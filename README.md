@@ -1,4 +1,4 @@
-# tidy-tabs
+# Tab Hero
 
 <img src="./chrome-ext--tab-hero/icon.png" width="15%">
 
