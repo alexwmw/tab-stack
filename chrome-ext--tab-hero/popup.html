@@ -1,15 +1,279 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <script type="text/javascript" src="jquery-3.4.1.js"></script>
+    <script type="text/javascript" src="popup-script.js"></script>
+    <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Consolas">
     <style>
-      button {
-        height: 30px;
-        width: 30px;
-        outline: none;
+      :root {
+        /* colors */
+        --text: black;
+        --primary: teal;
+        --secondary: orange;
+        --unselected: grey;
+        --hover: lightgrey;
+        --link: purple;
+
+        --table-border: lightgrey;
+        --tab: none;
+        --background: whitesmoke;
+
+        --body-family: helvetica;
+        --heading-family: helvetica;
       }
+      html{
+        min-height: 600px;
+        width: 800px;
+      }
+      body{
+        display: block;
+        margin: 0;
+        padding: 0;
+        font-size: 11pt;
+
+      }
+      h1{
+        font-size: 16pt;
+      }
+      button{
+        padding: 10px;
+      }
+      select{
+        padding: 10px;
+      }
+      input[type=checkbox]{
+        transform: scale(1.1);
+      }
+      .tab-container{
+        position: fixed;
+        z-index: 3;
+        background-color: white;
+        width: 100%;
+      }
+      .title{
+        display: inline-block;
+        text-align: right;
+        width: 300px;
+        font-size: 18pt;
+        font-family: Consolas;
+      }
+      .icon{
+        margin-bottom: -3px;
+        margin-right: 8px;
+        margin-left: 8px;
+        height: 20px;
+      }
+      .tab{
+        min-width: 120px;
+        color: var(--unselected);
+        display: inline-block;
+        font-size: 10pt;
+        text-align: center;
+        padding: 15px;
+        border-radius: 5px 5px 0 0;
+        font-family: var(--heading-family);
+        margin: 0 -2px;
+      }
+      #tab-monitor-link{
+        margin-left: 0px;
+      }
+      .tab:hover{
+        color: var(--hover);
+        cursor: pointer;
+        box-shadow:inset 0px -6px 0px 0px var(--background);
+      }
+      .tab.selected{
+        color: var(--primary);
+        box-shadow:inset 0px -6px 0px 0px var(--primary);
+      }
+      .tab.selected:hover{
+        color: var(--secondary);
+        cursor: pointer;
+        box-shadow:inset 0px -6px 0px 0px var(--secondary);
+      }
+      .tab-content{
+        background-color: var(--background);
+        color: var(--body-text);
+        font-family: var(--body-family);
+        width: 100%;
+        height: 100%;
+        min-height: 500px;
+        display: inline-block;
+        overflow-y: scroll;
+        top: 39px;
+        padding: 36px;
+        margin-top: 30px;
+      }
+      .settings-table{
+        width:100%;
+        margin: 0 15px;
+      }
+
+      .setting-row{
+        height: 45px;
+        width: 80%;
+      }
+      .shortcut-input{
+        padding: 10px;
+      }
+      .time-input{
+        padding: 10px;
+        width: 40px;
+      }
+      .shortcut-description{
+        padding-left: 20px;
+      }
+      .follow-up{
+        padding-left: 20px;
+      }
+      .col1{
+        width: 30%;
+      }
+      .col2:{
+        width:20%;
+      }
+      .col3:{
+        width:5%;
+      }
+      .col4:{
+        width:5%;
+      }
+      .greyed-out{
+        color: lightgrey;
+      }
+
+
     </style>
   </head>
+  <!--------------------------------------------------------------->
   <body>
-    <button id="changeColor"></button>
+    <!-- Tabs -->
+    <div class="tab-container">
+        <div class="tab selected" id='tab-monitor-link'>Tab Monitor</div>
+        <div class="tab" id='tab-history-link'>Tab History</div>
+        <div class="tab" id='settings-link'>Settings</div>
+        <div class="title" id="title"><img class="icon" src="icon128.png"></div>
+    </div>
+
+    <!------------------------------------------------------------->
+
+    <!-- Monitor Page -->
+
+    <div id="tab-monitor" style="display: none;" class="tab-content">
+      <p>Here is some content in the monitor</p>
+    </div>
+
+
+    <!------------------------------------------------------------->
+
+    <!-- History Page -->
+
+    <div id="tab-history" style="display: none;" class="tab-content">
+      <p>History looks like this</p>
+    </div>
+
+
+    <!------------------------------------------------------------->
+
+    <!-- Settings Page -->
+
+
+    <div id="settings" style="display: show;" class="tab-content">
+      <h1>Settings page</h1>
+      <form>
+        <table class="settings-table">
+          <tr class="setting-row">
+            <td class="col1">Close tabs after:</td>
+            <td class="col2">
+              <input class="time-input" type="number" id="timout-m"></input>
+              :
+              <input size="2" class="time-input" type="number" id="timout-s"></input>
+            mm:ss</td>
+          </tr>
+          <tr class="setting-row">
+            <td class="col1">Close criteria:</td>
+            <td class="col2">
+              <select id="O-close-criteria" name="O-close-criteria">
+                <option value="all">Close any tabs</option>
+                <option value="whitelist">Except whitelisted</option>
+                <option value="blacklist">Blacklisted only</option>
+              </select>
+              <button id="myBtn" >Edit lists</button>
+            </td>
+          </tr>
+          <tr class="setting-row">
+            <td class="col1">Allow grouping of tabs:</td>
+            <td class="col2"><input type="checkbox" id="Q-group-tabs" name="Q-group-tabs"></td>
+          </tr>
+          <tr id="Q-group-by" class="setting-row greyed-out">
+            <td class="col1 follow-up">Group by:</td>
+            <td class="col2">
+              <select id="O-group-by" name="Q-group-by" disabled>
+                <option value="origin">Origin</option>
+                <option value="domain">Domain</option>
+              </select>
+            </td>
+          </tr>
+          <tr id="Q-warn-close" class="setting-row greyed-out">
+            <td class="col1 follow-up">Warn before closing group:</td>
+            <td class="col2"><input type="checkbox" id="O-warn-close" name="O-warn-close" disabled></td>
+          </tr>
+          <!-- tr id="Q-warn-timeout" class="setting-row greyed-out">
+            <td class="col1">Warning timeout:</td>
+            <td class="col2">
+              <input class="time-input" type="number" id="warn-timout-m" disabled></input>
+              :
+              <input class="time-input" type="number" id="warn-timout-s" disabled></input>
+            mm:ss</td>
+            </td>
+          </tr -->
+          <tr class="setting-row">
+            <td class="col1">Clear closed tabs list on quit:</td>
+            <td class="col2"><input type="checkbox" id="O-clear-criteria" name="O-clear-criteria"></td>
+          </tr>
+          <tr class="setting-row">
+            <td class="col1"><h4>Keyboard shortcuts:</h4></td>
+          </tr>
+          <tr class="setting-row shortcut-row">
+            <td class="col1 shortcut-description">Open tab history</td>
+            <td class="col2">
+              <input class="shortcut-input" type="text" id=""></input>
+            </td>
+          <tr class="setting-row shortcut-row">
+            <td class="col1 shortcut-description">Open tab monitor</td>
+            <td class="col2">
+              <input class="shortcut-input" type="text" id=""></input>
+            </td>
+          <tr class="setting-row shortcut-row">
+            <td class="col1 shortcut-description">Open settings</td>
+            <td class="col2">
+              <input class="shortcut-input" type="text" id=""></input>
+            </td>
+          <tr class="setting-row shortcut-row">
+            <td class="col1 shortcut-description">Re-open closed tab</td>
+            <td class="col2">
+              <input class="shortcut-input" type="text" id=""></input>
+            </td>
+          <tr class="setting-row shortcut-row">
+            <td class="col1 shortcut-description">Re-open closed group <br>(pop-up)</td>
+            <td class="col2">
+              <input class="shortcut-input" type="text" id=""></input>
+            </td>
+          <tr class="setting-row shortcut-row">
+            <td class="col1 shortcut-description">Pin/Unpin current tab</td>
+            <td class="col2">
+              <input class="shortcut-input" type="text" id=""></input>
+            </td>
+
+
+
+          </tr>
+
+        </table>
+      </form>
+    </div>
+
   </body>
 </html>
+

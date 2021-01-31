@@ -1,13 +1,15 @@
 {
-  "name": "Tidy Tabs",
+  "name": "Tab Hero",
   "version": "1.0",
-  "description": "It tidies your tabs away",
+  "description": "Total Tab Management",
   "background": {
-    "scripts": ["background.js"],
-    "persistent": false
+    "service_workers": ["background.js", "jquery-3.4.1.js", "popup-script.js"]
   },
-  "page_action": {
+  "action": {
     "default_popup": "popup.html"
+  },
+  "icons": {
+    "128": "icon128.png" 
   },
   "manifest_version": 3
 }
