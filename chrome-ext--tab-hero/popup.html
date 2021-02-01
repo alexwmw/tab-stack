@@ -59,10 +59,9 @@
         font-family: Consolas;
       }
       .icon{
-        margin-bottom: -3px;
-        margin-right: 8px;
-        margin-left: 8px;
-        height: 20px;
+        padding-top: 10px;
+		margin-bottom: -30px;
+        height: 50px;
       }
       .tab{
         min-width: 120px;
@@ -153,7 +152,7 @@
         <div class="tab selected" id='tab-monitor-link'>Tab Monitor</div>
         <div class="tab" id='tab-history-link'>Tab History</div>
         <div class="tab" id='settings-link'>Settings</div>
-        <div class="title" id="title"><img class="icon" src="icon128.png"></div>
+        <div class="title" id="title"><a href="#"><img class="icon" src="title.png"></a></div>
     </div>
 
     <!------------------------------------------------------------->
@@ -199,11 +198,12 @@
                 <option value="whitelist">Except whitelisted</option>
                 <option value="blacklist">Blacklisted only</option>
               </select>
-              <button id="myBtn" >Edit lists</button>
+              <button id="list-button" >View lists</button>
             </td>
           </tr>
+
           <tr class="setting-row">
-            <td class="col1">Allow grouping of tabs:</td>
+            <td class="col1">Allow automatic grouping of tabs:</td>
             <td class="col2"><input type="checkbox" id="Q-group-tabs" name="Q-group-tabs"></td>
           </tr>
           <tr id="Q-group-by" class="setting-row greyed-out">
@@ -262,6 +262,11 @@
             </td>
           <tr class="setting-row shortcut-row">
             <td class="col1 shortcut-description">Pin/Unpin current tab</td>
+            <td class="col2">
+              <input class="shortcut-input" type="text" id=""></input>
+            </td>
+          <tr class="setting-row shortcut-row">
+            <td class="col1 shortcut-description">Collapse/expand all groups</td>
             <td class="col2">
               <input class="shortcut-input" type="text" id=""></input>
             </td>

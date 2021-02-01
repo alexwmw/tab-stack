@@ -12,7 +12,9 @@ $(document).ready(function(){
 		$(this).addClass('selected');
 		$('.tab-content').not(openContent).hide();
 		$(openContent).show();
-	})
+	});
+
+
 
 	$('#Q-group-tabs').click(function() {
     	$("#Q-group-by").toggleClass('greyed-out',this.checked == false);
