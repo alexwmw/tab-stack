@@ -4,154 +4,146 @@
     <script type="text/javascript" src="jquery-3.4.1.js"></script>
     <script type="text/javascript" src="popup-script.js"></script>
     <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css?family=Consolas">
+    href="db.onlinewebfonts.com/c/9b62dc86f936227b3f7b367bd0b6c05e?family=Tw+Cen+MT">
     <style>
-      :root {
-        /* colors */
-        --text: black;
-        --primary: teal;
-        --secondary: orange;
-        --unselected: grey;
-        --hover: lightgrey;
-        --link: purple;
+		@font-face {
+			font-family: 'Tw Cen MT';
+			src: url('fonts/fontscorecomttwcenmt.eot');
+			src: local('Tw Cen MT'), url('./fonts/fontscorecomttwcenmt.woff') format('woff'), url('./fonts/fontscorecomttwcenmt.ttf') format('truetype');
+		}
 
-        --table-border: lightgrey;
-        --tab: none;
-        --background: whitesmoke;
+		:root {
+			/* colors */
+			--text: black;
+			--primary: teal;
+			--secondary: orange;
+			--unselected: dimgray;
+			--hover: lightgrey;
+			--link: purple;
 
-        --body-family: helvetica;
-        --heading-family: helvetica;
-      }
-      html{
-        min-height: 600px;
-        width: 800px;
-      }
-      body{
-        display: block;
-        margin: 0;
-        padding: 0;
-        font-size: 11pt;
+			--table-border: lightgrey;
+			--tab: none;
+			--background: whitesmoke;
 
-      }
-      h1{
-        font-size: 16pt;
-      }
-      button{
-        padding: 10px;
-      }
-      select{
-        padding: 10px;
-      }
-      input[type=checkbox]{
-        transform: scale(1.1);
-      }
-      .tab-container{
-        position: fixed;
-        z-index: 3;
-        background-color: white;
-        width: 100%;
-      }
-      .title{
-        display: inline-block;
-        text-align: right;
-        width: 300px;
-        font-size: 18pt;
-        font-family: Consolas;
-      }
-      .icon{
-        padding-top: 10px;
-		margin-bottom: -30px;
-        height: 50px;
-      }
-      .tab{
-        min-width: 120px;
-        color: var(--unselected);
-        display: inline-block;
-        font-size: 10pt;
-        text-align: center;
-        padding: 15px;
-        border-radius: 5px 5px 0 0;
-        font-family: var(--heading-family);
-        margin: 0 -2px;
-      }
-      #tab-monitor-link{
-        margin-left: 0px;
-      }
-      .tab:hover{
-        color: var(--hover);
-        cursor: pointer;
-        box-shadow:inset 0px -6px 0px 0px var(--background);
-      }
-      .tab.selected{
-        color: var(--primary);
-        box-shadow:inset 0px -6px 0px 0px var(--primary);
-      }
-      .tab.selected:hover{
-        color: var(--secondary);
-        cursor: pointer;
-        box-shadow:inset 0px -6px 0px 0px var(--secondary);
-      }
-      .tab-content{
-        background-color: var(--background);
-        color: var(--body-text);
-        font-family: var(--body-family);
-        width: 100%;
-        height: 100%;
-        min-height: 500px;
-        display: inline-block;
-        overflow-y: scroll;
-        top: 39px;
-        padding: 36px;
-        margin-top: 30px;
-      }
-      .settings-table{
-        width:100%;
-        margin: 0 15px;
-      }
+			--body-family: helvetica;
+			--heading-family: "Tw Cen MT";
+		}
+		html{
+			min-height: 600px;
+			width: 800px;
+		}
+		body{
+			display: block;
+			margin: 0;
+			padding: 0;
+			font-size: 10pt;
 
-      .setting-row{
-        height: 45px;
-        width: 80%;
-      }
-      .shortcut-input{
-        padding: 10px;
-      }
-      .time-input{
-        padding: 10px;
-        width: 40px;
-      }
-      .shortcut-description{
-        padding-left: 20px;
-      }
-      .follow-up{
-        padding-left: 20px;
-      }
-      .col1{
-        width: 30%;
-      }
-      .col2:{
-        width:20%;
-      }
-      .col3:{
-        width:5%;
-      }
-      .col4:{
-        width:5%;
-      }
-      .greyed-out{
-        color: lightgrey;
-      }
-
-
+		}
+		h1{
+			font-size: 16pt;
+			font-family: var(--heading-family);
+		}
+			input[type=checkbox]{
+			transform: scale(1.1);
+		}
+			.tab-container{
+			position: fixed;
+			z-index: 3;
+			background-color: white;
+			width: 100%;
+		}
+		.title{
+			display: inline-block;
+			text-align: right;
+			width: 300px;
+			font-size: 18pt;
+			font-family: Consolas;
+		}
+		.icon{
+			padding-top: 2px;
+			margin-bottom: -20px;
+			padding-left: 20px;
+			height: 40px;
+		}
+		.tab{
+			min-width: 120px;
+			color: var(--unselected);
+			display: inline-block;
+			font-size: 16pt;
+			text-align: center;
+			padding: 15px;
+			border-radius: 5px 5px 0 0;
+			font-family: var(--heading-family);
+			margin: 0 -2px;
+		}
+		#tab-monitor-link{
+			margin-left: 0px;
+		}
+		.tab:hover{
+			color: var(--hover);
+			cursor: pointer;
+			box-shadow:inset 0px -6px 0px 0px var(--background);
+		}
+		.tab.selected{
+			color: var(--primary);
+			box-shadow:inset 0px -6px 0px 0px var(--primary);
+		}
+		.tab.selected:hover{
+			color: var(--secondary);
+			cursor: pointer;
+			box-shadow:inset 0px -6px 0px 0px var(--secondary);
+		}
+		.tab-content{
+			background-color: var(--background);
+			color: var(--body-text);
+			font-family: var(--body-family);
+			width: 100%;
+			height: 100%;
+			min-height: 500px;
+			display: inline-block;
+			overflow-y: scroll;
+			top: 39px;
+			padding: 36px;
+			margin-top: 30px;
+		}
+		.settings-table{
+			width:100%;
+			margin: 0 15px;
+		}
+		.setting-row{
+			height: 30px;
+			width: 80%;
+		}
+		.time-input{
+			width: 35px;
+		}
+		.shortcut-description{
+			padding-left: 20px;
+		}
+		.follow-up{
+			padding-left: 20px;
+		}
+		.col1{
+			width: 30%;
+		}
+		.col2:{
+			width:20%;
+		}
+		.col3:{
+			width:5%;
+		}
+		.greyed-out{
+			color: lightgrey;
+		}
     </style>
   </head>
   <!--------------------------------------------------------------->
   <body>
     <!-- Tabs -->
     <div class="tab-container">
-        <div class="tab selected" id='tab-monitor-link'>Tab Monitor</div>
-        <div class="tab" id='tab-history-link'>Tab History</div>
-        <div class="tab" id='settings-link'>Settings</div>
+        <div class="tab selected" id='tab-history-link'>tab stack</div>
+		<div class="tab" id='tab-monitor-link'>tab monitor</div>
+        <div class="tab" id='settings-link'>settings</div>
         <div class="title" id="title"><a href="#"><img class="icon" src="title.png"></a></div>
     </div>
 
