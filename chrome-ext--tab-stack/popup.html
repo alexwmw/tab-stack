@@ -3,156 +3,26 @@
   <head>
     <script type="text/javascript" src="jquery-3.4.1.js"></script>
     <script type="text/javascript" src="popup-script.js"></script>
-    <link rel="stylesheet"
-    href="db.onlinewebfonts.com/c/9b62dc86f936227b3f7b367bd0b6c05e?family=Tw+Cen+MT">
-    <style>
-		@font-face {
-			font-family: 'Tw Cen MT';
-			src: url('fonts/fontscorecomttwcenmt.eot');
-			src: local('Tw Cen MT'), url('./fonts/fontscorecomttwcenmt.woff') format('woff'), url('./fonts/fontscorecomttwcenmt.ttf') format('truetype');
-		}
-
-		:root {
-			/* colors */
-			--text: black;
-			--primary: teal;
-			--secondary: orange;
-			--unselected: dimgray;
-			--hover: lightgrey;
-			--link: purple;
-
-			--table-border: lightgrey;
-			--tab: none;
-			--background: whitesmoke;
-
-			--body-family: helvetica;
-			--heading-family: "Tw Cen MT";
-		}
-		html{
-			min-height: 600px;
-			width: 800px;
-		}
-		body{
-			display: block;
-			margin: 0;
-			padding: 0;
-			font-size: 10pt;
-
-		}
-		h1{
-			font-size: 16pt;
-			font-family: var(--heading-family);
-		}
-			input[type=checkbox]{
-			transform: scale(1.1);
-		}
-			.tab-container{
-			position: fixed;
-			z-index: 3;
-			background-color: white;
-			width: 100%;
-		}
-		.title{
-			display: inline-block;
-			text-align: right;
-			width: 300px;
-			font-size: 18pt;
-			font-family: Consolas;
-		}
-		.icon{
-			padding-top: 2px;
-			margin-bottom: -20px;
-			padding-left: 20px;
-			height: 40px;
-		}
-		.tab{
-			min-width: 120px;
-			color: var(--unselected);
-			display: inline-block;
-			font-size: 16pt;
-			text-align: center;
-			padding: 15px;
-			border-radius: 5px 5px 0 0;
-			font-family: var(--heading-family);
-			margin: 0 -2px;
-		}
-		#tab-monitor-link{
-			margin-left: 0px;
-		}
-		.tab:hover{
-			color: var(--hover);
-			cursor: pointer;
-			box-shadow:inset 0px -6px 0px 0px var(--background);
-		}
-		.tab.selected{
-			color: var(--primary);
-			box-shadow:inset 0px -6px 0px 0px var(--primary);
-		}
-		.tab.selected:hover{
-			color: var(--secondary);
-			cursor: pointer;
-			box-shadow:inset 0px -6px 0px 0px var(--secondary);
-		}
-		.tab-content{
-			background-color: var(--background);
-			color: var(--body-text);
-			font-family: var(--body-family);
-			width: 100%;
-			height: 100%;
-			min-height: 500px;
-			display: inline-block;
-			overflow-y: scroll;
-			top: 39px;
-			padding: 36px;
-			margin-top: 30px;
-		}
-		.settings-table{
-			width:100%;
-			margin: 0 15px;
-		}
-		.setting-row{
-			height: 30px;
-			width: 80%;
-		}
-		.time-input{
-			width: 35px;
-		}
-		.shortcut-description{
-			padding-left: 20px;
-		}
-		.follow-up{
-			padding-left: 20px;
-		}
-		.col1{
-			width: 30%;
-		}
-		.col2:{
-			width:20%;
-		}
-		.col3:{
-			width:5%;
-		}
-		.greyed-out{
-			color: lightgrey;
-		}
-    </style>
+    <link rel="stylesheet" href="popup.css"></link>
   </head>
   <!--------------------------------------------------------------->
   <body>
+
+    
     <!-- Tabs -->
     <div class="tab-container">
-        <div class="tab selected" id='tab-history-link'>tab stack</div>
-		<div class="tab" id='tab-monitor-link'>tab monitor</div>
-        <div class="tab" id='settings-link'>settings</div>
-        <div class="title" id="title"><a href="#"><img class="icon" src="title.png"></a></div>
-    </div>
+      <div class="title" id="title">
+        <a target="_blank" href="https://github.com/alexwmw/tab-stack"><img class="icon" src="title.png" title='Link to github'></a>
+      </div>
+        <div class="tab selected" id='tab-history-link'>
+          stack</div>
+		    <div class="tab" id='tab-monitor-link'>
+          monitor</div>
+        <div class="tab" id='settings-link'>
+          settings</div>
+          <div class="tab" style="display: none;" id='list-button-tab'>
+            edit views</div>
 
-    <!------------------------------------------------------------->
-
-    <!-- Monitor Page -->
-
-    <div id="tab-monitor" style="display: none;" class="tab-content">
-      <p>Here is some content in the monitor</p>
     </div>
 
 
@@ -167,110 +37,188 @@
 
     <!------------------------------------------------------------->
 
-    <!-- Settings Page -->
+    <!-- Monitor Page -->
 
-
-    <div id="settings" style="display: show;" class="tab-content">
-      <h1>Settings page</h1>
-      <form>
-        <table class="settings-table">
-          <tr class="setting-row">
-            <td class="col1">Close tabs after:</td>
-            <td class="col2">
-              <input class="time-input" type="number" id="timout-m"></input>
-              :
-              <input size="2" class="time-input" type="number" id="timout-s"></input>
-            mm:ss</td>
-          </tr>
-          <tr class="setting-row">
-            <td class="col1">Close criteria:</td>
-            <td class="col2">
-              <select id="O-close-criteria" name="O-close-criteria">
-                <option value="all">Close any tabs</option>
-                <option value="whitelist">Except whitelisted</option>
-                <option value="blacklist">Blacklisted only</option>
-              </select>
-              <button id="list-button" >View lists</button>
-            </td>
-          </tr>
-
-          <tr class="setting-row">
-            <td class="col1">Allow automatic grouping of tabs:</td>
-            <td class="col2"><input type="checkbox" id="Q-group-tabs" name="Q-group-tabs"></td>
-          </tr>
-          <tr id="Q-group-by" class="setting-row greyed-out">
-            <td class="col1 follow-up">Group by:</td>
-            <td class="col2">
-              <select id="O-group-by" name="Q-group-by" disabled>
-                <option value="origin">Origin</option>
-                <option value="domain">Domain</option>
-              </select>
-            </td>
-          </tr>
-          <tr id="Q-warn-close" class="setting-row greyed-out">
-            <td class="col1 follow-up">Warn before closing group:</td>
-            <td class="col2"><input type="checkbox" id="O-warn-close" name="O-warn-close" disabled></td>
-          </tr>
-          <!-- tr id="Q-warn-timeout" class="setting-row greyed-out">
-            <td class="col1">Warning timeout:</td>
-            <td class="col2">
-              <input class="time-input" type="number" id="warn-timout-m" disabled></input>
-              :
-              <input class="time-input" type="number" id="warn-timout-s" disabled></input>
-            mm:ss</td>
-            </td>
-          </tr -->
-          <tr class="setting-row">
-            <td class="col1">Clear closed tabs list on quit:</td>
-            <td class="col2"><input type="checkbox" id="O-clear-criteria" name="O-clear-criteria"></td>
-          </tr>
-          <tr class="setting-row">
-            <td class="col1"><h4>Keyboard shortcuts:</h4></td>
-          </tr>
-          <tr class="setting-row shortcut-row">
-            <td class="col1 shortcut-description">Open tab history</td>
-            <td class="col2">
-              <input class="shortcut-input" type="text" id=""></input>
-            </td>
-          <tr class="setting-row shortcut-row">
-            <td class="col1 shortcut-description">Open tab monitor</td>
-            <td class="col2">
-              <input class="shortcut-input" type="text" id=""></input>
-            </td>
-          <tr class="setting-row shortcut-row">
-            <td class="col1 shortcut-description">Open settings</td>
-            <td class="col2">
-              <input class="shortcut-input" type="text" id=""></input>
-            </td>
-          <tr class="setting-row shortcut-row">
-            <td class="col1 shortcut-description">Re-open closed tab</td>
-            <td class="col2">
-              <input class="shortcut-input" type="text" id=""></input>
-            </td>
-          <tr class="setting-row shortcut-row">
-            <td class="col1 shortcut-description">Re-open closed group <br>(pop-up)</td>
-            <td class="col2">
-              <input class="shortcut-input" type="text" id=""></input>
-            </td>
-          <tr class="setting-row shortcut-row">
-            <td class="col1 shortcut-description">Pin/Unpin current tab</td>
-            <td class="col2">
-              <input class="shortcut-input" type="text" id=""></input>
-            </td>
-          <tr class="setting-row shortcut-row">
-            <td class="col1 shortcut-description">Collapse/expand all groups</td>
-            <td class="col2">
-              <input class="shortcut-input" type="text" id=""></input>
-            </td>
-
-
-
-          </tr>
-
-        </table>
-      </form>
+    <div id="tab-monitor" style="display: none;" class="tab-content">
+      <p>Here is some content in the monitor</p>
     </div>
 
+
+    <!------------------------------------------------------------->
+
+    <!-- Settings Page -->
+
+    <div id="settings" class="tab-content">
+      <div id="settings-view">
+        <h1>Settings page</h1>
+          <form>
+            <table class="settings-table">
+
+              <tr class="blank_row"><td></td><td></td></tr>
+              <tr class="setting-row main-setting">
+                  <td class="col1">Allow automatic closing of tabs:</td>
+                  <td class="col2"><input type="checkbox" checked id="cb-close-tabs" name="close-tabs"></td>
+              </tr>
+
+                    <tr class="setting-row cb-close-tabs-dependent indented">
+                      <td class="col1 ">Close tabs after:</td>
+                      <td class="col2">
+                        <input class="time-input" type="number" id="timeout-m" ></input>
+                        min &nbsp;&nbsp;
+                        <input size="2" class="time-input" type="number" id="timeout-s" ></input>
+                        sec</td>
+                    </tr>
+
+                    <tr class="setting-row cb-close-tabs-dependent indented">
+                      <td class="col1 ">Close tabs when more than:</td>
+                      <td class="col2">
+                        <input class="time-input" type="number" id="timeout-m" ></input>
+                        tabs are open
+
+                    </tr>
+
+                    <tr class="setting-row cb-close-tabs-dependent indented">
+                      <td class="col1 follow-up ">Close criteria:</td>
+                      <td class="col2">
+                        <select id="close-criteria" name="O-close-criteria" >
+                          <option value="all">Close any tabs</option>
+                          <option value="whitelist">Except whitelisted</option>
+                          <option value="blacklist">Blacklisted only</option>
+                        </select>
+                    </td>
+                    <tr id="list-button-row" class="setting-row cb-close-tabs-dependent indented">
+                      <td class="col1">
+                        Edit lists:
+                      </td>
+                      <td class="col2">
+                        <input type="button" class="change-view-button" id="list-button" value="View lists">
+                      </td>
+                    </tr>
+
+                    <tr class="setting-row cb-close-tabs-dependent indented">
+                      <td class="col1">Don't close tabs that are playing audio</td>
+                      <td class="col2"><input type="checkbox"></td>
+                    </tr>
+
+                    
+
+              <tr class="blank_row"><td></td><td></td></tr>
+              <tr class="setting-row main-setting">
+                <td class="col1">Allow automatic grouping of tabs:</td>
+                <td class="col2"><input type="checkbox" checked id="group-tabs" name="group-tabs"></td>
+              </tr>
+
+                      <tr id="group-by" class="setting-row group-tabs-dependent indented">
+                        <td class="col1">Group by:</td>
+                        <td class="col2">
+                          <select id="group-by-select" name="group-by-select" >
+                            <option value="origin">Origin</option>
+                            <option value="domain">Domain</option>
+                          </select>
+                        </td>
+
+                      </tr>
+                      <tr id="warn-close" class="setting-row group-tabs-dependent indented">
+                        <td class="col1">Warn before closing group:</td>
+                        <td class="col2">
+                          <select id="warn-close-select" name="warn-close-select" >
+                            <option value="always">Always</option>
+                            <option value="never">Never</option>
+                            <option value="never">Only most active groups</option>
+                          </select>
+                        </td>
+                      </tr>
+
+              <tr class="blank_row"><td></td><td></td></tr>
+              <tr class="setting-row main-setting">
+                <td class="col1">Clear closed tabs list on quit:</td>
+                <td class="col2"><input type="checkbox" id="O-clear-criteria" name="O-clear-criteria"></td>
+              </tr>
+
+              <tr class="blank_row"><td></td><td></td></tr>
+              <tr class="setting-row">
+                <td class="col1"><h4>Keyboard shortcuts:</h4></td>
+              </tr>
+              <tr class="shortcut-row ">
+                <td class="col1 ">Open the stack window</td>
+                <td class="col2">
+                  <input class="shortcut-input" type="text" id=""></input>
+                </td>
+              </tr>
+              <tr class="shortcut-row ">
+                <td class="col1 ">Open the monitor window</td>
+                <td class="col2">
+                  <input class="shortcut-input" type="text" id=""></input>
+                </td>
+              </tr>
+              <tr class="shortcut-row ">
+                <td class="col1 ">Open settings</td>
+                <td class="col2">
+                  <input class="shortcut-input" type="text" id=""></input>
+                </td>
+              </tr>
+              <tr class="shortcut-row ">
+                <td class="col1 ">Pin/unpin current tab</td>
+                <td class="col2">
+                  <input class="shortcut-input" type="text" id=""></input>
+                </td>
+              </tr>
+              <tr class="shortcut-row ">
+                <td class="col1 ">Lock/unlock current tab</td>
+                <td class="col2">
+                  <input class="shortcut-input" type="text" id=""></input>
+                </td>
+              </tr>
+              <tr class="shortcut-row ">
+                <td class="col1 ">Lock/unlock current group</td>
+                <td class="col2">
+                  <input class="shortcut-input" type="text" id=""></input>
+                </td>
+              </tr>
+              <tr class="shortcut-row ">
+                <td class="col1 ">Collapse/expand current group</td>
+                <td class="col2">
+                  <input class="shortcut-input" type="text" id=""></input>
+                </td>
+              </tr>
+              <tr class="shortcut-row ">
+                <td class="col1 ">Collapse/expand all other groups</td>
+                <td class="col2">
+                  <input class="shortcut-input" type="text" id=""></input>
+                </td>
+              </tr>
+              <tr class="shortcut-row ">
+                <td class="col1 ">Collapse/expand all groups</td>
+                <td class="col2">
+                  <input class="shortcut-input" type="text" id=""></input>
+                </td>
+              </tr>
+            </table>
+          </form>
+      </div>
+      <div class="alt-view" id="list-button-view" style="display: none;">
+        <form>
+          <p>White List</p>
+          <textarea id="white-list-area" name="white-list-area" rows="10" cols="50"></textarea>
+          <br>
+          <p>Black List</p>
+          <textarea id="black-list-area" name="black-list-area" rows="10" cols="50"></textarea>
+          <br><br>
+          <input id="" class="list-form-buttons" type="submit" value="Save">
+          <input id="" class="list-form-buttons" type="button" value="Cancel">
+        </form>
+      </div>  
+
+    </div>
+    
+    <div id="dialog">
+      <h1 id="default-heading">Default Heading</h1>
+      <div id="default-content">
+        <p>Default content</p>
+      </div>
+    </div>
+  
   </body>
+    
 </html>
 

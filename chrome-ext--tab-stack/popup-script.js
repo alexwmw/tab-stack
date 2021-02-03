@@ -1,48 +1,68 @@
-
 $(document).ready(function(){
 
-	$('.tab').click(function(){
-	  	var obj = {
+	//functions
+
+
+	// Tabs
+	{
+		var tabObj = {
 			'tab-monitor-link': '#tab-monitor',
 			'tab-history-link': '#tab-history',
 			'settings-link': '#settings'
 		};
-		var openContent = obj[$(this).attr('id')];
-		$('.tab').not(this).removeClass('selected');
-		$(this).addClass('selected');
-		$('.tab-content').not(openContent).hide();
-		$(openContent).show();
-	});
+		$('.tab').click(function(){
+			var visiblePage = tabObj[$(this).attr('id')];
+			$('.tab').removeClass('selected');
+			$(this).addClass('selected');
+			$('.tab-content').hide();
+			$(visiblePage).show();
+		});
+	}
+	// Settings
+	{
+		// Checkboxes and dependent items
+		{
+			var checkboxes = $("input[type='checkbox']");
 
+			$(checkboxes).each(function(){
+				if($(this).is(":not(:checked)")){
+					var item = $(this).attr('id');
+					var dependent = '.'+item+'-dependent';
+					$(dependent).find('input, select, button').prop('disabled', function(i, v) { return !v; });
+					$(dependent).find('td').toggleClass('grey');
+				}
+			});
 
+			$(checkboxes).click(function(){
+				var item = $(this).attr('id');
+				var dependent = '.'+item+'-dependent';
+				$(dependent).find('input, select, button').prop('disabled', function(i, v) { return !v; });
+				$(dependent).find('td').toggleClass('grey');
+			});
+		}
+		//Buttons
+		{
+			/** Any element in class .change-view-button:
+					Must have a div with an id identical this this
+					appended with '-view'
+				
+					Must have a tab with an id identical this this
+					appended with '-tab'
+			*/
+			$('.change-view-button').click(function(){
+				var item = $(this).attr('id');
+				var view = '#'+item+'-view';
+				var tab = '#'+item+'-tab';
+				$('#settings-view').hide();
+				$('.tab-container').children().hide();
+				$(tab + ',' + view).fadeIn();
+			});
 
-	$('#Q-group-tabs').click(function() {
-    	$("#Q-group-by").toggleClass('greyed-out',this.checked == false);
-    	$("#Q-warn-close").toggleClass('greyed-out',this.checked == false);
-    	if($( "#O-group-by" ).prop( "disabled")){
-    		$( "#O-group-by" ).prop( "disabled", false );
-    		$( "#O-warn-close" ).prop( "disabled", false );
-    	}
-    	else{
-    		$( "#O-group-by" ).prop( "disabled", true );
-    		$( "#O-warn-close" ).prop( "disabled", true );
-    	}
-	});
-
-	$('#Q-warn-group-close').click(function() {
-    	$("#Q-warn-timeout").toggleClass('greyed-out',this.checked == false);
-    	 if($( "#warn-timout-m" ).prop( "disabled")){
-    		$( "#warn-timout-m" ).prop( "disabled", false );
-    		$( "#warn-timout-s" ).prop( "disabled", false );
-    	}
-    	else{
-    		$( "#warn-timout-m" ).prop( "disabled", true );
-    		$( "#warn-timout-s" ).prop( "disabled", true );
-    	}
-	});
-
-
-
-
-
+			$('.list-form-buttons').click(function(){
+				$('.tab-container').children().show();
+				$('#list-button-tab,#list-button-view').hide();
+				$('#settings-view').show();
+			});
+		}
+	}
 });
