@@ -4,6 +4,7 @@
     <script type="text/javascript" src="jquery-3.4.1.js"></script>
     <script type="text/javascript" src="popup-script.js"></script>
     <link rel="stylesheet" href="popup.css"></link>
+    <link rel="stylesheet" href="fonts/font-awesome/css/font-awesome.min.css">
   </head>
   <!--------------------------------------------------------------->
   <body>
@@ -12,7 +13,7 @@
     <!-- Tabs -->
     <div class="tab-container">
       <div class="title" id="title">
-        <a target="_blank" href="https://github.com/alexwmw/tab-stack"><img class="icon" src="title.png" title='Link to github'></a>
+        <a target="_blank" href="https://github.com/alexwmw/tab-stack"><img class="icon" src="images/title.png" title='Link to github'></a>
       </div>
         <div class="tab selected" id='tab-history-link'>
           stack</div>
@@ -53,146 +54,119 @@
         <h1>Settings page</h1>
           <form>
             <table class="settings-table">
-
+              <colgroup>
+                <col class="col1">
+                <col class="col2">
+              </colgroup>
+              <!--Closing----------------------------------------------------------->
               <tr class="blank_row"><td></td><td></td></tr>
               <tr class="setting-row main-setting">
-                  <td class="col1">Allow automatic closing of tabs:</td>
-                  <td class="col2"><input type="checkbox" checked id="cb-close-tabs" name="close-tabs"></td>
+                  <td>Allow automatic closing of tabs:</td>
+                  <td><input type="checkbox" checked id="cb-close-tabs" name="close-tabs"></td>
               </tr>
-
-                    <tr class="setting-row cb-close-tabs-dependent indented">
-                      <td class="col1 ">Close tabs after:</td>
-                      <td class="col2">
-                        <input class="time-input" type="number" id="timeout-m" ></input>
-                        min &nbsp;&nbsp;
-                        <input size="2" class="time-input" type="number" id="timeout-s" ></input>
-                        sec</td>
-                    </tr>
-
-                    <tr class="setting-row cb-close-tabs-dependent indented">
-                      <td class="col1 ">Close tabs when more than:</td>
-                      <td class="col2">
-                        <input class="time-input" type="number" id="timeout-m" ></input>
-                        tabs are open
-
-                    </tr>
-
-                    <tr class="setting-row cb-close-tabs-dependent indented">
-                      <td class="col1 follow-up ">Close criteria:</td>
-                      <td class="col2">
-                        <select id="close-criteria" name="O-close-criteria" >
-                          <option value="all">Close any tabs</option>
-                          <option value="whitelist">Except whitelisted</option>
-                          <option value="blacklist">Blacklisted only</option>
-                        </select>
-                    </td>
-                    <tr id="list-button-row" class="setting-row cb-close-tabs-dependent indented">
-                      <td class="col1">
-                        Edit lists:
-                      </td>
-                      <td class="col2">
-                        <input type="button" class="change-view-button" id="list-button" value="View lists">
-                      </td>
-                    </tr>
-
-                    <tr class="setting-row cb-close-tabs-dependent indented">
-                      <td class="col1">Don't close tabs that are playing audio</td>
-                      <td class="col2"><input type="checkbox"></td>
-                    </tr>
-
-                    
-
+              <tr class="setting-row cb-close-tabs-dependent indented">
+                <td>Close tabs after:</td>
+                <td><input class="time-input" type="number" id="timeout-m" ></input>
+                  min &nbsp;&nbsp;
+                  <input size="2" class="time-input" type="number" id="timeout-s" ></input>
+                  sec</td>
+              </tr>
+              <tr class="setting-row cb-close-tabs-dependent indented">
+                <td>Close tabs when more than:</td>
+                <td><input class="time-input" type="number" id="timeout-m" ></input>
+                  tabs are open</td>
+              </tr>
+              <tr class="setting-row cb-close-tabs-dependent indented">
+                <td>Close criteria:</td>
+                <td><select id="close-criteria" name="O-close-criteria" >
+                    <option value="all">Close any tabs</option>
+                    <option value="whitelist">Except whitelisted</option>
+                    <option value="blacklist">Blacklisted only</option>
+                  </select></td>
+              </tr>
+              <tr id="list-button-row" class="setting-row cb-close-tabs-dependent indented">
+                <td>Edit lists:</td>
+                <td><input type="button" class="change-view-button" id="list-button" value="View lists"></td>
+              </tr>
+              <tr class="setting-row cb-close-tabs-dependent indented">
+                <td>Display the lock icon <i class="fa fa-lock"></i> on locked tabs:</td>
+                <td><input type="checkbox"></td>
+              </tr>
+              <!--Grouping----------------------------------------------------------->
               <tr class="blank_row"><td></td><td></td></tr>
               <tr class="setting-row main-setting">
-                <td class="col1">Allow automatic grouping of tabs:</td>
-                <td class="col2"><input type="checkbox" checked id="group-tabs" name="group-tabs"></td>
+                <td>Allow automatic grouping of tabs:</td>
+                <td><input type="checkbox" checked id="group-tabs" name="group-tabs"></td>
+              </tr>
+              <tr id="group-by" class="setting-row group-tabs-dependent indented">
+                <td>Group by:</td>
+                <td><select id="group-by-select" name="group-by-select" >
+                    <option value="origin">Origin</option>
+                    <option value="domain">Domain</option>
+                  </select></td>
+              </tr>
+              <tr id="warn-close" class="setting-row group-tabs-dependent indented">
+                <td>Warn before closing group:</td>
+                <td><select id="warn-close-select" name="warn-close-select" >
+                    <option value="always">Always</option>
+                    <option value="never">Never</option>
+                    <option value="never">Only most active groups</option>
+                  </select></td>
+              </tr>
+              <!--Miscellaneous----------------------------------------------------------->
+              <tr span="2" class="blank_row"></tr>
+              <tr span="2" style="height: 10px;"></tr>
+              <tr class="setting-row ">
+                <td>Clear closed tabs list on quit:</td>
+                <td><input type="checkbox" id="O-clear-criteria" name="O-clear-criteria"></td>
+              </tr>
+              <tr class="setting-row ">
+                <td>Don't close tabs that are playing audio</td>
+                <td><input type="checkbox"></td>
               </tr>
 
-                      <tr id="group-by" class="setting-row group-tabs-dependent indented">
-                        <td class="col1">Group by:</td>
-                        <td class="col2">
-                          <select id="group-by-select" name="group-by-select" >
-                            <option value="origin">Origin</option>
-                            <option value="domain">Domain</option>
-                          </select>
-                        </td>
-
-                      </tr>
-                      <tr id="warn-close" class="setting-row group-tabs-dependent indented">
-                        <td class="col1">Warn before closing group:</td>
-                        <td class="col2">
-                          <select id="warn-close-select" name="warn-close-select" >
-                            <option value="always">Always</option>
-                            <option value="never">Never</option>
-                            <option value="never">Only most active groups</option>
-                          </select>
-                        </td>
-                      </tr>
-
-              <tr class="blank_row"><td></td><td></td></tr>
-              <tr class="setting-row main-setting">
-                <td class="col1">Clear closed tabs list on quit:</td>
-                <td class="col2"><input type="checkbox" id="O-clear-criteria" name="O-clear-criteria"></td>
-              </tr>
-
+              <!--Keyboard-Shortcuts----------------------------------------------------------->
               <tr class="blank_row"><td></td><td></td></tr>
               <tr class="setting-row">
-                <td class="col1"><h4>Keyboard shortcuts:</h4></td>
+                <td><h4>Keyboard shortcuts:</h4></td>
               </tr>
               <tr class="shortcut-row ">
-                <td class="col1 ">Open the stack window</td>
-                <td class="col2">
-                  <input class="shortcut-input" type="text" id=""></input>
-                </td>
+                <td>Pull most recent tab(s) from the stack</td>
+                <td><input class="shortcut-input" type="text" id=""></input></td>
               </tr>
               <tr class="shortcut-row ">
-                <td class="col1 ">Open the monitor window</td>
-                <td class="col2">
-                  <input class="shortcut-input" type="text" id=""></input>
-                </td>
+                <td>Open the stack window</td>
+                <td><input class="shortcut-input"  type="text" id=""></input></td>
               </tr>
               <tr class="shortcut-row ">
-                <td class="col1 ">Open settings</td>
-                <td class="col2">
-                  <input class="shortcut-input" type="text" id=""></input>
-                </td>
+                <td>Open the monitor window</td>
+                <td><input class="shortcut-input" type="text" id=""></input></td>
               </tr>
               <tr class="shortcut-row ">
-                <td class="col1 ">Pin/unpin current tab</td>
-                <td class="col2">
-                  <input class="shortcut-input" type="text" id=""></input>
-                </td>
+                <td>Open settings</td>
+                <td><input class="shortcut-input" type="text" id=""></input></td>
               </tr>
               <tr class="shortcut-row ">
-                <td class="col1 ">Lock/unlock current tab</td>
-                <td class="col2">
-                  <input class="shortcut-input" type="text" id=""></input>
-                </td>
+                <td>Pin/unpin current tab</td>
+                <td><input class="shortcut-input" type="text" id=""></input></td>
               </tr>
               <tr class="shortcut-row ">
-                <td class="col1 ">Lock/unlock current group</td>
-                <td class="col2">
-                  <input class="shortcut-input" type="text" id=""></input>
-                </td>
+                <td>Lock/unlock current tab</td>
+                <td><input class="shortcut-input" type="text" id=""></input></td>
               </tr>
               <tr class="shortcut-row ">
-                <td class="col1 ">Collapse/expand current group</td>
-                <td class="col2">
-                  <input class="shortcut-input" type="text" id=""></input>
-                </td>
+                <td>Lock/unlock current group</td>
+                <td><input class="shortcut-input" type="text" id=""></input></td>
               </tr>
               <tr class="shortcut-row ">
-                <td class="col1 ">Collapse/expand all other groups</td>
-                <td class="col2">
-                  <input class="shortcut-input" type="text" id=""></input>
-                </td>
+                <td>Collapse/expand current group</td>
+                <td><input class="shortcut-input" type="text" id=""></input></td>
               </tr>
               <tr class="shortcut-row ">
-                <td class="col1 ">Collapse/expand all groups</td>
-                <td class="col2">
-                  <input class="shortcut-input" type="text" id=""></input>
-                </td>
+                <td>Collapse/expand all other groups</td>
+                <td><input class="shortcut-input" type="text" id=""></input></td>
               </tr>
+              
             </table>
           </form>
       </div>
