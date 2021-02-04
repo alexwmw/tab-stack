@@ -2,17 +2,14 @@ $(document).ready(function(){
 
 	const keyCodes = {
 		0: '',
-		91: '\u2318',
-		93: '\u2318',
-		92: 'windows',
-		16: 'shift',
-		17: 'ctrl',
-		18: 'alt',
 		3: 'break',
 		8: 'backspace',
 		9: 'tab',
 		12: 'clear',
 		13: 'enter',
+		16: 'shift',
+		17: 'ctrl',
+		18: 'alt',
 		19: '',
 		20: '',
 		21: '',
@@ -78,6 +75,9 @@ $(document).ready(function(){
 		88: 'x',
 		89: 'y',
 		90: 'z',
+		91: '\u2318',
+		92: 'right window key',
+		93: '\u2318',
 		95: 'sleep',
 		96: 'n0',
 		97: 'n1',
@@ -183,26 +183,6 @@ $(document).ready(function(){
 		251: '',
 		255: '',
 	  };
-	const functionKeys = {
-		8: 'backspace',
-		13: 'enter',
-		46: 'delete',
-		95: 'sleep',
-		144: 'numlock',
-		145: 'scrolllock',
-		166: 'page backward',
-		167: 'page forward',
-		168: 'refresh',
-		172: 'homekey'
-	};
-	const cmd = [
-		91,
-		93,
-		92,
-		16,
-		17,
-		18,
-	]
 
 
 	// Tabs
@@ -268,41 +248,29 @@ $(document).ready(function(){
 		}
 		//Keyboard Shortcut Settings input{
 		{
-			var codeBuffer = [];
-			$('.shortcut-input').click(function(){
-				this.select()
-			});
+			var codes = [];
+			var sympress = 0;
+
+
 
 			$('.shortcut-input').keydown(function (e) {
-				if(!(functionKeys.hasOwnProperty(e.keyCode))){
-					e.preventDefault();
-					if(codeBuffer.length == 0){
-						$(this).val('');
-					}
-					if(codeBuffer.indexOf(e.keyCode) < 0 & codeBuffer.length < 4){
-						codeBuffer.push(e.keyCode);  
-					}
-					codeBuffer.sort((x,y) => {
-							if(cmd.includes(x) & cmd.includes(y)){
-								return cmd.indexOf(x) < cmd.indexOf(y) ? -1 : 1;
-							}
-							else{
-								return cmd.includes(x) ? -1 : cmd.includes(y) ? 1 : 0;
-							}
-						});
-					$(this).val(
-						Array
-						.from(codeBuffer, i => keyCodes[i])
-						.join(' + ')
-						);
-					$(this).keyup(function(e){
-						if(codeBuffer.length){
-							$(this).siblings("input").val(codeBuffer);
-							codeBuffer = [];
-						}
-					});
+				e.preventDefault();
+				if(sympress == 0){
+					$(this).val('');
+					codes = [];
 				}
+				sympress++;
+				codes.push(keyCodes[e.keyCode]);  
+				$(this).val(codes.sort().join(' + '));
+				$(this).keyup(function(e){
+					sympress = 0;
+				});
+				return false;
+
+				
 			});
+
+
 		}
 	}
 });

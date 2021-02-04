@@ -126,6 +126,9 @@ button{
 	height: 30px;
 	width: 80%;
 }
+.setting-row.misc > td:first-child{
+	padding: 10px;
+}
 .blank_row
 {
 	height: 20px;
@@ -143,22 +146,21 @@ button{
 	height: 30px;
 	width: 80%;
 }
-.shortcut-row .col1{
+.shortcut-row > td:nth-child(1){
 	text-align: left;
-	padding-left: 50px;
+	padding-left: 30px;
 }
-
 .col1{
 	width: 300px;
 }
 .col2{
 	width:300px;
 }
-.indented .col1{
-	padding-left: 50px;
+.indented > td:nth-child(1) {
+	padding-left: 30px;
 
 }
-.indented .col2{
+.indented > td:nth-child(2){
 	text-align: left;
 	text-indent: 0px;
 }
