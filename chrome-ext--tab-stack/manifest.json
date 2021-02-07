@@ -2,16 +2,50 @@
   "name": "tab stack",
   "version": "1.0",
   "description": "Arranges your tabs into groups, closes tabs you don't need and makes it easy to restore closed tabs.",
+  "permissions": [
+    "tabs"
+  ],
   "background": {
-    "service_workers": ["background.js", "jquery-3.4.1.js", "popup-script.js"]
+    "scripts": ["jquery-3.4.1.js","background.js"],
+    "persistent": false
   },
-  "action": {
-    "default_popup": "popup.html"
+  "browser_action": {
+    "default_popup": "search.html"
+  },
+  "commands": {
+    "pin-toggle":{
+      "description": "Pin/unpin the current tab",
+      "suggested_key": {
+        "windows":"Ctrl+Shift+P",
+        "mac":"Command+Shift+P"
+      }
+    },
+    "search-tabs":{
+      "description": "Perform a search",
+      "suggested_key": {
+        "windows":"Ctrl+Shift+S",
+        "mac":"Command+Shift+S"
+      }
+    },
+    "lock-toggle":{
+      "description": "Lock/unlock current tab",
+      "suggested_key": {
+        "windows":"Ctrl+Shift+L",
+        "mac":"Command+Shift+L"
+      }
+    },
+    "expand-toggle":{
+      "description": "Expand/collpse all groups",
+      "suggested_key": {
+        "windows":"Ctrl+Shift+E",
+        "mac":"Command+Shift+E"
+      }
+    } 
   },
   "icons": {
     "16": "images/icon16.png",
     "48": "images/icon48.png",
     "128": "images/icon128.png" 
   },
-  "manifest_version": 3
+  "manifest_version": 2
 }

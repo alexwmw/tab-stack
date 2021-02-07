@@ -203,13 +203,54 @@ $(document).ready(function(){
 		17,
 		18,
 	]
+	// Get Parameter By Name:
+		// Open to settings if open-settings=1
+	function getParameterByName(name) {
+		name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+		var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+		results = regex.exec(location.search);
+		return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+	}
+	$(function() {
+        $(document).bind("myCustomEvent", function(e, data) {
+			$('#settings-tab-link').trigger('click');
+        });
+        var eventId = getParameterByName('open-settings');  // Load the query string specified by the previous page's link
+        if(eventId == 1) {
+            $(document).trigger("myCustomEvent", {EventId: eventId});
+        } 
+		else {
+        } // end if/else
+    });
 
 
-	// Tabs
+		
+		$(document).keydown(function(e) {
+			var nextTab = 
+				$('.selected').next('.tab').length ?
+				$('.selected').next('.tab') :
+				$('.tab').first();
+			var prevTab = 
+				$('.selected').prev('.tab').length ?
+				$('.selected').prev('.tab') :
+				$('.tab').last();
+			if (e.ctrlKey && e.which == 9) {
+				e.preventDefault();
+				$(nextTab).trigger('click');
+				$(nextTab).focus();
+			}
+			if (e.ctrlKey && e.shiftKey && e.which == 9) {
+				e.preventDefault();
+				$(prevTab).trigger('click');
+				$(prevTab).focus();
+			}
+		})
+	// Tabs & settings button
 	{
 		var tabObj = {
 			'tab-monitor-link': '#tab-monitor',
 			'tab-history-link': '#tab-history',
+			'settings-tab-link': '#settings',
 			'settings-link': '#settings'
 		};
 		$('.tab').click(function(){
@@ -218,7 +259,28 @@ $(document).ready(function(){
 			$(this).addClass('selected');
 			$('.tab-content').hide();
 			$(visiblePage).show();
+			if(visiblePage == '#settings'){
+				$('.footer').hide()
+			}
+			else{
+				$('.footer').show()
+			}
 		});
+		$('.tab').keypress(function(e){
+			 if (e.keyCode == 32){
+				e.preventDefault();
+		  		$(this).trigger('click');
+	  		}
+		});
+		$('.title').keypress(function(e){
+			if (e.keyCode == 32){
+				e.preventDefault();
+				$(this).find('img').trigger('click');
+			}
+		});
+
+
+
 	}
 	// Settings
 	{
@@ -268,6 +330,10 @@ $(document).ready(function(){
 		}
 		//Keyboard Shortcut Settings input{
 		{
+
+			var restoreButton = '<button class="shortcut-buttons">Restore default</button>';
+			$('.shortcut-row').append('<td>' + restoreButton + '</td>');
+
 			var codeBuffer = [];
 			$('.shortcut-input').click(function(){
 				this.select()
@@ -303,6 +369,12 @@ $(document).ready(function(){
 					});
 				}
 			});
+
+			$('.shortcut-buttons').click(function(){
+				$(this).closest('tr').find('.shortcut-input').val('Restored!');
+				return false;
+			});
+
 		}
 	}
 });

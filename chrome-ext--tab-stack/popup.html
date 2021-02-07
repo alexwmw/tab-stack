@@ -3,6 +3,7 @@
   <head>
     <script type="text/javascript" src="jquery-3.4.1.js"></script>
     <script type="text/javascript" src="popup-script.js"></script>
+    <link rel="stylesheet" href="common.css"></link>
     <link rel="stylesheet" href="popup.css"></link>
     <link rel="stylesheet" href="fonts/font-awesome/css/font-awesome.min.css">
   </head>
@@ -15,14 +16,12 @@
       <div class="title" id="title">
         <a target="_blank" href="https://github.com/alexwmw/tab-stack"><img class="icon" src="images/title.png" title='Link to github'></a>
       </div>
-        <div class="tab selected" id='tab-history-link'>
-          stack</div>
-		    <div class="tab" id='tab-monitor-link'>
-          monitor</div>
-        <div class="tab" id='settings-link'>
-          settings</div>
-          <div class="tab" style="display: none;" id='list-button-tab'>
-            edit views</div>
+      <div tabindex="1" class="tab selected" id='tab-history-link'>
+        tab stack</div>
+      <div tabindex="2" class="tab" id='tab-monitor-link'>
+        tab monitor</div>
+      <div tabindex="3" class="tab" id='settings-tab-link'>
+        settings</div>
 
     </div>
 
@@ -31,8 +30,23 @@
 
     <!-- History Page -->
 
-    <div id="tab-history" style="display: none;" class="tab-content">
-      <p>History looks like this</p>
+    <div id="tab-history" class="tab-content">
+      <input autofocus value="" type="text" id="searchbox" placeholder="Search closed tabs">
+      <select id="search-filter">
+          <option>Tabs</option>
+          <option>Groups</option>
+      </select>
+
+    <div id="results-area">
+        <table id="results-table">
+            <colgroup>
+                <col class="favicon">
+                <col class="tab-details">
+                <col class="opt1">
+                <col class="opt2">
+            </colgroup>
+        </table>
+    </div>
     </div>
 
 
@@ -49,7 +63,7 @@
 
     <!-- Settings Page -->
 
-    <div id="settings" class="tab-content">
+    <div id="settings" style="display: none;" class="tab-content">
       <div id="settings-view">
         <h1>Settings page</h1>
           <form>
@@ -57,9 +71,10 @@
               <colgroup>
                 <col class="col1">
                 <col class="col2">
+                <col class="extracol">
               </colgroup>
               <!--Closing----------------------------------------------------------->
-              <tr class="blank_row"><td style="height: 30px;" colspan="2" ></td></tr>
+              <tr class="blank_row"><td style="height: 0;" colspan="3" ></td></tr>
               <tr class="setting-row main-setting">
                   <td>Allow automatic closing of tabs:</td>
                   <td><input type="checkbox" checked id="cb-close-tabs" name="close-tabs"></td>
@@ -89,11 +104,11 @@
                 <td><input type="button" class="change-view-button" id="list-button" value="View lists"></td>
               </tr>
               <tr class="setting-row cb-close-tabs-dependent indented">
-                <td>Display the lock icon <i class="fa fa-lock"></i> on locked tabs:</td>
+                <td>Display lock icon on locked tabs:</td>
                 <td><input type="checkbox"></td>
               </tr>
               <!--Grouping----------------------------------------------------------->
-              <tr class="blank_row"><td style="height: 30px;" colspan="2" ></td></tr>
+              <tr class="blank_row"><td style="height: 0;" colspan="3" ></td></tr>
               <tr class="setting-row main-setting">
                 <td>Allow automatic grouping of tabs:</td>
                 <td><input type="checkbox" checked id="group-tabs" name="group-tabs"></td>
@@ -105,6 +120,17 @@
                     <option value="domain">Domain</option>
                   </select></td>
               </tr>
+              <tr id="group-label" class="setting-row group-tabs-dependent indented">
+                <td>Group label:</td>
+                <td><select id="group-by-select" name="group-by-select" >
+                    <option value="none">None</option>
+                    <option value="domain">Domain name</option>
+                    <option value="title">Title of first tab</option>
+                    <option value="time">Time created</option>
+                    <option value="timeDomain">Time & domain</option>
+                    <option value="timeTitle">Time & title</option>
+                  </select></td>
+              </tr>
               <tr id="warn-close" class="setting-row group-tabs-dependent indented">
                 <td>Warn before closing group:</td>
                 <td><select id="warn-close-select" name="warn-close-select" >
@@ -113,9 +139,16 @@
                     <option value="never">Only most active groups</option>
                   </select></td>
               </tr>
+              <tr id="reset-criteria" class="setting-row group-tabs-dependent indented">
+                <td>When the timer resets, reset for:</td>
+                <td><select id="warn-close-select" name="warn-close-select" >
+                    <option value="group">Group</option>
+                    <option value="never">Tab only</option>
+                  </select></td>
+              </tr>
               <!--Miscellaneous----------------------------------------------------------->
               
-              <tr class="blank_row"><td style="height: 30px;" colspan="2"></td></tr>
+              <tr class="blank_row"><td style="height: 0;" colspan="3"></td></tr>
               
               <tr class="setting-row misc">
                 <td><br>Clear closed tabs list on quit:</td>
@@ -127,71 +160,50 @@
               </tr>
 
               <!--Keyboard-Shortcuts----------------------------------------------------------->
-              <tr class="blank_row"><td style="height: 30px;" colspan="2" ></td></tr>
+              <tr class="blank_row"><td style="height: 0;" colspan="3   s" ></td></tr>
               <tr class="setting-row">
                 <td><h4>Keyboard shortcuts:</h4></td>
               </tr>
-              <tr class="shortcut-row ">
+              <tr class="shortcut-row">
                 <td>Pull most recent tab(s) from the stack</td>
                 <td>
-                  <input class="shortcut-input" type="text" id=""></input>
-                  <input class="shortcut-encoded"  type="hidden" id=""></input>
+                  <input title="This shortcut cannot be customised" class="shortcut-input" type="text" id="pull-tab" readonly></input>
+                  <input class="shortcut-encoded"  type="hidden" id="pull-tab-enc"></input>
                 </td>
               </tr>
               <tr class="shortcut-row ">
-                <td>Open the stack window</td>
+                <td>Perform tab search / view the stack</td>
                 <td>
-                  <input class="shortcut-input" type="text" id=""></input>
-                  <input class="shortcut-encoded"  type="hidden" id=""></input>
+                  <input class="shortcut-input" type="text" id="search-tabs"></input>
+                  <input class="shortcut-encoded"  type="hidden" id="search-enc"></input>
                 </td>
               </tr>
               <tr class="shortcut-row ">
-                <td>Open the monitor window</td>
+                <td>Expand/collapse all groups</td>
                 <td>
-                  <input class="shortcut-input" type="text" id=""></input>
-                  <input class="shortcut-encoded"  type="hidden" id=""></input>
+                  <input class="shortcut-input" type="text" id="expand-toggle"></input>
+                  <input class="shortcut-encoded"  type="hidden" id="expand-toggle-enc"></input>
                 </td>
               </tr>
               <tr class="shortcut-row ">
-                <td>Open settings</td>
+                <td>Lock/unlock the current tab/group</td>
                 <td>
-                  <input class="shortcut-input" type="text" id=""></input>
-                  <input class="shortcut-encoded"  type="hidden" id=""></input>
+                  <input class="shortcut-input" type="text" id="lock-toggle"></input>
+                  <input class="shortcut-encoded"  type="hidden" id="lock-toggle-enc"></input>
                 </td>
               </tr>
               <tr class="shortcut-row ">
                 <td>Pin/unpin current tab</td>
                 <td>
-                  <input class="shortcut-input" type="text" id=""></input>
-                  <input class="shortcut-encoded"  type="hidden" id=""></input>
+                  <input class="shortcut-input" type="text" id="pin-toggle"></input>
+                  <input class="shortcut-encoded"  type="hidden" id="pin-toggle-enc"></input>
                 </td>
               </tr>
               <tr class="shortcut-row ">
-                <td>Lock/unlock current tab</td>
+                <td>Open the tab stack window</td>
                 <td>
-                  <input class="shortcut-input" type="text" id=""></input>
-                  <input class="shortcut-encoded"  type="hidden" id=""></input>
-                </td>
-              </tr>
-              <tr class="shortcut-row ">
-                <td>Lock/unlock current group</td>
-                <td>
-                  <input class="shortcut-input" type="text" id=""></input>
-                  <input class="shortcut-encoded"  type="hidden" id=""></input>
-                </td>
-              </tr>
-              <tr class="shortcut-row ">
-                <td>Collapse/expand current group</td>
-                <td>
-                  <input class="shortcut-input" type="text" id=""></input>
-                  <input class="shortcut-encoded"  type="hidden" id=""></input>
-                </td>
-              </tr>
-              <tr class="shortcut-row ">
-                <td>Collapse/expand all other groups</td>
-                <td>
-                  <input class="shortcut-input" type="text" id=""></input>
-                  <input class="shortcut-encoded"  type="hidden" id=""></input>
+                  <input class="shortcut-input" type="text" id="ts-window"></input>
+                  <input class="shortcut-encoded"  type="hidden" id="ts-window-enc"></input>
                 </td>
               </tr>
               
@@ -219,7 +231,12 @@
         <p>Default content</p>
       </div>
     </div>
-  
+    <div class="footer">
+      <span class="footer-links" id="search-link"><a href="search.html">
+          <i style="font-size: 0.8em;" class="fa fa-angle-double-right"></i> Collapse</a></span>
+          <!--span class="footer-links" id="settings-link"><a href="">
+            <i style="font-size: 0.8em;" class="fa fa-wrench"></i> Settings</a></span-->
+  </div>
   </body>
     
 </html>
