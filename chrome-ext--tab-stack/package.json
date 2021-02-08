@@ -1,0 +1,8 @@
+{
+  "devDependencies": {
+    "eslint": "^7.19.0"
+  },
+  "dependencies": {
+    "psl": "^1.8.0"
+  }
+}

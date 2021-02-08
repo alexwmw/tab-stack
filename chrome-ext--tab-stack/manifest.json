@@ -2,50 +2,48 @@
   "name": "tab stack",
   "version": "1.0",
   "description": "Arranges your tabs into groups, closes tabs you don't need and makes it easy to restore closed tabs.",
-  "permissions": [
-    "tabs"
-  ],
+  "permissions": ["tabs"],
   "background": {
-    "scripts": ["jquery-3.4.1.js","background.js"],
+    "scripts": ["scripts/jquery-3.4.1.js", "scripts/background.js"],
     "persistent": false
   },
   "browser_action": {
-    "default_popup": "search.html"
+    "default_popup": "layouts/search.html"
   },
   "commands": {
-    "pin-toggle":{
+    "pin-toggle": {
       "description": "Pin/unpin the current tab",
       "suggested_key": {
-        "windows":"Ctrl+Shift+P",
-        "mac":"Command+Shift+P"
+        "windows": "Ctrl+Shift+P",
+        "mac": "Command+Shift+P"
       }
     },
-    "search-tabs":{
+    "search-tabs": {
       "description": "Perform a search",
       "suggested_key": {
-        "windows":"Ctrl+Shift+S",
-        "mac":"Command+Shift+S"
+        "windows": "Ctrl+Shift+S",
+        "mac": "Command+Shift+S"
       }
     },
-    "lock-toggle":{
+    "lock-toggle": {
       "description": "Lock/unlock current tab",
       "suggested_key": {
-        "windows":"Ctrl+Shift+L",
-        "mac":"Command+Shift+L"
+        "windows": "Ctrl+Shift+L",
+        "mac": "Command+Shift+L"
       }
     },
-    "expand-toggle":{
+    "expand-toggle": {
       "description": "Expand/collpse all groups",
       "suggested_key": {
-        "windows":"Ctrl+Shift+E",
-        "mac":"Command+Shift+E"
+        "windows": "Ctrl+Shift+E",
+        "mac": "Command+Shift+E"
       }
-    } 
+    }
   },
   "icons": {
     "16": "images/icon16.png",
     "48": "images/icon48.png",
-    "128": "images/icon128.png" 
+    "128": "images/icon128.png"
   },
   "manifest_version": 2
 }
