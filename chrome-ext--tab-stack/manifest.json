@@ -1,6 +1,6 @@
 {
   "name": "tab stack",
-  "version": "1.0",
+  "version": "0.2",
   "description": "Arranges your tabs into groups, closes tabs you don't need and makes it easy to restore closed tabs.",
   "permissions": ["tabs"],
   "background": {
@@ -18,7 +18,7 @@
         "mac": "Command+Shift+P"
       }
     },
-    "search-tabs": {
+    "_execute_browser_action": {
       "description": "Perform a search",
       "suggested_key": {
         "windows": "Ctrl+Shift+S",

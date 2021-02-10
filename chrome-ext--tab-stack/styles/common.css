@@ -53,7 +53,7 @@
 	text-decoration: none;
 }
 
-.footer-links:hover{
-	text-decoration: underline;
+.footer-links i{
+	font-size: 0.8em;
 }
 

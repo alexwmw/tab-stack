@@ -78,7 +78,7 @@ button, select, input{
 }
 .tab:focus{
 	color: var(--primary);
-	box-shadow:inset 0px -6px 0px 0px var(--primary);
+
 }
 .tab:active{
 	outline: none;

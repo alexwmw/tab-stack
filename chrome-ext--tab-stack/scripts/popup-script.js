@@ -1,8 +1,8 @@
 $(document).ready(function () {
   const keyCodes = {
     0: "",
-    91: "\u2318",
-    93: "\u2318",
+    91: "command", //"\u2318",
+    93: "command", //"\u2318",
     92: "windows",
     16: "shift",
     17: "ctrl",
@@ -167,7 +167,7 @@ $(document).ready(function () {
     221: ")",
     222: "'",
     223: "`",
-    224: "cmd",
+    224: "command",
     225: "altgr",
     226: "//",
     230: "",
@@ -194,7 +194,7 @@ $(document).ready(function () {
     168: "refresh",
     172: "homekey",
   };
-  const cmd = [91, 93, 92, 16, 17, 18];
+  const cmd = [91, 93, 92, 17, 16, 18];
   // Get Parameter By Name:
   // Open to settings if open-settings=1
   function getParameterByName(name) {
@@ -357,8 +357,19 @@ $(document).ready(function () {
         }
       });
 
+      var os = navigator.platform;
+      var osCmd = os == "MacIntel" ? "command" : "control";
+
+      $(".shortcut-input").each(function(index, element){
+        $(element).data().key ? $(element).val(osCmd + " + shift + " + $(element).data("key")) : ''
+        }
+    );
+
       $(".shortcut-buttons").click(function () {
-        $(this).closest("tr").find(".shortcut-input").val("Restored!");
+        var os = navigator.platform;
+        var cmd = os == "MacIntel" ? "command" : "control";
+        var scInput = $(this).closest("tr").find(".shortcut-input");
+        scInput.val(cmd + " + shift + " + scInput.data("key"));
         return false;
       });
     }

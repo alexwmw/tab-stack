@@ -1,6 +1,7 @@
-var allTabs = {};
 
-chrome.tabs.query({}, (tabs) => {
+/*var allTabs = {};
+
+chrome.tabs.query({active: true}, (tabs) => {
   allTabs = tabs;
   displayTabs();
 });
@@ -27,3 +28,4 @@ function sendMessage(msgArg, dataArg) {
 chrome.tabs.onCreated.addListener(function (tab) {
   sendMessage("onCreated", tab);
 });
+*/

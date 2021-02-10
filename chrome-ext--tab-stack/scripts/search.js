@@ -166,7 +166,18 @@ $(document).ready(function () {
     }
   });
 
-  //Key Up And Down ------------->
+  // Click Pause
+  $("#pause-button").on("click", function (e) {
+    e.preventDefault();
+    var playIcon = createWithClasses("i", ["fa", "fa-play"]);
+    var pauseIcon = createWithClasses("i", ["fa", "fa-pause"]);
+    var paused = $("#pause-button").data("paused");
+    $("#pause-button").text(paused ? " Continue" : " Pause");
+    $("#pause-button").prepend(paused ? playIcon : pauseIcon);
+    $("#pause-button").data("paused", !paused);
+  });
+
+  //Keyup Up And Down Arrows ------------->
   $(document).keyup(function (e) {
     if ($(e.target).closest("#search-filter")[0]) {
       return;
