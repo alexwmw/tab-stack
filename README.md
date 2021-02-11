@@ -3,4 +3,4 @@
 A Chrome extension that arranges your tabs into groups, closes tabs you don't need and makes it easy to restore closed tabs.
 
 
-This extension is under development, but you can view and install it from the webstore: https://chrome.google.com/webstore/detail/tab-stack/agjealbfpkdojoonkdjchophopohpaco
+This extension is under development, but you can view and install it from <a href="https://chrome.google.com/webstore/detail/tab-stack/agjealbfpkdojoonkdjchophopohpaco">the chrome webstore</a>.
