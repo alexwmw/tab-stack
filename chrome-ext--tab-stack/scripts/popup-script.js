@@ -197,6 +197,22 @@ $(document).ready(function () {
   const cmd = [91, 93, 92, 17, 16, 18];
   // Get Parameter By Name:
   // Open to settings if open-settings=1
+
+  // Element Creation
+  const create = (str) => document.createElement(str);
+  const createWithClass = (typ, clas) => {
+    var elem = create(typ);
+    elem.classList.add(clas);
+    return elem;
+  };
+  const createWithClasses = (typ, cList) => {
+    var elem = create(typ);
+    $.each(cList, function (i, c) {
+      elem.classList.add(c);
+    });
+    return elem;
+  };
+
   function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -216,12 +232,14 @@ $(document).ready(function () {
   });
 
   $(document).keydown(function (e) {
-    var nextTab = $(".selected").next(".tab").length
-      ? $(".selected").next(".tab")
-      : $(".tab").first();
-    var prevTab = $(".selected").prev(".tab").length
-      ? $(".selected").prev(".tab")
-      : $(".tab").last();
+    if (e.ctrlKey) {
+      var nextTab = $(".selected").next(".tab").length
+        ? $(".selected").next(".tab")
+        : $(".tab").first();
+      var prevTab = $(".selected").prev(".tab").length
+        ? $(".selected").prev(".tab")
+        : $(".tab").last();
+    }
     if (e.ctrlKey && e.which == 9) {
       e.preventDefault();
       $(nextTab).trigger("click");
@@ -233,59 +251,48 @@ $(document).ready(function () {
       $(prevTab).focus();
     }
   });
+
   // Tabs & settings button
-  {
-    var tabObj = {
-      "tab-monitor-link": "#tab-monitor",
-      "tab-history-link": "#tab-history",
-      "settings-tab-link": "#settings",
-      "settings-link": "#settings",
-    };
-    $(".tab").click(function () {
-      var visiblePage = tabObj[$(this).attr("id")];
-      $(".tab").removeClass("selected");
-      $(this).addClass("selected");
-      $(".tab-content").hide();
-      $(visiblePage).show();
-      if (visiblePage == "#settings") {
-        $(".footer").hide();
-      } else {
-        $(".footer").show();
-      }
-    });
-    $(".tab").keypress(function (e) {
-      if (e.keyCode == 32) {
-        e.preventDefault();
-        $(this).trigger("click");
-      }
-    });
-    $(".title").keypress(function (e) {
-      if (e.keyCode == 32) {
-        e.preventDefault();
-        $(this).find("img").trigger("click");
-      }
-    });
-  }
+
+  var tabObj = {
+    "tab-monitor-link": "#tab-monitor",
+    "tab-history-link": "#tab-history",
+    "settings-tab-link": "#settings",
+    "settings-link": "#settings",
+  };
+  $(".tab").click(function () {
+    var visiblePage = tabObj[$(this).attr("id")];
+    $(".tab").removeClass("selected");
+    $(this).addClass("selected");
+    $(".tab-content").hide();
+    $(visiblePage).show();
+    if (visiblePage == "#settings") {
+      $(".footer").hide();
+    } else {
+      $(".footer").show();
+    }
+  });
+  $(".tab").keypress(function (e) {
+    if (e.keyCode == 32) {
+      e.preventDefault();
+      $(this).trigger("click");
+    }
+  });
+  $(".title").keypress(function (e) {
+    if (e.keyCode == 32) {
+      e.preventDefault();
+      $(this).find("img").trigger("click");
+    }
+  });
+
   // Settings
+
+  // Checkboxes and dependent items- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   {
-    // Checkboxes and dependent items
-    {
-      var checkboxes = $("input[type='checkbox']");
+    var checkboxes = $("input[type='checkbox']");
 
-      $(checkboxes).each(function () {
-        if ($(this).is(":not(:checked)")) {
-          var item = $(this).attr("id");
-          var dependent = "." + item + "-dependent";
-          $(dependent)
-            .find("input, select, button")
-            .prop("disabled", function (i, v) {
-              return !v;
-            });
-          $(dependent).find("td").toggleClass("grey");
-        }
-      });
-
-      $(checkboxes).click(function () {
+    $(checkboxes).each(function () {
+      if ($(this).is(":not(:checked)")) {
         var item = $(this).attr("id");
         var dependent = "." + item + "-dependent";
         $(dependent)
@@ -294,84 +301,231 @@ $(document).ready(function () {
             return !v;
           });
         $(dependent).find("td").toggleClass("grey");
-      });
-    }
-    //Buttons
-    {
-      /** Any element in class .change-view-button:
+      }
+    });
+
+    $(checkboxes).click(function () {
+      var item = $(this).attr("id");
+      var dependent = "." + item + "-dependent";
+      $(dependent)
+        .find("input, select, button")
+        .prop("disabled", function (i, v) {
+          return !v;
+        });
+      $(dependent).find("td").toggleClass("grey");
+    });
+  }
+  //Buttons - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  /** Any element in class .change-view-button:
 					Must have a div with an id identical to id of this
 					appended with '-view'
 				
 					Must have a tab with an id identical this this
 					appended with '-tab'
 			*/
-      $(".change-view-button").click(function () {
-        var item = $(this).attr("id");
-        var view = "#" + item + "-view";
-        var tab = "#" + item + "-tab";
-        $("#settings-view").hide();
-        $(".tab-container").children().hide();
-        $(tab + "," + view).fadeIn();
-      });
+  $(".change-view-button").click(function () {
+    var item = $(this).attr("id");
+    var view = "#" + item + "-view";
+    var tab = "#" + item + "-tab";
+    $("#settings-view").hide();
+    $(".tab-container").children().hide();
+    $(tab + "," + view).fadeIn();
+  });
 
-      $(".list-form-buttons").click(function () {
-        $(".tab-container").children().show();
-        $("#list-button-tab,#list-button-view").hide();
-        $("#settings-view").show();
-      });
-    }
-    //Keyboard Shortcut Settings input{
-    {
-      var restoreButton =
-        '<button class="shortcut-buttons">Restore default</button>';
-      $(".shortcut-row").append("<td>" + restoreButton + "</td>");
+  $(".exit-subsetting-view").click(function () {
+    var item = $(this).closest("div[class$='-view']");
+    var view = "#" + item + "-view";
+    var tab = "#" + item + "-tab";
+    $(".tab-container").children().show();
+    $(item).hide();
+    $("#settings-view").show();
+  });
 
-      var codeBuffer = [];
-      $(".shortcut-input").click(function () {
-        this.select();
-      });
+  //Keyboard Shortcut Settings input - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      $(".shortcut-input").keydown(function (e) {
-        if (!functionKeys.hasOwnProperty(e.keyCode)) {
-          e.preventDefault();
-          if (codeBuffer.length == 0) {
-            $(this).val("");
-          }
-          if ((codeBuffer.indexOf(e.keyCode) < 0) & (codeBuffer.length < 4)) {
-            codeBuffer.push(e.keyCode);
-          }
-          codeBuffer.sort((x, y) => {
-            if (cmd.includes(x) & cmd.includes(y)) {
-              return cmd.indexOf(x) < cmd.indexOf(y) ? -1 : 1;
-            } else {
-              return cmd.includes(x) ? -1 : cmd.includes(y) ? 1 : 0;
-            }
-          });
-          $(this).val(Array.from(codeBuffer, (i) => keyCodes[i]).join(" + "));
-          $(this).keyup(function () {
-            if (codeBuffer.length) {
-              $(this).siblings("input").val(codeBuffer);
-              codeBuffer = [];
-            }
-          });
+  var restoreButton =
+    '<button class="shortcut-buttons">Restore default</button>';
+  $(".shortcut-row").append("<td>" + restoreButton + "</td>");
+
+  var codeBuffer = [];
+  $(".shortcut-input").click(function () {
+    this.select();
+  });
+
+  $(".shortcut-input").keydown(function (e) {
+    if (!functionKeys.hasOwnProperty(e.keyCode)) {
+      e.preventDefault();
+      if (codeBuffer.length == 0) {
+        $(this).val("");
+      }
+      if ((codeBuffer.indexOf(e.keyCode) < 0) & (codeBuffer.length < 4)) {
+        codeBuffer.push(e.keyCode);
+      }
+      codeBuffer.sort((x, y) => {
+        if (cmd.includes(x) & cmd.includes(y)) {
+          return cmd.indexOf(x) < cmd.indexOf(y) ? -1 : 1;
+        } else {
+          return cmd.includes(x) ? -1 : cmd.includes(y) ? 1 : 0;
         }
       });
-
-      var os = navigator.platform;
-      var osCmd = os == "MacIntel" ? "command" : "control";
-
-      $(".shortcut-input").each(function(index, element){
-        $(element).data().key ? $(element).val(osCmd + " + shift + " + $(element).data("key")) : ''
+      $(this).val(Array.from(codeBuffer, (i) => keyCodes[i]).join(" + "));
+      $(this).keyup(function () {
+        if (codeBuffer.length) {
+          $(this).siblings("input").val(codeBuffer);
+          codeBuffer = [];
         }
-    );
-
-      $(".shortcut-buttons").click(function () {
-        var os = navigator.platform;
-        var cmd = os == "MacIntel" ? "command" : "control";
-        var scInput = $(this).closest("tr").find(".shortcut-input");
-        scInput.val(cmd + " + shift + " + scInput.data("key"));
-        return false;
       });
     }
+  });
+
+  var os = navigator.platform;
+  var osCmd = os == "MacIntel" ? "command" : "control";
+
+  $(".shortcut-input").each(function (index, element) {
+    $(element).data().key
+      ? $(element).val(osCmd + " + shift + " + $(element).data("key"))
+      : "";
+  });
+
+  $(".shortcut-buttons").click(function () {
+    var os = navigator.platform;
+    var cmd = os == "MacIntel" ? "command" : "control";
+    var scInput = $(this).closest("tr").find(".shortcut-input");
+    scInput.val(cmd + " + shift + " + scInput.data("key"));
+    return false;
+  });
+
+  // Rules view - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  function createRow(size, ofClass) {
+    var row = create("tr");
+    if (ofClass) {
+      row.classList.add(ofClass);
+    }
+    for (i = 0; i < size; i++) {
+      row.append(create("td"));
+    }
+    return row;
+  }
+
+  function createRuleRow(ruleName) {
+    var row = createRow(6, "rule-row");
+    $(row)
+      .find("td:first-child")
+      .append(
+        '<label class="switch">' +
+          '<input checked type="checkbox">' +
+          '<span class="slider round"></span>' +
+          "</label>"
+      );
+    $(row).find("td:nth-child(2)").html(ruleName);
+    $(row).find("td:nth-child(3)").append("<i class='fa fa-angle-up'></i>");
+    $(row).find("td:nth-child(4)").append("<i class='fa fa-angle-down'></i>");
+    $(row).find("td:nth-child(5)").append("<i class='fa fa-pencil'></i>");
+    $(row).find("td:nth-child(6)").append("<i class='fa fa-trash-o'></i>");
+    return row;
+  }
+
+  function createParameterRow() {
+    var row = createRow(5, "parameter-row");
+    $(row)
+      .find("td:first-child")
+      .append(
+        "<select>" +
+          "<option value='domain'>Domain name</option>" +
+          "<option value='title'>Page title</option>" +
+          "</select>"
+      );
+    $(row)
+      .find("td:nth-child(2)")
+      .append(
+        "<select>" +
+          "<option value='equals'>Equals</option>" +
+          "<option value='contains'>Contains</option>" +
+          "<option value='not-contains'>Does not contain</option>" +
+          "</select>"
+      );
+    $(row).find("td:nth-child(3)").append("<input type='text'></input>");
+    $(row).find("td:nth-child(4)").append("<i class='fa fa-trash-o'></i>");
+    $(row).find("td:nth-child(5)").append("<i class='fa fa-plus'></i>");
+    return row;
+  }
+
+  // Row icons and buttons
+
+  $("#rules").on("DOMNodeInserted", function (e) {
+    var obj = {
+      ".fa-pencil": function () {
+        $("#edit-rule-link").trigger("click");
+      },
+      ".fa-trash-o": function () {
+        if (confirm("Confirm delete this rule")) {
+          $(this).closest("tr").remove();
+        }
+        if (!$("#rules tr").length) {
+          $("#no-results").show();
+        }
+      },
+      ".fa-angle-up": function () {
+        // NOT WORKING
+        $(this).closest("tr").insertBefore($(this).closest("tr").prev());
+      },
+      ".fa-angle-down": function () {
+        // NOT WORKING
+        $(this).closest("tr").insertAfter($(this).closest("tr").next());
+      },
+    };
+    applyClickEvents(e.target, obj);
+
+
+  });
+
+  $("#new-rule-parameters").on("DOMNodeInserted", function (e) {
+    applyClickEvents(e.target, {
+      ".fa-plus": function () {
+        $(createParameterRow()).insertAfter(e.target);
+      },
+      ".fa-trash-o": function () {
+        if ($("#new-rule-parameters tr").length > 1) {
+          $(this).closest("tr").remove();
+        }
+      },
+    });
+  });
+
+  function applyClickEvents(node, obj) {
+    for (const [key, value] of Object.entries(obj)) {
+      $(node).find(key).on("click", value);
+    }
+  }
+
+  // New rule modal open
+  $("#new-rule-button").on("click", function () {
+    resetParameterForm("#new-rule");
+    $("#new-rule-link").trigger("click");
+    $("#new-rule-parameters").append(createParameterRow());
+  });
+
+  // New rule modal close
+  $("#cancel-rule").on("click", function () {
+    $("#new-rule-close").trigger("click");
+  });
+
+  function resetParameterForm(tabl) {
+    $(tabl).find("form")[0].reset();
+    $(tabl).find("tr").remove();
+  }
+  // Save new rule & add to table
+  $("#save-rule").on("click", function () {
+    var name = $("#new-rule-name").val();
+    $("#rules").append(createRuleRow(name));
+    $("#new-rule-close").trigger("click");
+    $("#no-results").hide();
+  });
+
+  // No results
+  if (!$("#rules tr").length) {
+    $("#no-results").show();
   }
 });

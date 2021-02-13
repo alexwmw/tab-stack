@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script type="text/javascript" src="/scripts/jquery-3.4.1.js"></script>
-    <script type="text/javascript" src="/scripts/psl.min.js"></script>
-    <script type="text/javascript" src="/scripts/popup-script.js"></script>
-    <link rel="stylesheet" href="/styles/common.css"></link>
-    <link rel="stylesheet" href="/styles/popup.css"></link>
-    <link rel="stylesheet" href="/fonts/font-awesome/css/font-awesome.min.css">
+    <script type="text/javascript" src="../scripts/jquery-3.4.1.js"></script>
+    <script type="text/javascript" src="../scripts/jquery.modal.min.js"></script>
+    <script type="text/javascript" src="../scripts/psl.min.js"></script>
+    <script type="text/javascript" src="../scripts/popup-script.js"></script>
+    <link rel="stylesheet" href="../scripts/jquery.modal.min.css"></link>
+    <link rel="stylesheet" href="../styles/common.css"></link>
+    <link rel="stylesheet" href="../styles/popup.css"></link>
+    <link rel="stylesheet" href="../fonts/font-awesome/css/font-awesome.min.css">
   </head>
   <!--------------------------------------------------------------->
   <body>
@@ -23,15 +25,13 @@
         tab monitor</div>
       <div tabindex="3" class="tab" id='settings-tab-link'>
         settings</div>
-
     </div>
 
+<!------------------------------------------------------------->
 
-    <!------------------------------------------------------------->
+<!-- History Page -->
 
-    <!-- History Page -->
-
-    <div id="tab-history" class="tab-content">
+    <div id="tab-history" style="display: none;" class="tab-content">
       <input autofocus value="" type="text" id="searchbox" placeholder="Search closed tabs">
       <select id="search-filter">
           <option>Tabs</option>
@@ -51,20 +51,24 @@
     </div>
 
 
-    <!------------------------------------------------------------->
+<!------------------------------------------------------------->
 
-    <!-- Monitor Page -->
+<!-- Monitor Page -->
 
     <div id="tab-monitor" style="display: none;" class="tab-content">
       <p>Here is some content in the monitor</p>
     </div>
 
 
-    <!------------------------------------------------------------->
+<!------------------------------------------------------------->
 
-    <!-- Settings Page -->
 
-    <div id="settings" style="display: none;" class="tab-content">
+<!-- Settings Page -->
+
+    
+    <div id="settings" class="tab-content">
+      
+
       <div id="settings-view">
         <h1>Settings page</h1>
           <form>
@@ -74,7 +78,7 @@
                 <col class="col2">
                 <col class="extracol">
               </colgroup>
-              <!--Closing----------------------------------------------------------->
+<!--Closing------------------------------>
               <tr class="blank_row"><td style="height: 0;" colspan="3" ></td></tr>
               <tr class="setting-row main-setting">
                   <td>Allow automatic closing of tabs:</td>
@@ -108,7 +112,7 @@
                 <td>Display lock icon on locked tabs:</td>
                 <td><input type="checkbox"></td>
               </tr>
-              <!--Grouping----------------------------------------------------------->
+<!--Grouping------------------------------->
               <tr class="blank_row"><td style="height: 0;" colspan="3" ></td></tr>
               <tr class="setting-row main-setting">
                 <td>Allow automatic grouping of tabs:</td>
@@ -119,7 +123,12 @@
                 <td><select id="group-by-select" name="group-by-select" >
                     <option value="origin">Origin</option>
                     <option value="domain">Domain</option>
+                    <option value="domain">Custom rules only</option>
                   </select></td>
+              </tr>
+              <tr id="rules-button-row" class="setting-row group-tabs-dependent indented">
+                <td>Group tabs according to custom rules:</td>
+                <td><input type="button" class="change-view-button" id="rules-button" value="Edit rules"></td>
               </tr>
               <tr id="group-label" class="setting-row group-tabs-dependent indented">
                 <td>Group label:</td>
@@ -147,7 +156,7 @@
                     <option value="never">Tab only</option>
                   </select></td>
               </tr>
-              <!--Miscellaneous----------------------------------------------------------->
+<!--Miscellaneous-------------------------------->
               
               <tr class="blank_row"><td style="height: 0;" colspan="3"></td></tr>
               
@@ -160,7 +169,7 @@
                 <td><input type="checkbox"></td>
               </tr>
 
-              <!--Keyboard-Shortcuts----------------------------------------------------------->
+<!--Keyboard-Shortcuts----------------------------->
               <tr class="blank_row"><td style="height: 0;" colspan="3   s" ></td></tr>
               <tr class="setting-row">
                 <td colspan='2'><h4>Keyboard shortcuts:</h4>
@@ -213,6 +222,8 @@
             </table>
           </form>
       </div>
+<!--Alt-Views----------------------------------------------------------->
+<!--List-Views--------------------->
       <div class="alt-view" id="list-button-view" style="display: none;">
         <form>
           <p>White List</p>
@@ -222,11 +233,67 @@
           <textarea id="black-list-area" name="black-list-area" rows="10" cols="50"></textarea>
           <br><br>
           <input id="" class="list-form-buttons" type="submit" value="Save">
-          <input id="" class="list-form-buttons" type="button" value="Cancel">
+          <input id="" class="list-form-buttons exit-subsetting-view" type="button" value="Cancel">
         </form>
-      </div>  
+      </div>
+<!--Rule-Views--------------------->
+      <div class="alt-view" id="rules-button-view" style="display: none;">
+          <h2 id="rules-heading">Tab grouping rules</h2>
+          <div id="rules-container">
+            <div id="no-results" style="display: none; position: fixed; left: 80px; ">
+              <p>No rules set</p>
+            </div>
+            <table id="rules">
+            <colgroup>
+              <col class="on-switch">
+              <col class="rule-name">
+              <col class="move-up">
+              <col class="move-down">
+              <col class="edit-rule">
+              <col class="delete-rule">
+            </colgroup>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+          <div id="rule-buttons-container">
+            <input id="new-rule-button" class="rules-form-buttons" type="button" value="New Rule">
+            <input id="" class="rules-form-buttons exit-subsetting-view" type="button" value="Finish">
+          </div>
 
+<!-- Modals ------------------------->
+          <div id="edit-rule" class="modal">
+            <h2>Edit rule</h2>
+            <div class="modal-buttons-container">
+              <a style="display: none;" rel="modal:close" href="#" >Close</a>
+              <input id="cancel-rule-changes" class="rules-form-buttons" type="button" value="Cancel">
+              <input id="save-rule-changes" rel="modal:close" class="rules-form-buttons " type="button" value="Save Changes">
+            </div>
+          </div>
+
+          <div id="new-rule" class="modal">
+            <h2>Create new rule</h2>
+            <form>
+              <input type="text" autofocus placeholder="Rule name" id="new-rule-name">
+              <table id="new-rule-parameters" class="rule-parameters">
+
+              </table>
+              <div class="modal-buttons-container">
+                <a id="new-rule-close" style="display: none;" rel="modal:close" href="#" >Close</a>
+                <input id="cancel-rule" rel="modal:close" class="rules-form-buttons" type="button" value="Cancel">
+                <input id="save-rule" rel="modal:close" class="rules-form-buttons " type="button" value="Save">
+              </div>
+            </form>
+          </div>
+
+          <a style="display: none;" id="edit-rule-link" href="#edit-rule" rel="modal:open">Open Modal</a>
+          <a style="display: none;" id="new-rule-link" href="#new-rule" rel="modal:open">Open Modal</a>
+          
+
+      </div>  
     </div>
+      
+
     
     <div id="dialog">
       <h1 id="default-heading">Default Heading</h1>
@@ -239,7 +306,7 @@
           <i style="font-size: 0.8em;" class="fa fa-angle-double-right"></i> Collapse</a></span>
           <!--span class="footer-links" id="settings-link"><a href="">
             <i style="font-size: 0.8em;" class="fa fa-wrench"></i> Settings</a></span-->
-  </div>
+    </div>
   </body>
     
 </html>
