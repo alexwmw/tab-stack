@@ -71,7 +71,18 @@ body {
   }
 }
 /* icon */
-i.fa-lock {
+.result i.fa-lock {
+  color: whitesmoke;
+  font-size: 1.2em !important;
+  visibility: hidden;
+  cursor: pointer;
+}
+.result td.cant-lock i.fa-lock{
+  cursor: default !important;
+  display: none;
+}
+/* icon */
+.result.locked i.fa-lock {
   color: var(--text) !important;
   font-size: 1.2em !important;
   cursor: pointer;
@@ -79,20 +90,14 @@ i.fa-lock {
   animation: fadeIn ease 0.5s;
 }
 /* icon */
-i.fa-unlock {
-  color: whitesmoke;
-  font-size: 1.2em !important;
-  visibility: hidden;
-  cursor: pointer;
-}
-/* icon */
-.selected i.fa-unlock {
+.selected i.fa-lock {
   color: peachpuff;
   visibility: visible;
   animation: fadeIn ease 0.5s;
 }
+
 /* icon */
-.result:hover i.fa-unlock {
+.result:hover i.fa-lock {
   visibility: visible;
   animation: fadeIn ease 0.5s;
 }
@@ -110,11 +115,6 @@ i.fa-times {
 .result:hover i.fa-times {
   visibility: visible;
   animation: fadeIn ease 0.5s;
-}
-/* icon */
-i.fa-times {
-  visibility: hidden;
-  cursor: pointer;
 }
 /* icon */
 .selected i.fa-times {
@@ -340,11 +340,13 @@ i:after {
 }
 /* tooltip */
 i:hover:after {
-  display: inline-block;
+  display: block;
+
 }
 /* tooltip */
-.fa-unlock:after {
-  content: "Toggle lock";
+td.cant-lock .fa-lock:after {
+  content: "Lock disabled for chrome://";
+  height: 40px;
 }
 /* tooltip */
 .fa-lock:after {
@@ -356,4 +358,12 @@ i:hover:after {
 }
 .fa-times:after {
 	content: "Close tab";
+  }
+  #no-results{
+    display: block;
+    position: absolute;
+    z-index: -2;
+    left: 37%;
+    font-family: var(--heading-family);
+    display: none;
   }

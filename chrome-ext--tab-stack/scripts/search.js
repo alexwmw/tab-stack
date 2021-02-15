@@ -1,112 +1,130 @@
 $(document).ready(function () {
-  // Vars
   var openTabs = [];
+  var closedTabs = [];
   var activeTab;
+  var lockedTabs = [];
 
-  // Element Creation
-  const create = (str) => document.createElement(str);
-  const createWithClass = (typ, clas) => {
-    var elem = create(typ);
+  const element = (str) => document.createElement(str);
+
+  const elementOfClass = (typ, clas) => {
+    var elem = element(typ);
     elem.classList.add(clas);
     return elem;
   };
-  const createWithClasses = (typ, cList) => {
-    var elem = create(typ);
+
+  const elementOfClasses = (typ, cList) => {
+    var elem = element(typ);
     $.each(cList, function (i, c) {
       elem.classList.add(c);
     });
     return elem;
   };
 
-  // Booleans
-  const NotNewTab = (tab) => tab.title != "New Tab";
   const isChromeTab = (tab) =>
     tab.url.substring(0, tab.url.indexOf(":")) == "chrome"
       ? tab.url.substring(0, tab.url.indexOf(":"))
       : false;
 
-  // Chrome
+  const getTabIdFromResult = (result) =>
+    Number(result.getAttribute("data-tabid"));
 
-  // Results table
-  const displayTabs = () => {
-    var tbody = $("#results-tbody");
-    $("#results-tbody").detach();
-    tbody.empty();
-    tbody.append(...openTabs.map(createResultRow));
-    $("#results-table").append(tbody);
-    changeSelectedRowTo($(".result:visible").first());
-  };
   const urlParse = (url) =>
     url.substring(
       url.lastIndexOf("//") + 2,
       url.indexOf("/", url.lastIndexOf("//") + 2)
     );
-  const getOptions = (tab) => {
-    const opt0 = createWithClass("td", "lock-toggle");
-    const opt1 = create("td");
-    $(opt0).data("locked", false);
-    const lock_icon = $(opt0).data().locked ? "fa-lock" : "fa-unlock";
-    opt0.append(createWithClasses("i", ["fa", lock_icon]));
-    opt1.append(createWithClasses("i", ["fa", "fa-times"]));
-    return [opt0, opt1];
-  };
 
-  const createResultRow = (tab) => {
+  function displayTabRows() {
+    var tbody = $("#results-tbody");
+    $("#results-tbody").detach();
+    tbody.empty();
+    tbody.append(...openTabs.map(createResultRow));
+    $("#results-table").append(tbody);
+    //$(".tab-title").each(function () {
+    //  $(this).text(function (index, text) {
+    //    return text.replace("o", "0");
+    //  });
+    //});
+    changeSelectedRowTo($(".result:visible").first());
+  }
+
+  function createRowIcons(tab) {
+    const icon0 = elementOfClass("td", "lock-toggle");
+    const icon1 = element("td");
+    icon0.append(elementOfClasses("i", ["fa", "fa-lock"]));
+    icon1.append(elementOfClasses("i", ["fa", "fa-times"]));
+    return [icon0, icon1];
+  }
+
+  function createResultRow(tab) {
     const chrome = isChromeTab(tab);
     const parsedUrl = urlParse(tab.url);
-    const row = createWithClass("tr", "result");
-    const globe = createWithClasses("i", ["fa", "fa-globe"]);
-    const favicon = createWithClass("td", "td-favicon");
-    const fav_img = create("img");
-    const info = createWithClass("td", "tab-info");
-    const title = createWithClass("span", "tab-title");
-    const url = createWithClass("span", "tab-domain");
-    const opt0 = getOptions(tab)[0];
-    const opt1 = getOptions(tab)[1];
+    const row = elementOfClass("tr", "result");
+    const globe = elementOfClasses("i", ["fa", "fa-globe"]);
+    const favicon = elementOfClass("td", "td-favicon");
+    const fav_img = element("img");
+    const info = elementOfClass("td", "tab-info");
+    const title = elementOfClass("span", "tab-title");
+    const url = elementOfClass("span", "tab-domain");
+    const icon0 = createRowIcons(tab)[0];
+    const icon1 = createRowIcons(tab)[1];
     url.textContent = (chrome ? "chrome://" : "") + parsedUrl;
     title.textContent = tab.title;
-    fav_img.setAttribute(
-      "src",
-      chrome ? "/images/blue-chrome-icon-2.jpg" : tab.favIconUrl
-    );
+    fav_img.setAttribute("src", tab.favIconUrl);
     favicon.append(!tab.favIconUrl && !chrome ? globe : fav_img);
-    title.append(create("br"));
+    title.append(element("br"));
     info.append(title, url);
-    row.append(favicon, info, opt0, opt1);
+    row.append(favicon, info, icon0, icon1);
+    row.classList.add(lockedTabs.includes(tab.id) ? "locked" : "unlocked");
+
+    if (chrome) {
+      fav_img.setAttribute("src", "/images/blue-chrome-icon-2.jpg");
+      icon0.classList.remove("lock-toggle");
+      icon0.classList.add("cant-lock");
+    }
     row.setAttribute("data-url", tab.url);
     row.setAttribute("data-tabid", tab.id);
     return row;
-  };
+  }
 
-  const changeSelectedRowTo = (selection) => {
+  function changeSelectedRowTo(selection) {
     $(".selected").removeClass("selected");
     selection.addClass("selected");
-  };
+  }
 
-  const getTabIdFromResult = (result) =>
-    Number(result.getAttribute("data-tabid"));
+  // Event handlers - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  // Initialisation - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  // getTabs
-  chrome.tabs.query({}, (tabs) => {
-    openTabs = tabs.filter(NotNewTab);
-    displayTabs();
-  });
+  // request tabs
+  function requestTabs() {
+    chrome.runtime.sendMessage(
+      { msg: "request_tabs" },
+      function (responseObject) {
+        openTabs = responseObject.openTabData;
+        closedTabs = responseObject.closedTabsData;
+        getActiveTabs();
+        displayTabRows();
+      }
+    );
+  }
+  requestTabs();
 
   // label active tab
-  chrome.tabs.query({ active: true }, function (tabs) {
-    activeTab = tabs[0];
-    var ids = tabs.map((tab) => tab.id);
-    $(".result").each(function (index, result) {
-      if (ids.includes(getTabIdFromResult(result))) {
-        $(this).find(".tab-domain").toggleClass("tag-active");
-        //$(this).find('.fa-times').removeClass('fa-times').addClass('fa-ban');
-      }
+  function getActiveTabs() {
+    chrome.tabs.query({ active: true }, function (tabs) {
+      activeTab = tabs[0];
+      var ids = tabs.map((tab) => tab.id);
+      $(".result").each(function (index, result) {
+        if (ids.includes(getTabIdFromResult(result))) {
+          $(this).find(".tab-domain").toggleClass("tag-active");
+        }
+      });
     });
-  });
+  }
 
-  // Events - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
+    requestTabs();
+    displayTabRows();
+  });
 
   // When click on .result
   $(document).on("click", ".result", function () {
@@ -114,25 +132,51 @@ $(document).ready(function () {
     //Then Open link
     var id = getTabIdFromResult(this);
     setTimeout(function () {
+      // make tab active
       chrome.tabs.update(id, { active: true });
+      // make window focused
+      chrome.tabs.get(id, function (tab) {
+        chrome.windows.update(tab.windowId, { focused: true });
+      });
+      requestTabs();
       self.close();
     }, 100);
   });
 
-  // When click on .result i
-  $(document).on("click", ".result i", function (e) {
+  // Toggle lock class on result rows
+  function lock(result) {
+    var tabId = getTabIdFromResult(result[0]);
+    var isLocked = $(result).hasClass("locked");
+    var newState = isLocked ? "unlocked" : "locked";
+    addOrRemove(lockedTabs, tabId);
+    chrome.tabs.sendMessage(
+      tabId,
+      { msg: newState, bool: !isLocked },
+      function (responseObject) {
+        $(result).removeClass("locked unlocked");
+        $(result).addClass(responseObject.newState);
+      }
+    );
+  }
+
+  function addOrRemove(array, item) {
+    const index = array.indexOf(item);
+    if (index > -1) {
+      array.splice(index, 1);
+    } else {
+      array.push(item);
+    }
+  }
+
+  $(document).on("click", ".result .lock-toggle i", function (e) {
+    var result = $(this).closest(".result");
+    lock(result);
     e.stopPropagation();
   });
 
-  // Toggle lock class on result rows
-  $(document).on("click", ".result .lock-toggle i", function () {
-    $(this).toggleClass("fa-lock");
-    $(this).toggleClass("fa-unlock");
-    $(this).closest(".result").toggleClass("locked");
-  });
-
   // Close tab on x
-  $(document).on("click", ".result .fa-times", function () {
+  $(document).on("click", ".result .fa-times", function (e) {
+    e.stopPropagation();
     var result = $(this).closest(".result");
     var tabInfo = result.find(".tab-title, .tab-domain");
     var tabId = getTabIdFromResult(result[0]);
@@ -169,8 +213,8 @@ $(document).ready(function () {
   // Click Pause
   $("#pause-button").on("click", function (e) {
     e.preventDefault();
-    var playIcon = createWithClasses("i", ["fa", "fa-play"]);
-    var pauseIcon = createWithClasses("i", ["fa", "fa-pause"]);
+    var playIcon = elementOfClasses("i", ["fa", "fa-play"]);
+    var pauseIcon = elementOfClasses("i", ["fa", "fa-pause"]);
     var paused = $("#pause-button").data("paused");
     $("#pause-button").text(paused ? " Continue" : " Pause");
     $("#pause-button").prepend(paused ? playIcon : pauseIcon);

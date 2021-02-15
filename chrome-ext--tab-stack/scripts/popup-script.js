@@ -410,7 +410,7 @@ $(document).ready(function () {
   }
 
   function createRuleRow(ruleName) {
-    var row = createRow(6, "rule-row");
+    var row = createRow(7, "rule-row");
     $(row)
       .find("td:first-child")
       .append(
@@ -428,9 +428,17 @@ $(document).ready(function () {
   }
 
   function createParameterRow() {
-    var row = createRow(5, "parameter-row");
+    var row = createRow(6, "parameter-row");
     $(row)
       .find("td:first-child")
+      .append(
+        "<div class='and-or-switch'>" +
+        "<input type='button' class='selected' value='AND'>" +
+          "<input type='button' value='OR'>" +
+          "</div>"
+      );
+          $(row)
+      .find("td:nth-child(2)")
       .append(
         "<select>" +
           "<option value='domain'>Domain name</option>" +
@@ -438,7 +446,7 @@ $(document).ready(function () {
           "</select>"
       );
     $(row)
-      .find("td:nth-child(2)")
+      .find("td:nth-child(3)")
       .append(
         "<select>" +
           "<option value='equals'>Equals</option>" +
@@ -446,11 +454,17 @@ $(document).ready(function () {
           "<option value='not-contains'>Does not contain</option>" +
           "</select>"
       );
-    $(row).find("td:nth-child(3)").append("<input type='text'></input>");
-    $(row).find("td:nth-child(4)").append("<i class='fa fa-trash-o'></i>");
-    $(row).find("td:nth-child(5)").append("<i class='fa fa-plus'></i>");
+    $(row).find("td:nth-child(4)").append("<input type='text'></input>");
+    $(row).find("td:nth-child(5)").append("<i class='fa fa-trash-o'></i>");
+    $(row).find("td:nth-child(6)").append("<i class='fa fa-plus'></i>");
     return row;
   }
+
+  // Toggle AND OR
+  $(document).on('click','.and-or-switch input[type="button"]',function(e){
+    $(e.target).parent().children().removeClass('selected');
+    $(e.target).addClass('selected');
+  })
 
   // Row icons and buttons
 
