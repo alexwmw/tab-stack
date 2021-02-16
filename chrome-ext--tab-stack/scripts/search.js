@@ -145,18 +145,20 @@ $(document).ready(function () {
 
   // Toggle lock class on result rows
   function lock(result) {
-    var tabId = getTabIdFromResult(result[0]);
+    var tabId = getTabIdFromResult(result);
     var isLocked = $(result).hasClass("locked");
     var newState = isLocked ? "unlocked" : "locked";
     addOrRemove(lockedTabs, tabId);
-    chrome.tabs.sendMessage(
+    $(result).removeClass("locked unlocked");
+    $(result).addClass(newState);
+    /*chrome.tabs.sendMessage(
       tabId,
       { msg: newState, bool: !isLocked },
       function (responseObject) {
         $(result).removeClass("locked unlocked");
-        $(result).addClass(responseObject.newState);
+        $(result).addClass(newState);
       }
-    );
+    );*/
   }
 
   function addOrRemove(array, item) {
@@ -169,7 +171,7 @@ $(document).ready(function () {
   }
 
   $(document).on("click", ".result .lock-toggle i", function (e) {
-    var result = $(this).closest(".result");
+    var result = $(this).closest(".result")[0];
     lock(result);
     e.stopPropagation();
   });

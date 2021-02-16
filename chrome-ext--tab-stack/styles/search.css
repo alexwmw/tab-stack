@@ -77,7 +77,7 @@ body {
   visibility: hidden;
   cursor: pointer;
 }
-.result td.cant-lock i.fa-lock{
+.result td.cant-lock i.fa-lock {
   cursor: default !important;
   display: none;
 }
@@ -125,6 +125,15 @@ i.fa-times {
 .result:hover i.fa-times {
   visibility: visible;
   animation: fadeIn ease 0.5s;
+}
+/* results */
+#no-results {
+  display: block;
+  position: absolute;
+  z-index: -2;
+  left: 37%;
+  font-family: var(--heading-family);
+  display: none;
 }
 /* results */
 #results-area {
@@ -341,7 +350,6 @@ i:after {
 /* tooltip */
 i:hover:after {
   display: block;
-
 }
 /* tooltip */
 td.cant-lock .fa-lock:after {
@@ -356,14 +364,7 @@ td.cant-lock .fa-lock:after {
 .fa-times:after {
   content: "Close tab";
 }
+/* tooltip */
 .fa-times:after {
-	content: "Close tab";
-  }
-  #no-results{
-    display: block;
-    position: absolute;
-    z-index: -2;
-    left: 37%;
-    font-family: var(--heading-family);
-    display: none;
-  }
+  content: "Close tab";
+}
