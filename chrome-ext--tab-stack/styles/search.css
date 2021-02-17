@@ -73,7 +73,6 @@ body {
 /* icon */
 .result i.fa-lock {
   color: whitesmoke;
-  font-size: 1.2em !important;
   visibility: hidden;
   cursor: pointer;
 }
@@ -84,7 +83,6 @@ body {
 /* icon */
 .result.locked i.fa-lock {
   color: var(--text) !important;
-  font-size: 1.2em !important;
   cursor: pointer;
   visibility: visible;
   animation: fadeIn ease 0.5s;
@@ -125,6 +123,19 @@ i.fa-times {
 .result:hover i.fa-times {
   visibility: visible;
   animation: fadeIn ease 0.5s;
+}
+/* icon */
+.ts-icon{
+  text-align: left;
+  color:darkgrey;
+}
+/* icon */
+.selected .ts-icon{
+  color: var(--text);
+}
+/* icon */
+.result:hover .ts-icon{
+  color:var(--text);
 }
 /* results */
 #no-results {
@@ -185,7 +196,7 @@ td:first-child i {
 /* result cells */
 td:nth-child(3),
 td:nth-child(4) {
-  width: 30px;
+  width: 50px;
   padding: 0;
 }
 /* result cells */
@@ -218,6 +229,9 @@ td:nth-child(4) {
   width: 100%;
   height: 56px;
   color: var(--charcoal);
+}
+.result[data-closed="true"]{
+  background-color: papayawhip;
 }
 /* result rows */
 .result.selected {
@@ -326,6 +340,18 @@ td:nth-child(4) {
   color: white;
   background-color: var(--primary);
 }
+/* tag */
+.tag-otherwindow::before {
+  content: "_Window ";
+  color: darkgreen;
+  background-color: white;
+}
+/* tag */
+.tag-closed::before {
+  content: "Stacked";
+  color: white;
+  background-color: var(--secondary);
+}
 /* tooltip */
 i:after {
   padding: 2px;
@@ -347,6 +373,47 @@ i:after {
   animation: fadeInDelay ease 1s;
   opacity: 0.9;
 }
+td.ts-icon:after {
+  padding: 2px;
+  display: none;
+  position: absolute;
+  right: 30px;
+  top: 1px;
+  width: 70px;
+  padding: 4px 2px;
+  height: 15px;
+  text-align: center;
+  background-color: #fef4c5;
+  box-shadow: 2px 2px 5px grey;
+  color: var(--text);
+  font-family: var(--heading-family);
+  font-size: 10pt;
+  border-radius: 2px;
+  z-index: 999;
+  animation: fadeInDelay ease 1s;
+  opacity: 0.9;
+}
+/* tooltip * /
+.tab-title:after {
+  padding: 2px;
+  display: none;
+  position: absolute;
+  right: 30px;
+  top: 1px;
+  width: 70px;
+  padding: 4px 2px;
+  height: 15px;
+  text-align: center;
+  background-color: #fef4c5;
+  box-shadow: 2px 2px 5px grey;
+  color: var(--text);
+  font-family: var(--heading-family);
+  font-size: 10pt;
+  border-radius: 2px;
+  z-index: 999;
+  animation: fadeInDelay ease 1s;
+  opacity: 0.9;
+}*/
 /* tooltip */
 i:hover:after {
   display: block;
@@ -365,6 +432,15 @@ td.cant-lock .fa-lock:after {
   content: "Close tab";
 }
 /* tooltip */
+.forget-x .fa-times:after {
+  content: "Forget this tab";
+  height: 25px;
+}
+/* tooltip */
 .fa-times:after {
   content: "Close tab";
 }
+.ts-icon:after{
+  content:"Hellow";
+}
+

@@ -1,10 +1,9 @@
 $(document).ready(function () {
-  var openTabs = [];
-  var closedTabs = [];
-  var activeTab;
-  var lockedTabs = [];
+  var openTabs = {};
+  var closedTabs = {};
+  var lockedTabIds = [];
 
-  const element = (str) => document.createElement(str);
+  const element = (type) => document.createElement(type);
 
   const elementOfClass = (typ, clas) => {
     var elem = element(typ);
@@ -25,8 +24,7 @@ $(document).ready(function () {
       ? tab.url.substring(0, tab.url.indexOf(":"))
       : false;
 
-  const getTabIdFromResult = (result) =>
-    Number(result.getAttribute("data-tabid"));
+  const tabIdOfResult = (result) => Number(result.getAttribute("data-tabid"));
 
   const urlParse = (url) =>
     url.substring(
@@ -34,33 +32,47 @@ $(document).ready(function () {
       url.indexOf("/", url.lastIndexOf("//") + 2)
     );
 
-  function displayTabRows() {
+  const isClosedTab = (tabObject) => tabObject.hasOwnProperty("isClosed");
+
+  function displayTabRows(objList) {
+    for (tabsObj of objList) {
+      var tbody = $("#results-tbody");
+      $("#results-tbody").detach();
+      const tabs = Object.values(tabsObj);
+      tbody.append(...tabs.map(createResultRow));
+      $("#results-table").append(tbody);
+      changeSelectedRowTo($(".result:visible").first());
+    }
+  }
+
+  function emptyResultsTable() {
     var tbody = $("#results-tbody");
     $("#results-tbody").detach();
     tbody.empty();
-    tbody.append(...openTabs.map(createResultRow));
     $("#results-table").append(tbody);
-    //$(".tab-title").each(function () {
-    //  $(this).text(function (index, text) {
-    //    return text.replace("o", "0");
-    //  });
-    //});
-    changeSelectedRowTo($(".result:visible").first());
   }
 
   function createRowIcons(tab) {
-    const icon0 = elementOfClass("td", "lock-toggle");
-    const icon1 = element("td");
-    icon0.append(elementOfClasses("i", ["fa", "fa-lock"]));
-    icon1.append(elementOfClasses("i", ["fa", "fa-times"]));
+    const icon0 = isClosedTab(tab)
+      ? elementOfClass("td", "ts-icon")
+      : elementOfClass("td", "lock-toggle");
+    const icon1 = isClosedTab(tab)
+      ? elementOfClass("td", "forget-x")
+      : elementOfClass("td", "close-x");
+    const appendage0 = isClosedTab(tab)
+      ? ""
+      : elementOfClasses("i", ["fas", "fa-lock"]);
+    icon0.append(appendage0);
+    icon1.append(elementOfClasses("i", ["fas", "fa-times"]));
     return [icon0, icon1];
   }
 
   function createResultRow(tab) {
-    const chrome = isChromeTab(tab);
+    const isClosed = isClosedTab(tab);
+    const isChrome = isChromeTab(tab);
     const parsedUrl = urlParse(tab.url);
     const row = elementOfClass("tr", "result");
-    const globe = elementOfClasses("i", ["fa", "fa-globe"]);
+    const globe = elementOfClasses("i", ["fas", "fa-globe"]);
     const favicon = elementOfClass("td", "td-favicon");
     const fav_img = element("img");
     const info = elementOfClass("td", "tab-info");
@@ -68,20 +80,26 @@ $(document).ready(function () {
     const url = elementOfClass("span", "tab-domain");
     const icon0 = createRowIcons(tab)[0];
     const icon1 = createRowIcons(tab)[1];
-    url.textContent = (chrome ? "chrome://" : "") + parsedUrl;
+    url.textContent = parsedUrl;
     title.textContent = tab.title;
     fav_img.setAttribute("src", tab.favIconUrl);
-    favicon.append(!tab.favIconUrl && !chrome ? globe : fav_img);
+    favicon.append(!tab.favIconUrl && !isChrome ? globe : fav_img);
     title.append(element("br"));
     info.append(title, url);
     row.append(favicon, info, icon0, icon1);
-    row.classList.add(lockedTabs.includes(tab.id) ? "locked" : "unlocked");
+    row.classList.add(lockedTabIds.includes(tab.id) ? "locked" : "unlocked");
 
-    if (chrome) {
+    if (isChrome) {
       fav_img.setAttribute("src", "/images/blue-chrome-icon-2.jpg");
-      icon0.classList.remove("lock-toggle");
-      icon0.classList.add("cant-lock");
+      url.textContent = "chrome://" + +parsedUrl;
+      if (!isClosed) {
+        icon0.classList.add("cant-lock");
+      }
     }
+    if (isClosed){
+      url.classList.add('tag-closed');
+    }
+    row.setAttribute("data-closed", isClosed);
     row.setAttribute("data-url", tab.url);
     row.setAttribute("data-tabid", tab.id);
     return row;
@@ -101,54 +119,80 @@ $(document).ready(function () {
       function (responseObject) {
         openTabs = responseObject.openTabData;
         closedTabs = responseObject.closedTabsData;
-        getActiveTabs();
-        displayTabRows();
+        applyTags([
+          [{ active: true }, "tag-active"],
+          [{ currentWindow: false }, "tag-otherwindow"],
+        ]);
+        emptyResultsTable();
+        displayTabRows([openTabs, closedTabs]);
       }
     );
   }
   requestTabs();
 
-  // label active tab
-  function getActiveTabs() {
-    chrome.tabs.query({ active: true }, function (tabs) {
-      activeTab = tabs[0];
+  function queryAndTag(queryObj, tagClass) {
+    chrome.tabs.query(queryObj, function (tabs) {
       var ids = tabs.map((tab) => tab.id);
       $(".result").each(function (index, result) {
-        if (ids.includes(getTabIdFromResult(result))) {
-          $(this).find(".tab-domain").toggleClass("tag-active");
+        if (ids.includes(tabIdOfResult(result))) {
+          $(this).find(".tab-domain").toggleClass(tagClass);
         }
       });
     });
   }
 
+  function applyTags(queryTagPairs) {
+    for (pair of queryTagPairs) {
+      queryAndTag(pair[0], pair[1]);
+    }
+  }
+
   chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
+    emptyResultsTable();
     requestTabs();
-    displayTabRows();
+  });
+
+  chrome.tabs.onRemoved.addListener(function (tabId) {
+    var result = $(".result[data-tabid=" + tabId + "]");
+    result.fadeOut();
+    if (result.hasClass("selected")) {
+      result.toggleClass("selected");
+      result.next().toggleClass("selected");
+    }
+    emptyResultsTable();
+    requestTabs();
   });
 
   // When click on .result
   $(document).on("click", ".result", function () {
     changeSelectedRowTo($(this));
     //Then Open link
-    var id = getTabIdFromResult(this);
-    setTimeout(function () {
-      // make tab active
-      chrome.tabs.update(id, { active: true });
-      // make window focused
-      chrome.tabs.get(id, function (tab) {
-        chrome.windows.update(tab.windowId, { focused: true });
-      });
-      requestTabs();
-      self.close();
-    }, 100);
+    var id = tabIdOfResult(this);
+    if (id in openTabs) {
+      setTimeout(function () {
+        // make tab active
+        chrome.tabs.update(id, { active: true });
+        // make window focused
+        chrome.tabs.get(id, function (tab) {
+          chrome.windows.update(tab.windowId, { focused: true });
+        });
+        requestTabs();
+        self.close();
+      }, 100);
+    } else if (id in closedTabs) {
+      chrome.runtime.sendMessage(
+        { msg: "resurrect", tabId: id },
+        function (responseObject) {}
+      );
+    }
   });
 
   // Toggle lock class on result rows
   function lock(result) {
-    var tabId = getTabIdFromResult(result);
+    var tabId = tabIdOfResult(result);
     var isLocked = $(result).hasClass("locked");
     var newState = isLocked ? "unlocked" : "locked";
-    addOrRemove(lockedTabs, tabId);
+    addOrRemove(lockedTabIds, tabId);
     $(result).removeClass("locked unlocked");
     $(result).addClass(newState);
     /*chrome.tabs.sendMessage(
@@ -181,7 +225,7 @@ $(document).ready(function () {
     e.stopPropagation();
     var result = $(this).closest(".result");
     var tabInfo = result.find(".tab-title, .tab-domain");
-    var tabId = getTabIdFromResult(result[0]);
+    var tabId = tabIdOfResult(result[0]);
     result.fadeOut();
     tabInfo.animate({
       paddingLeft: 100,
@@ -198,8 +242,8 @@ $(document).ready(function () {
   });
 
   // Filter results by search
-  var searchterm = "";
   $("#searchbox").on("keyup", function () {
+    var searchterm = "";
     // get the value currently in searchbox
     searchterm = $(this).val().toLowerCase();
     // Filter the results
@@ -215,8 +259,8 @@ $(document).ready(function () {
   // Click Pause
   $("#pause-button").on("click", function (e) {
     e.preventDefault();
-    var playIcon = elementOfClasses("i", ["fa", "fa-play"]);
-    var pauseIcon = elementOfClasses("i", ["fa", "fa-pause"]);
+    var playIcon = elementOfClasses("i", ["fas", "fa-play"]);
+    var pauseIcon = elementOfClasses("i", ["fas", "fa-pause"]);
     var paused = $("#pause-button").data("paused");
     $("#pause-button").text(paused ? " Continue" : " Pause");
     $("#pause-button").prepend(paused ? playIcon : pauseIcon);
