@@ -91,13 +91,13 @@ $(document).ready(function () {
 
     if (isChrome) {
       fav_img.setAttribute("src", "/images/blue-chrome-icon-2.jpg");
-      url.textContent = "chrome://" + +parsedUrl;
+      url.textContent = "chrome://" + parsedUrl;
       if (!isClosed) {
         icon0.classList.add("cant-lock");
       }
     }
-    if (isClosed){
-      url.classList.add('tag-closed');
+    if (isClosed) {
+      url.classList.add("tag-closed");
     }
     row.setAttribute("data-closed", isClosed);
     row.setAttribute("data-url", tab.url);

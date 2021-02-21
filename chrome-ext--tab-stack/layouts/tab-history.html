@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="../styles/common.css" />
+    <link rel="stylesheet" href="../styles/popup.css" />
+    <link rel="stylesheet" href="../styles/tab-history.css" />
+    <link rel="stylesheet" href="../fonts/font-awesome/css/all.css" />
+    <link rel="stylesheet" href="../scripts/jquery.modal.min.css" />
+    <script type="text/javascript" src="../scripts/jquery-3.4.1.js"></script>
+    <script
+      type="text/javascript"
+      src="../scripts/jquery.modal.min.js"
+    ></script>
+    <!--script type="text/javascript" src="../scripts/psl.min.js"></script-->
+    <script type="text/javascript" src="../scripts/popup.js"></script>
+    <script type="text/javascript" src="../scripts/tab-history.js"></script>
+  </head>
+  <!--------------------------------------------------------------->
+  <body>
+    <!-- Tabs -->
+    <div class="tab-container">
+      <div class="title" id="title">
+        <a target="_blank" href="https://github.com/alexwmw/tab-stack"
+          ><img class="icon" src="../images/title.png" title="Link to github"
+        /></a>
+      </div>
+      <div tabindex="1" class="tab selected" id="tab-history-link">
+        tab stack
+      </div>
+      <div tabindex="2" class="tab" id="tab-monitor-link">tab monitor</div>
+      <a href="settings.html" tabindex="3" class="tab" id="settings-tab-link"
+        ><span style="font-size: 0.6em"
+          ><i class="fas fa-external-link-alt"> </i
+        ></span>
+        settings</a
+      >
+    </div>
+
+    <!------------------------------------------------------------->
+
+    <!-- History Page -->
+
+    <div id="tab-history" class="tab-content">
+      <div id="grey-box">
+        <input
+          autofocus
+          value=""
+          type="text"
+          id="searchbox"
+          placeholder="Search closed tabs"
+        />
+        <select id="search-filter">
+          <option>Tabs</option>
+          <option>Groups</option>
+        </select>
+        <input
+          style="display: block; position: relative; left: 2px; top: -17px"
+          type="checkbox"
+        />
+      </div>
+
+      <div id="results-table-container">
+        <table id="results-table">
+          <tbody id='results-tbody'>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- Modal -->
+    <a
+      style="display: none"
+      id="tab-info-link"
+      href="#tab-info"
+      rel="modal:open"
+      >Open Modal</a
+    >
+    <div id="tab-info" class="modal">
+      <h2>
+        <i style="font-size: 0.8em" class="fas fa-info-circle"> &nbsp;</i>Tab
+        Info
+      </h2>
+      <table>
+        <tr>
+          <td>Title:</td>
+          <td></td>
+          <td>
+            <button class="copy-btn">Copy</button
+            ><span class="copied">Copied!</span>
+          </td>
+        </tr>
+
+        <tr>
+          <td>Url:</td>
+          <td></td>
+          <td>
+            <button class="copy-btn">Copy</button
+            ><span class="copied">Copied!</span>
+          </td>
+        </tr>
+        <tr>
+          <td>Group:</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Opener Tab:</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Closed at:</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Closed by:</td>
+          <td></td>
+        </tr>
+      </table>
+    </div>
+
+    <!------------------------------------------------------------->
+
+    <!-- Monitor Page -->
+
+    <div id="tab-monitor" style="display: none" class="tab-content">
+      <p>Here is some content in the monitor</p>
+    </div>
+
+    <!------------------------------------------------------------->
+
+    <!-- Settings Page -->
+
+    <div id="settings" style="display: none" class="tab-content">
+      <!--iframe style="margin: -60px -30px; border: none; width: 100%; height: 850px;" scrolling="no" src="settings.html"-->
+    </div>
+
+    <!------------------------------------------------------------->
+
+    <div class="footer">
+      <span class="footer-links" id="search-link"
+        ><a href="search.html">
+          <i style="font-size: 0.8em" class="fas fa-angle-double-right"> </i>
+          Collapse</a
+        ></span
+      >
+    </div>
+  </body>
+</html>

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="../styles/common.css" />
+    <link rel="stylesheet" href="../styles/popup.css" />
+    <link rel="stylesheet" href="../styles/settings.css" />
+    <link rel="stylesheet" href="../fonts/font-awesome/css/all.css" />
+    <link rel="stylesheet" href="../scripts/jquery.modal.min.css" />
+    <script type="text/javascript" src="../scripts/jquery-3.4.1.js"></script>
+    <script
+      type="text/javascript"
+      src="../scripts/jquery.modal.min.js"
+    ></script>
+    <!--script type="text/javascript" src="../scripts/psl.min.js"></script-->
+    <script type="text/javascript" src="../scripts/popup.js"></script>
+    <script type="text/javascript" src="../scripts/settings.js"></script>
+  </head>
+
+  <body>
+    <!-- Header Area ----------------------------------------------->
+    <div id="title-border-box">
+      <a target="_blank" href="https://github.com/alexwmw/tab-stack"
+        ><img class="icon" src="../images/title.png" title="Link to github"
+      /></a>
+
+      <span id="settings-title">{settings}</span>
+      <span id="close-settings">close</span>
+    </div>
+
+    <!-- Settings ------------------------------------------------>
+    <div id="settings">
+      <div id="settings-view">
+        <form>
+          <table class="settings-table">
+            <colgroup>
+              <col class="col1" />
+              <col class="col2" />
+              <col class="extracol" />
+            </colgroup>
+            <!--Closing------------------------------>
+            <tr class="blank_row" style="border: none">
+              <td style="height: 0" colspan="3"></td>
+            </tr>
+            <tr class="setting-row main-setting">
+              <td>Allow automatic closing of tabs:</td>
+              <td>
+                <input
+                  type="checkbox"
+                  checked
+                  id="cb-close-tabs"
+                  name="close-tabs"
+                />
+              </td>
+            </tr>
+            <tr class="setting-row cb-close-tabs-dependent indented">
+              <td>Close tabs after:</td>
+              <td>
+                <input class="time-input" type="number" id="timeout-m" />
+                min &nbsp;&nbsp;
+                <input
+                  size="2"
+                  class="time-input"
+                  type="number"
+                  id="timeout-s"
+                />
+                sec
+              </td>
+            </tr>
+            <tr class="setting-row cb-close-tabs-dependent indented">
+              <td>Close tabs when more than:</td>
+              <td>
+                <input class="time-input" type="number" id="timeout-m" /> tabs
+                are open
+              </td>
+            </tr>
+            <tr class="setting-row cb-close-tabs-dependent indented">
+              <td>Close criteria:</td>
+              <td>
+                <select id="close-criteria" name="O-close-criteria">
+                  <option value="all">Close any tabs</option>
+                  <option value="whitelist">Except whitelisted</option>
+                  <option value="blacklist">Blacklisted only</option>
+                </select>
+              </td>
+            </tr>
+            <tr
+              id="list-button-row"
+              class="setting-row cb-close-tabs-dependent indented"
+            >
+              <td>Edit lists:</td>
+              <td>
+                <input
+                  type="button"
+                  class="change-view-button"
+                  id="list-button"
+                  value="View lists"
+                />
+              </td>
+            </tr>
+            <tr class="setting-row cb-close-tabs-dependent indented">
+              <td>Display lock icon on locked tabs:</td>
+              <td><input type="checkbox" /></td>
+            </tr>
+            <!--Grouping------------------------------->
+            <tr class="blank_row">
+              <td style="height: 0" colspan="3"></td>
+            </tr>
+            <tr class="setting-row main-setting">
+              <td>Allow automatic grouping of tabs:</td>
+              <td>
+                <input
+                  type="checkbox"
+                  checked
+                  id="group-tabs"
+                  name="group-tabs"
+                />
+              </td>
+            </tr>
+            <tr id="group-by" class="setting-row group-tabs-dependent indented">
+              <td>Group by:</td>
+              <td>
+                <select id="group-by-select" name="group-by-select">
+                  <option value="origin">Origin</option>
+                  <option value="domain">Domain</option>
+                  <option value="domain">Custom rules only</option>
+                </select>
+              </td>
+            </tr>
+            <tr
+              id="rules-button-row"
+              class="setting-row group-tabs-dependent indented"
+            >
+              <td>Group tabs according to custom rules:</td>
+              <td>
+                <input
+                  type="button"
+                  class="change-view-button"
+                  id="rules-button"
+                  value="Edit rules"
+                />
+              </td>
+            </tr>
+            <tr
+              id="group-label"
+              class="setting-row group-tabs-dependent indented"
+            >
+              <td>Group label:</td>
+              <td>
+                <select id="group-by-select" name="group-by-select">
+                  <option value="none">None</option>
+                  <option value="domain">Domain name</option>
+                  <option value="title">Title of first tab</option>
+                  <option value="time">Time created</option>
+                  <option value="timeDomain">Time & domain</option>
+                  <option value="timeTitle">Time & title</option>
+                </select>
+              </td>
+            </tr>
+            <tr
+              id="warn-close"
+              class="setting-row group-tabs-dependent indented"
+            >
+              <td>Warn before closing group:</td>
+              <td>
+                <select id="warn-close-select" name="warn-close-select">
+                  <option value="always">Always</option>
+                  <option value="never">Never</option>
+                  <option value="never">Only most active groups</option>
+                </select>
+              </td>
+            </tr>
+            <tr
+              id="reset-criteria"
+              class="setting-row group-tabs-dependent indented"
+            >
+              <td>When the timer resets, reset for:</td>
+              <td>
+                <select id="warn-close-select" name="warn-close-select">
+                  <option value="group">Group</option>
+                  <option value="never">Tab only</option>
+                </select>
+              </td>
+            </tr>
+            <!--Miscellaneous-------------------------------->
+
+            <tr class="blank_row">
+              <td style="height: 0" colspan="3"></td>
+            </tr>
+
+            <tr class="setting-row misc">
+              <td><br />Clear closed tabs list on quit:</td>
+              <td>
+                <br /><input
+                  type="checkbox"
+                  id="O-clear-criteria"
+                  name="O-clear-criteria"
+                />
+              </td>
+            </tr>
+            <tr class="setting-row misc">
+              <td>Prevent closing of tabs playing audio:</td>
+              <td><input type="checkbox" /></td>
+            </tr>
+
+            <!--Keyboard-Shortcuts----------------------------->
+            <tr class="blank_row">
+              <td style="height: 0" colspan="3   s"></td>
+            </tr>
+            <tr>
+              <td><h3>Keyboard Shortcuts</h3></td>
+            </tr>
+            <tr class="shortcut-row">
+              <td>Pull most recent tab(s) from the stack</td>
+              <td>
+                <input
+                  data-key="t"
+                  title="This shortcut cannot be customised"
+                  class="shortcut-input"
+                  type="text"
+                  id="pull-tab"
+                  readonly
+                />
+              </td>
+            </tr>
+            <tr class="shortcut-row">
+              <td>Perform tab search / view the stack</td>
+              <td>
+                <input
+                  data-key="s"
+                  class="shortcut-input"
+                  type="text"
+                  id="search-tabs"
+                />
+              </td>
+            </tr>
+            <tr class="shortcut-row">
+              <td>Expand/collapse all groups</td>
+              <td>
+                <input class="shortcut-input" type="text" id="expand-toggle" />
+              </td>
+            </tr>
+            <tr class="shortcut-row">
+              <td>Lock/unlock the current tab/group</td>
+              <td>
+                <input class="shortcut-input" type="text" id="lock-toggle" />
+              </td>
+            </tr>
+            <tr class="shortcut-row">
+              <td>Pin/unpin current tab</td>
+              <td>
+                <input class="shortcut-input" type="text" id="pin-toggle" />
+              </td>
+            </tr>
+            <tr class="shortcut-row">
+              <td>Open the tab stack window</td>
+              <td>
+                <input class="shortcut-input" type="text" id="ts-window" />
+              </td>
+            </tr>
+          </table>
+        </form>
+      </div>
+      <!--Alt-Views----------------------------------------------------------->
+      <!--List-Views--------------------->
+      <div class="alt-view" id="list-button-view" style="display: none">
+        <form>
+          <p>White List</p>
+          <textarea
+            id="white-list-area"
+            name="white-list-area"
+            rows="10"
+            cols="50"
+          ></textarea>
+          <br />
+          <p>Black List</p>
+          <textarea
+            id="black-list-area"
+            name="black-list-area"
+            rows="10"
+            cols="50"
+          ></textarea>
+          <br /><br />
+          <input id="" class="list-form-buttons" type="submit" value="Save" />
+          <input
+            id=""
+            class="list-form-buttons exit-subsetting-view"
+            type="button"
+            value="Cancel"
+          />
+        </form>
+      </div>
+      <!--Rule-Views--------------------->
+      <div class="alt-view" id="rules-button-view" style="display: none">
+        <h2 id="rules-heading">Tab grouping rules</h2>
+        <div id="rules-container">
+          <div
+            id="no-results"
+            style="display: none; position: fixed; left: 80px"
+          >
+            <p>No rules set</p>
+          </div>
+          <table id="rules">
+            <colgroup>
+              <col class="on-switch" />
+              <col class="rule-name" />
+              <col class="move-up" />
+              <col class="move-down" />
+              <col class="edit-rule" />
+              <col class="delete-rule" />
+            </colgroup>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div id="rule-buttons-container">
+          <input
+            id="new-rule-button"
+            class="rules-form-buttons"
+            type="button"
+            value="New Rule"
+          />
+          <input
+            id=""
+            class="rules-form-buttons exit-subsetting-view"
+            type="button"
+            value="Finish"
+          />
+        </div>
+
+        <!-- Modals ------------------------->
+        <div id="edit-rule" class="modal">
+          <h2>Edit rule</h2>
+          <div class="modal-buttons-container">
+            <a style="display: none" rel="modal:close" href="#">Close</a>
+            <input
+              id="cancel-rule-changes"
+              class="rules-form-buttons"
+              type="button"
+              value="Cancel"
+            />
+            <input
+              id="save-rule-changes"
+              rel="modal:close"
+              class="rules-form-buttons"
+              type="button"
+              value="Save Changes"
+            />
+          </div>
+        </div>
+
+        <div id="new-rule" class="modal">
+          <h2>Create new rule</h2>
+          <form>
+            <input
+              type="text"
+              autofocus
+              placeholder="Rule name"
+              id="new-rule-name"
+            />
+            <table id="new-rule-parameters" class="rule-parameters"></table>
+            <div class="modal-buttons-container">
+              <a
+                id="new-rule-close"
+                style="display: none"
+                rel="modal:close"
+                href="#"
+                >Close</a
+              >
+              <input
+                id="cancel-rule"
+                rel="modal:close"
+                class="rules-form-buttons"
+                type="button"
+                value="Cancel"
+              />
+              <input
+                id="save-rule"
+                rel="modal:close"
+                class="rules-form-buttons"
+                type="button"
+                value="Save"
+              />
+            </div>
+          </form>
+        </div>
+        <a
+          style="display: none"
+          id="edit-rule-link"
+          href="#edit-rule"
+          rel="modal:open"
+          >Open Modal</a
+        >
+        <a
+          style="display: none"
+          id="new-rule-link"
+          href="#new-rule"
+          rel="modal:open"
+          >Open Modal</a
+        >
+      </div>
+    </div>
+
+    <div id="dialog">
+      <h1 id="default-heading">Default Heading</h1>
+      <div id="default-content">
+        <p>Default content</p>
+      </div>
+    </div>
+    <div class="footer">
+      <span class="footer-links" id="search-link"
+        ><a href="search.html">
+          <i style="font-size: 0.8em" class="fas fa-angle-double-right"> </i>
+          Collapse</a
+        ></span
+      >
+    </div>
+  </body>
+</html>

@@ -1,15 +1,16 @@
 {
   "name": "tab stack",
-  "version": "0.2.3",
+  "version": "0.3.2",
   "description": "Arranges your tabs into groups, closes tabs you don't need and makes it easy to restore closed tabs.",
-  "permissions": ["tabs", "http://*/", "https://*/"],
+  "permissions": ["tabs"],
   "background": {
     "scripts": ["scripts/jquery-3.4.1.js", "scripts/background.js"],
-    "persistent": false
+    "persistent": true
   },
   "browser_action": {
     "default_popup": "layouts/search.html"
   },
+  "options_page": "layouts/settings.html",
   "commands": {
     "pin-toggle": {
       "description": "Pin/unpin the current tab",
