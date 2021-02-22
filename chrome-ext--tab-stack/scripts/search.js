@@ -34,20 +34,33 @@ $(document).ready(function () {
 
   const isClosedTab = (tabObject) => tabObject.hasOwnProperty("isClosed");
 
+  const addOrRemove = (array, item) => {
+    const index = array.indexOf(item);
+    if (index > -1) {
+      array.splice(index, 1);
+    } else {
+      array.push(item);
+    }
+  };
+
   function displayTabRows(objList) {
     for (tabsObj of objList) {
-      var tbody = $("#results-tbody");
-      $("#results-tbody").detach();
-      const tabs = Object.values(tabsObj);
+      const tbody = $("#results-tbody");
+      const table = $("#results-table");
+      const tabs = Object.values(tabsObj).reverse();
+      tbody.detach();
       tbody.append(...tabs.map(createResultRow));
-      $("#results-table").append(tbody);
+      table.append(tbody);
+      lockIfLocked(".result");
+      $.each($(".result"), (index, result) => {});
+      filterMatchCriteria(".result");
       changeSelectedRowTo($(".result:visible").first());
     }
   }
 
   function emptyResultsTable() {
-    var tbody = $("#results-tbody");
-    $("#results-tbody").detach();
+    const tbody = $("#results-tbody");
+    tbody.detach();
     tbody.empty();
     $("#results-table").append(tbody);
   }
@@ -110,7 +123,46 @@ $(document).ready(function () {
     selection.addClass("selected");
   }
 
-  // Event handlers - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Toggle lock class on result rows
+  function lock(result) {
+    const tabId = tabIdOfResult(result);
+    const newState = $(result).hasClass("locked") ? "unlocked" : "locked";
+    $(result).removeClass("locked unlocked").addClass(newState);
+    chrome.runtime.sendMessage(
+      {
+        msg: "request_locked_tabs",
+      },
+      function (responseObject) {
+        lockedTabIds = responseObject.data;
+        addOrRemove(lockedTabIds, tabId);
+        chrome.runtime.sendMessage({
+          msg: "tab_locked",
+          data: lockedTabIds,
+        });
+      }
+    );
+  }
+
+  // Apply lock to locked rows
+  function lockIfLocked(selector) {
+    $.each($(selector), (index, element) => {
+      const tabId = tabIdOfResult(element);
+      if (lockedTabIds.includes(tabId)) {
+        $(element).removeClass("unlocked").addClass("locked");
+      }
+    });
+  }
+
+  /*chrome.tabs.sendMessage(
+      tabId,
+      { msg: newState, bool: !isLocked },
+      function (responseObject) {
+        $(result).removeClass("locked unlocked");
+        $(result).addClass(newState);
+      }
+      );*/
+
+  // Events & Chrome - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   // request tabs
   function requestTabs() {
@@ -119,6 +171,7 @@ $(document).ready(function () {
       function (responseObject) {
         openTabs = responseObject.openTabData;
         closedTabs = responseObject.closedTabsData;
+        lockedTabIds = responseObject.lockedTabIdsData;
         applyTags([
           [{ active: true }, "tag-active"],
           [{ currentWindow: false }, "tag-otherwindow"],
@@ -128,7 +181,6 @@ $(document).ready(function () {
       }
     );
   }
-  requestTabs();
 
   function queryAndTag(queryObj, tagClass) {
     chrome.tabs.query(queryObj, function (tabs) {
@@ -146,22 +198,6 @@ $(document).ready(function () {
       queryAndTag(pair[0], pair[1]);
     }
   }
-
-  chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
-    emptyResultsTable();
-    requestTabs();
-  });
-
-  chrome.tabs.onRemoved.addListener(function (tabId) {
-    var result = $(".result[data-tabid=" + tabId + "]");
-    result.fadeOut();
-    if (result.hasClass("selected")) {
-      result.toggleClass("selected");
-      result.next().toggleClass("selected");
-    }
-    emptyResultsTable();
-    requestTabs();
-  });
 
   // When click on .result
   $(document).on("click", ".result", function () {
@@ -187,33 +223,7 @@ $(document).ready(function () {
     }
   });
 
-  // Toggle lock class on result rows
-  function lock(result) {
-    var tabId = tabIdOfResult(result);
-    var isLocked = $(result).hasClass("locked");
-    var newState = isLocked ? "unlocked" : "locked";
-    addOrRemove(lockedTabIds, tabId);
-    $(result).removeClass("locked unlocked");
-    $(result).addClass(newState);
-    /*chrome.tabs.sendMessage(
-      tabId,
-      { msg: newState, bool: !isLocked },
-      function (responseObject) {
-        $(result).removeClass("locked unlocked");
-        $(result).addClass(newState);
-      }
-    );*/
-  }
-
-  function addOrRemove(array, item) {
-    const index = array.indexOf(item);
-    if (index > -1) {
-      array.splice(index, 1);
-    } else {
-      array.push(item);
-    }
-  }
-
+  // When click on lock icon
   $(document).on("click", ".result .lock-toggle i", function (e) {
     var result = $(this).closest(".result")[0];
     lock(result);
@@ -241,20 +251,60 @@ $(document).ready(function () {
     }
   });
 
+  var searchterm = "";
   // Filter results by search
-  $("#searchbox").on("keyup", function () {
-    var searchterm = "";
-    // get the value currently in searchbox
-    searchterm = $(this).val().toLowerCase();
-    // Filter the results
-    $(".result").filter(function () {
-      $(this).toggle($(this).text().toLowerCase().indexOf(searchterm) > -1);
-    });
-    //Re-set the selected result
-    if ($(".selected").first().is(":hidden") || !$(".selected").length) {
-      changeSelectedRowTo($(".result:visible").first());
+  $("#searchbox").on("keyup", function (e) {
+    var code = e.keyCode || e.which;
+    if (code == 37 || code == 38 || code == 39 || code == 40) {
+    } else {
+      // get the value currently in searchbox
+      searchterm = $(this).val().toLowerCase();
+      // Filter the results
+      filterMatchCriteria(".result");
+      //Re-set the selected result
+      if ($(".selected").first().is(":hidden") || !$(".selected").length) {
+        changeSelectedRowTo($(".result:visible").first());
+      }
     }
   });
+
+  // Filter results by dropdown
+  $("#search-filter").change(function () {
+    const val = $(this).val();
+    filterMatchCriteria(".result");
+  });
+
+  function filterMatchCriteria(selector) {
+    $(selector).filter(function () {
+      $(this).toggle(
+        matchSelectCriteria(
+          this,
+          $("#search-filter").val(),
+          matchSearchTerm(this, searchterm)
+        )
+      );
+    });
+  }
+
+  function matchSearchTerm(result, value, otherCriteria = true) {
+    return $(result).text().toLowerCase().indexOf(value) > -1 && otherCriteria;
+  }
+
+  function matchSelectCriteria(result, value, otherCriteria = true) {
+    const isClosed = $(result).data("closed");
+    switch (value) {
+      case "All tabs":
+        return true && otherCriteria;
+      case "Open tabs":
+        return !isClosed && otherCriteria;
+      case "Closed tabs":
+        return isClosed && otherCriteria;
+      case "Locked tabs":
+        return lockedTabIds.includes(tabIdOfResult(result)) && otherCriteria;
+      case "Unlocked tabs":
+        return !lockedTabIds.includes(tabIdOfResult(result)) && otherCriteria;
+    }
+  }
 
   // Click Pause
   $("#pause-button").on("click", function (e) {
@@ -321,4 +371,35 @@ $(document).ready(function () {
   $("#search-filter").change(function () {
     $("#searchbox").focus();
   });
+
+  chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
+    emptyResultsTable();
+    requestTabs();
+  });
+
+  chrome.tabs.onRemoved.addListener(function (tabId) {
+    var result = $(".result[data-tabid=" + tabId + "]");
+    result.fadeOut();
+    if (result.hasClass("selected")) {
+      result.toggleClass("selected");
+      result.next().toggleClass("selected");
+    }
+    emptyResultsTable();
+    requestTabs();
+  });
+
+  chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
+    switch (obj.msg) {
+      case "tab_locked": {
+        if (obj.data.length != lockedTabIds.length) {
+          lockedTabIds = obj.data;
+          emptyResultsTable();
+          displayTabRows([openTabs, closedTabs]);
+        }
+        break;
+      }
+    }
+  });
+
+  requestTabs();
 });

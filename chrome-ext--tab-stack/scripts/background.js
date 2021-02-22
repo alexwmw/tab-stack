@@ -1,4 +1,5 @@
 const openTabs = {};
+var lockedTabIds = [];
 
 function logTabLengths() {
   console.log("open tabs: " + Object.keys(openTabs).length);
@@ -28,7 +29,6 @@ class ClosedTab {
     if (removedTab) {
       this.tabs[tabId] = new ClosedTab(removedTab);
       console.log("Added to ClosedTab.tabs: " + this.tabs[tabId].url);
-      logTabLengths();
     }
     this.closedBy = "user";
   }
@@ -72,45 +72,59 @@ function updateOpenTabs() {
     for (const tab of tabs) {
       openTabs[tab.id] = tab;
     }
-    logTabLengths();
   });
 }
 
 // Add Listeners - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
-  if (obj.msg == "request_tabs") {
-    sendResponse({
-      msg: "data sent from bg page",
-      openTabData: openTabs,
-      closedTabsData: ClosedTab.tabs,
-    });
-  } else if (obj.msg == "resurrect") {
-    ClosedTab.tabs[obj.tabId].resurrect();
-    sendResponse({});
+  switch (obj.msg) {
+    case "request_tabs":
+      sendResponse({
+        msg: "data sent from bg page",
+        openTabData: openTabs,
+        closedTabsData: ClosedTab.tabs,
+        lockedTabIdsData: lockedTabIds,
+      });
+      break;
+    case "resurrect":
+      ClosedTab.tabs[obj.tabId].resurrect();
+      sendResponse({});
+      break;
+    case "request_locked_tabs":
+      sendResponse({
+        msg: "lockedTabIds",
+        data: lockedTabIds,
+      });
+      break;
+    case "tab_locked":
+      lockedTabIds = obj.data;
+      chrome.runtime.sendMessage({
+        msg: "tab_locked",
+        data: lockedTabIds,
+      });
+      break;
   }
 });
 
 chrome.tabs.onCreated.addListener(function (tab) {
   updateOpenTabs();
-  logTabLengths();
   //ClosedTab.onCreated(tabId);
   // if id in Closedtab.tabs keys => remove from closed tabs
 });
 
 chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
   console.log;
-  //if (info.status === "complete") {
   updateOpenTabs();
-  logTabLengths();
+
   //}
 });
 
 chrome.tabs.onRemoved.addListener(function (tabId) {
   ClosedTab.onRemoved(tabId);
   delete openTabs[tabId];
+
   updateOpenTabs();
-  logTabLengths();
 });
 
 // Main  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

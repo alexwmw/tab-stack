@@ -4,71 +4,57 @@
     <script type="text/javascript" src="../scripts/jquery-3.4.1.js"></script>
     <script type="text/javascript" src="../scripts/psl.min.js"></script>
     <script type="text/javascript" src="../scripts/search.js"></script>
-    <link rel="stylesheet" href="../styles/common.css"></link>
-    <link rel="stylesheet" href="../styles/search.css"></link>
-    <link rel="stylesheet" href="../fonts/font-awesome/css/all.css">
+    <link rel="stylesheet" href="../styles/common.css" />
+    <link rel="stylesheet" href="../styles/search.css" />
+    <link rel="stylesheet" href="../fonts/font-awesome/css/all.css" />
   </head>
   <body>
-        <div id="searchcontainer">
-            <div id="close-button"><i class="fas fa-times"></i></div>
-            <span id="pseudosearchbox"><i class="fas fa-search"></i></span>
-            <input autofocus value="" type="text" id="searchbox" placeholder="Search">
-            <select id="search-filter">
-                <option>All tabs</option>
-                <option>Open tabs</option>
-                <option>Closed tabs</option>
-            </select>
-        </div>
-        <div id="results-area">
-            <div id='no-results'><p>No Results</p></div>
-            <table id="results-table">
-                <colgroup>
-                    <col class="favicon">
-                    <col class="tab-details">
-                    <col class="opt1">
-                    <col class="opt2">
-                </colgroup>
-                <tbody id="results-tbody">
-                <!--tr class="result">
-                    <td><i class="fas fa-globe"></i></td>
-                    <td>
-                        <span class="tab-title">Photos - Facebook</span>
-                        <span class="tab-domain">www.facebook.com</span>
-
-                    </td>
-                    <td><i class="fas fa-unlock fa-lg"></i></td>
-                    <td><i class="fas fa-times"></i></td> 
-                </tr>
-                <tr class="result">
-                    <td><img src="/images/google.png"></td>
-                    <td>
-                        <span class="tab-title">chrome - Google Search</span>
-                        <span class="tab-domain">www.google.com</span>
-
-                    </td>
-                    <td><i class="fas fa-unlock fa-lg"></i></td>
-                    <td><i class="fas fa-times"></i></td> 
-                </tr>
-                <tr class="result">
-                    <td><img src="/images/youtube.png"></td>
-                    <td>
-                        <span class="tab-title">books - search results</span>
-                        <span class="tab-domain">www.youtube.com</span>
-
-                    </td>
-                    <td><i class="fas fa-unlock fa-lg"></i></td>
-                    <td><i class="fas fa-times"></i></td> 
-                </tr-->
-            </tbody>
-        </table>
-        </div>
-        <div class="footer">
-            <span class="footer-links" id="monitor-link"><a href="tab-history.html">
-                <i  class="fas fa-angle-double-left"></i> Expand</a></span>
-            <span class="footer-links" id="settings-link"><a href="settings.html">
-                <i class="fas fa-wrench"></i> Settings</a></span>
-                    <span class="footer-links" ><a data-paused="true" id="pause-button" href="">
-                    <i  class="fas fa-pause"></i> Pause</a></span>
-        </div>
+    <div id="searchcontainer">
+      <div id="close-button"><i class="fas fa-times"></i></div>
+      <span id="pseudosearchbox"><i class="fas fa-search"></i></span>
+      <input
+        autofocus
+        value=""
+        type="text"
+        id="searchbox"
+        placeholder="Search"
+      />
+      <select id="search-filter">
+        <option>All tabs</option>
+        <option>Open tabs</option>
+        <option>Closed tabs</option>
+        <option>Locked tabs</option>
+        <option>Unlocked tabs</option>
+      </select>
+    </div>
+    <div id="results-area">
+      <div id="no-results"><p>No Results</p></div>
+      <table id="results-table">
+        <colgroup>
+          <col class="favicon" />
+          <col class="tab-details" />
+          <col class="opt1" />
+          <col class="opt2" />
+        </colgroup>
+        <tbody id="results-tbody"></tbody>
+      </table>
+    </div>
+    <div class="footer">
+      <span class="footer-links" id="monitor-link"
+        ><a href="tab-history.html">
+          <i class="fas fa-angle-double-left"></i> Expand</a
+        ></span
+      >
+      <span class="footer-links" id="settings-link"
+        ><a href="settings.html">
+          <i class="fas fa-wrench"></i> Settings</a
+        ></span
+      >
+      <span class="footer-links"
+        ><a data-paused="true" id="pause-button" href="">
+          <i class="fas fa-pause"></i> Pause</a
+        ></span
+      >
+    </div>
   </body>
 </html>
