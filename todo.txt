@@ -1,0 +1,27 @@
+- Fix school issue
+
+- Remove 'Expand'
+
+- Add timer to each tab that restarts when tab made active
+
+- Add visible timer to each result
+
+- Sort Ctrl+Shift+T issue
+
+- Make settings work
+
+- Remember last filter selection
+
+- Make settings persistent over time
+
+- Add keyboard shortcuts:
+
+ -- cmd + shift + L = Lock/Unlock selected tab
+
+ -- cmd + shift + O = Filter Open Tabs
+
+ -- cmd + shift + C = Filter Closed Tabs
+
+ -- cmd + shift + A = Filter All Tabs
+
+ -- cmd + shift + backspace = remove tab

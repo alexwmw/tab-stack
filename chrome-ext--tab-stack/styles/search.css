@@ -85,37 +85,30 @@ i.fa-times {
   cursor: pointer;
 }
 /* icon */
-.selected i.fa-times {
+
+/* icon */
+.result:hover i.fa-times {
   visibility: visible;
   animation: fadeIn ease 0.5s;
 }
+
 /* icon */
 .result:hover i.fa-times {
   visibility: visible;
   animation: fadeIn ease 0.5s;
 }
 /* icon */
-.selected i.fa-times {
-  visibility: visible;
-  animation: fadeIn ease 0.5s;
-}
-/* icon */
-.result:hover i.fa-times {
-  visibility: visible;
-  animation: fadeIn ease 0.5s;
-}
-/* icon */
-.ts-icon{
+.ts-icon {
   text-align: left;
-  color:darkgrey;
+  color: darkgrey;
 }
 /* icon */
-.selected .ts-icon{
+.selected .ts-icon {
   color: var(--text);
 }
 /* icon */
-.result:hover .ts-icon{
-  color:var(--text);
+.result:hover .ts-icon {
+  color: var(--text);
 }
 /* results */
 #no-results {
@@ -210,16 +203,29 @@ td:nth-child(4) {
   height: 56px;
   color: var(--charcoal);
 }
-.result[data-closed="true"]{
-  background-color: papayawhip;
+.result[data-closed="true"] {
+  position: relative;
+}
+.result[data-closed="true"] td:nth-child(2)::before {
+  content: "";
+  text-indent: 9px;
+  font-size: 4pt;
+  display: inline-block;
+  background-color: tan;
+  position: absolute;
+  z-index: 1000;
+  left: -37px;
+  top: 1px;
+  width: 1px;
+  height: 54px;
 }
 /* result rows */
 .result.selected {
   background-color: var(--tertiary);
 }
 /* result rows */
-.result.locked:not(.selected) {
-  background-color: gainsboro;
+.result.locked .tab-title {
+  font-weight: bold;
 }
 /* result rows */
 .result:hover:not(.selected) {
@@ -316,21 +322,21 @@ td:nth-child(4) {
 }
 /* tag */
 .tag-active::before {
-  content: "Active";
+  content: "active";
   color: white;
   background-color: var(--primary);
 }
 /* tag */
 .tag-otherwindow::before {
-  content: "_Window ";
+  content: "alt-win ";
   color: darkgreen;
   background-color: white;
 }
 /* tag */
 .tag-closed::before {
-  content: "Stacked";
-  color: white;
-  background-color: var(--secondary);
+  content: "closed";
+  color: tan;
+  background-color: white;
 }
 /* tooltip */
 i:after {
@@ -420,7 +426,6 @@ td.cant-lock .fa-lock:after {
 .fa-times:after {
   content: "Close tab";
 }
-.ts-icon:after{
-  content:"Hellow";
+.ts-icon:after {
+  content: "Hellow";
 }
-

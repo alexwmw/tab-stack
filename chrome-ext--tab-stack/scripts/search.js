@@ -1,7 +1,10 @@
 $(document).ready(function () {
+  // Variables --------------------------------------------------------------
   var openTabs = {};
   var closedTabs = {};
   var lockedTabIds = [];
+
+  // Constant = () =>  ------------------------------------------------------
 
   const element = (type) => document.createElement(type);
 
@@ -43,6 +46,31 @@ $(document).ready(function () {
     }
   };
 
+  // Functions ----------------------------------------------------------------------
+
+  function updateAllResults() {
+    chrome.runtime.sendMessage(
+      { msg: "request_tabs" },
+      function (responseObject) {
+        openTabs = responseObject.openTabData;
+        closedTabs = responseObject.closedTabsData;
+        lockedTabIds = responseObject.lockedTabIdsData;
+        applyTags([
+          [{ active: true }, "tag-active"],
+          [{ currentWindow: false }, "tag-otherwindow"],
+        ]);
+        emptyResultsTable();
+        displayTabRows([openTabs, closedTabs]);
+        lockIfLocked(".result");
+        filterMatchCriteria(".result");
+        changeSelectedRowTo($(".result:visible").first());
+        ifNoResults();
+      }
+    );
+  }
+
+  // Table / Table Rows / Results
+
   function displayTabRows(objList) {
     for (tabsObj of objList) {
       const tbody = $("#results-tbody");
@@ -51,10 +79,6 @@ $(document).ready(function () {
       tbody.detach();
       tbody.append(...tabs.map(createResultRow));
       table.append(tbody);
-      lockIfLocked(".result");
-      $.each($(".result"), (index, result) => {});
-      filterMatchCriteria(".result");
-      changeSelectedRowTo($(".result:visible").first());
     }
   }
 
@@ -101,13 +125,12 @@ $(document).ready(function () {
     info.append(title, url);
     row.append(favicon, info, icon0, icon1);
     row.classList.add(lockedTabIds.includes(tab.id) ? "locked" : "unlocked");
-
     if (isChrome) {
       fav_img.setAttribute("src", "/images/blue-chrome-icon-2.jpg");
       url.textContent = "chrome://" + parsedUrl;
-      if (!isClosed) {
-        icon0.classList.add("cant-lock");
-      }
+      //if (!isClosed) {
+      //  icon0.classList.add("cant-lock");
+      //}
     }
     if (isClosed) {
       url.classList.add("tag-closed");
@@ -118,16 +141,22 @@ $(document).ready(function () {
     return row;
   }
 
-  function changeSelectedRowTo(selection) {
+  function changeSelectedRowTo(resultRow) {
     $(".selected").removeClass("selected");
-    selection.addClass("selected");
+    resultRow.addClass("selected");
   }
 
+  function ifNoResults() {
+    $("#no-results").toggle(!$(".result:visible").length);
+  }
+
+  // Locking ----------------------------
+
   // Toggle lock class on result rows
-  function lock(result) {
-    const tabId = tabIdOfResult(result);
-    const newState = $(result).hasClass("locked") ? "unlocked" : "locked";
-    $(result).removeClass("locked unlocked").addClass(newState);
+  function lock(resultRow) {
+    const tabId = tabIdOfResult(resultRow);
+    const newState = $(resultRow).hasClass("locked") ? "unlocked" : "locked";
+    $(resultRow).removeClass("locked unlocked").addClass(newState);
     chrome.runtime.sendMessage(
       {
         msg: "request_locked_tabs",
@@ -153,34 +182,7 @@ $(document).ready(function () {
     });
   }
 
-  /*chrome.tabs.sendMessage(
-      tabId,
-      { msg: newState, bool: !isLocked },
-      function (responseObject) {
-        $(result).removeClass("locked unlocked");
-        $(result).addClass(newState);
-      }
-      );*/
-
-  // Events & Chrome - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  // request tabs
-  function requestTabs() {
-    chrome.runtime.sendMessage(
-      { msg: "request_tabs" },
-      function (responseObject) {
-        openTabs = responseObject.openTabData;
-        closedTabs = responseObject.closedTabsData;
-        lockedTabIds = responseObject.lockedTabIdsData;
-        applyTags([
-          [{ active: true }, "tag-active"],
-          [{ currentWindow: false }, "tag-otherwindow"],
-        ]);
-        emptyResultsTable();
-        displayTabRows([openTabs, closedTabs]);
-      }
-    );
-  }
+  // Tagging ------------------------------------
 
   function queryAndTag(queryObj, tagClass) {
     chrome.tabs.query(queryObj, function (tabs) {
@@ -199,6 +201,44 @@ $(document).ready(function () {
     }
   }
 
+  // Filtering & Matching --------------------------------------
+
+  function filterMatchCriteria(selector) {
+    $(selector).filter(function () {
+      $(this).toggle(
+        matchSelectCriteria(
+          this,
+          $("#search-filter").val(),
+          matchSearchTerm(this, $("#searchbox").val().toLowerCase())
+        )
+      );
+    });
+  }
+
+  function matchSearchTerm(result, value, otherCriteria = true) {
+    return $(result).text().toLowerCase().indexOf(value) > -1 && otherCriteria;
+  }
+
+  function matchSelectCriteria(result, value, otherCriteria = true) {
+    const isClosed = $(result).data("closed");
+    switch (value) {
+      case "All tabs":
+        return true && otherCriteria;
+      case "Open tabs":
+        return !isClosed && otherCriteria;
+      case "Closed tabs":
+        return isClosed && otherCriteria;
+      case "Locked tabs":
+        return lockedTabIds.includes(tabIdOfResult(result)) && otherCriteria;
+      case "Unlocked tabs":
+        return !lockedTabIds.includes(tabIdOfResult(result)) && otherCriteria;
+    }
+  }
+
+  /// MAIN -----------------------------------------------------------------------------------
+
+  // Click events ------------------------------------------
+
   // When click on .result
   $(document).on("click", ".result", function () {
     changeSelectedRowTo($(this));
@@ -212,7 +252,7 @@ $(document).ready(function () {
         chrome.tabs.get(id, function (tab) {
           chrome.windows.update(tab.windowId, { focused: true });
         });
-        requestTabs();
+        updateAllResults();
         self.close();
       }, 100);
     } else if (id in closedTabs) {
@@ -244,67 +284,19 @@ $(document).ready(function () {
     setTimeout(function () {
       chrome.tabs.remove(tabId);
     }, 300);
-
+    if ($(result).data("closed")) {
+      chrome.runtime.sendMessage(
+        { msg: "forget_closed_tab", data: tabId },
+        function (responseObject) {
+          //closedTabs = responseObject.closedTabs;
+        }
+      );
+    }
     if (result.hasClass("selected")) {
       result.toggleClass("selected");
       result.next().toggleClass("selected");
     }
   });
-
-  var searchterm = "";
-  // Filter results by search
-  $("#searchbox").on("keyup", function (e) {
-    var code = e.keyCode || e.which;
-    if (code == 37 || code == 38 || code == 39 || code == 40) {
-    } else {
-      // get the value currently in searchbox
-      searchterm = $(this).val().toLowerCase();
-      // Filter the results
-      filterMatchCriteria(".result");
-      //Re-set the selected result
-      if ($(".selected").first().is(":hidden") || !$(".selected").length) {
-        changeSelectedRowTo($(".result:visible").first());
-      }
-    }
-  });
-
-  // Filter results by dropdown
-  $("#search-filter").change(function () {
-    const val = $(this).val();
-    filterMatchCriteria(".result");
-  });
-
-  function filterMatchCriteria(selector) {
-    $(selector).filter(function () {
-      $(this).toggle(
-        matchSelectCriteria(
-          this,
-          $("#search-filter").val(),
-          matchSearchTerm(this, searchterm)
-        )
-      );
-    });
-  }
-
-  function matchSearchTerm(result, value, otherCriteria = true) {
-    return $(result).text().toLowerCase().indexOf(value) > -1 && otherCriteria;
-  }
-
-  function matchSelectCriteria(result, value, otherCriteria = true) {
-    const isClosed = $(result).data("closed");
-    switch (value) {
-      case "All tabs":
-        return true && otherCriteria;
-      case "Open tabs":
-        return !isClosed && otherCriteria;
-      case "Closed tabs":
-        return isClosed && otherCriteria;
-      case "Locked tabs":
-        return lockedTabIds.includes(tabIdOfResult(result)) && otherCriteria;
-      case "Unlocked tabs":
-        return !lockedTabIds.includes(tabIdOfResult(result)) && otherCriteria;
-    }
-  }
 
   // Click Pause
   $("#pause-button").on("click", function (e) {
@@ -315,6 +307,20 @@ $(document).ready(function () {
     $("#pause-button").text(paused ? " Continue" : " Pause");
     $("#pause-button").prepend(paused ? playIcon : pauseIcon);
     $("#pause-button").data("paused", !paused);
+  });
+
+  // Key / Input / Selection events ------------------------------------------
+
+  $("#searchbox").on("keyup", function (e) {
+    var code = e.keyCode || e.which;
+    if (code == 37 || code == 38 || code == 39 || code == 40) {
+    } else {
+      filterMatchCriteria(".result");
+      //Re-set the selected result
+      if ($(".selected").first().is(":hidden") || !$(".selected").length) {
+        changeSelectedRowTo($(".result:visible").first());
+      }
+    }
   });
 
   //Keyup Up And Down Arrows ------------->
@@ -367,14 +373,17 @@ $(document).ready(function () {
     $("#results-area").scrollTop(y + targetY);
   });
 
-  //Search filter on change
+  // Filter results by dropdown
   $("#search-filter").change(function () {
+    const val = $(this).val();
+    filterMatchCriteria(".result");
     $("#searchbox").focus();
   });
 
+  // Chrome Events ----------------------------------------------------------
+
   chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
-    emptyResultsTable();
-    requestTabs();
+    updateAllResults();
   });
 
   chrome.tabs.onRemoved.addListener(function (tabId) {
@@ -384,22 +393,31 @@ $(document).ready(function () {
       result.toggleClass("selected");
       result.next().toggleClass("selected");
     }
-    emptyResultsTable();
-    requestTabs();
+    updateAllResults();
   });
 
   chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
     switch (obj.msg) {
-      case "tab_locked": {
+      case "tab_locked":
         if (obj.data.length != lockedTabIds.length) {
           lockedTabIds = obj.data;
-          emptyResultsTable();
-          displayTabRows([openTabs, closedTabs]);
         }
         break;
-      }
+      case "tab_forgotten":
+        closedTabs = obj.data;
+        break;
     }
+    applyTags([
+      [{ active: true }, "tag-active"],
+      [{ currentWindow: false }, "tag-otherwindow"],
+    ]);
+    emptyResultsTable();
+    displayTabRows([openTabs, closedTabs]);
+    lockIfLocked(".result");
+    filterMatchCriteria(".result");
+    changeSelectedRowTo($(".result:visible").first());
+    ifNoResults();
   });
 
-  requestTabs();
+  updateAllResults();
 });

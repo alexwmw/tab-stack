@@ -32,6 +32,11 @@ class ClosedTab {
     }
     this.closedBy = "user";
   }
+
+  forget() {
+    delete ClosedTab.tabs[this.id];
+  }
+
   resurrect() {
     const details = {
       active: true,
@@ -104,6 +109,15 @@ chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
         data: lockedTabIds,
       });
       break;
+    case "forget_closed_tab":
+      delete ClosedTab.tabs[obj.data];
+      //sendResponse({
+      //  closedTabs: ClosedTab.tabs,
+      //});
+      chrome.runtime.sendMessage({
+        msg: "tab_forgotten",
+        data: ClosedTab.tabs,
+      });
   }
 });
 
@@ -123,7 +137,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
 chrome.tabs.onRemoved.addListener(function (tabId) {
   ClosedTab.onRemoved(tabId);
   delete openTabs[tabId];
-
+  lockedTabIds = lockedTabIds.filter((item) => item != tabId);
   updateOpenTabs();
 });
 
