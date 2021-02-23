@@ -114,8 +114,8 @@ html {
 .grey {
   color: lightgrey;
 }
-.group-tabs-dependent > td > select {
-  width: 100%;
+.grey input {
+  background-color: whitesmoke !important;
 }
 #list-button-view {
   height: 100%;
