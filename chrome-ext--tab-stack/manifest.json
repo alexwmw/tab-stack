@@ -1,6 +1,6 @@
 {
   "name": "tab stack",
-  "version": "0.3.3",
+  "version": "0.4",
   "description": "Arranges your tabs into groups, closes tabs you don't need and makes it easy to restore closed tabs.",
   "permissions": ["tabs"],
   "background": {

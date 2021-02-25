@@ -1,18 +1,27 @@
-- Fix school issue
+--------------------------------------------Fix scroll issue
 
-- Remove 'Expand'
+--------------------------------------------Remove 'Expand'
 
-- Add timer to each tab that restarts when tab made active
+--------------------------------------------Add timer to each tab that restarts when tab made active
 
-- Add visible timer to each result
+--------------------------------------------Remember last filter selection
+
+--------------------------------------------Check is closed tag > 1 hour works
+
+--------------------------------------------Show timer in time :before class
 
 - Sort Ctrl+Shift+T issue
 
+- Sort tabs by: closed-> time closed
+
+- Remove time from pinned
+
 - Make settings work
 
-- Remember last filter selection
-
 - Make settings persistent over time
+
+- Add popup on each page --'Tab Stack: Locked!
+
 
 - Add keyboard shortcuts:
 

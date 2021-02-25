@@ -3,6 +3,7 @@ $(document).ready(function () {
   var openTabs = {};
   var closedTabs = {};
   var lockedTabIds = [];
+  var settings = {};
 
   // Constant = () =>  ------------------------------------------------------
 
@@ -27,7 +28,7 @@ $(document).ready(function () {
       ? tab.url.substring(0, tab.url.indexOf(":"))
       : false;
 
-  const tabIdOfResult = (result) => Number(result.getAttribute("data-tabid"));
+  const tabIdOf = (result) => Number(result.getAttribute("data-tabid"));
 
   const urlParse = (url) =>
     url.substring(
@@ -57,14 +58,12 @@ $(document).ready(function () {
         lockedTabIds = responseObject.lockedTabIdsData;
         applyTags([
           [{ active: true }, "tag-active"],
-          [{ currentWindow: false }, "tag-otherwindow"],
+          [{ pinned: true }, "tag-pinned"],
         ]);
         emptyResultsTable();
         displayTabRows([openTabs, closedTabs]);
         lockIfLocked(".result");
         filterMatchCriteria(".result");
-        changeSelectedRowTo($(".result:visible").first());
-        ifNoResults();
       }
     );
   }
@@ -96,10 +95,16 @@ $(document).ready(function () {
     const icon1 = isClosedTab(tab)
       ? elementOfClass("td", "forget-x")
       : elementOfClass("td", "close-x");
-    const appendage0 = isClosedTab(tab)
-      ? ""
-      : elementOfClasses("i", ["fas", "fa-lock"]);
-    icon0.append(appendage0);
+
+    icon0.append(
+      isClosedTab(tab)
+        ? ""
+        : elementOfClasses("i", [
+            "fas",
+            "fa-lock",
+            tab.audible ? "fa-volume-up" : null,
+          ])
+    );
     icon1.append(elementOfClasses("i", ["fas", "fa-times"]));
     return [icon0, icon1];
   }
@@ -115,14 +120,16 @@ $(document).ready(function () {
     const info = elementOfClass("td", "tab-info");
     const title = elementOfClass("span", "tab-title");
     const url = elementOfClass("span", "tab-domain");
+    const timer = elementOfClass("div", "timer");
     const icon0 = createRowIcons(tab)[0];
     const icon1 = createRowIcons(tab)[1];
     url.textContent = parsedUrl;
     title.textContent = tab.title;
+    timer.innerText = " ";
     fav_img.setAttribute("src", tab.favIconUrl);
     favicon.append(!tab.favIconUrl && !isChrome ? globe : fav_img);
-    title.append(element("br"));
     info.append(title, url);
+    info.prepend(timer);
     row.append(favicon, info, icon0, icon1);
     row.classList.add(lockedTabIds.includes(tab.id) ? "locked" : "unlocked");
     if (isChrome) {
@@ -133,12 +140,34 @@ $(document).ready(function () {
       //}
     }
     if (isClosed) {
-      url.classList.add("tag-closed");
+      url.classList;
+      const closedTag = elementOfClass("span", "closed-tag");
+      const timeInMins = Math.round(
+        (parseInt(Date.now()) - tab.timeClosed) / 100000
+      );
+      const timeStr =
+        timeInMins < 60
+          ? timeInMins + " min ago"
+          : Math.round(timeInMins / 60) + " hrs ago";
+      $(closedTag).text("closed " + timeStr);
+      $(url).prepend(closedTag);
     }
-    row.setAttribute("data-closed", isClosed);
-    row.setAttribute("data-url", tab.url);
-    row.setAttribute("data-tabid", tab.id);
+    setAttributes(row, {
+      "data-audible": tab.audible,
+      "data-pinned": tab.pinned,
+      "data-active": tab.active,
+      "data-url": tab.url,
+      "data-tabid": tab.id,
+      "data-closed": isClosed,
+    });
+
     return row;
+  }
+
+  function setAttributes(element, obj) {
+    Object.entries(obj).forEach(([key, value]) => {
+      element.setAttribute(key, value);
+    });
   }
 
   function changeSelectedRowTo(resultRow) {
@@ -146,15 +175,15 @@ $(document).ready(function () {
     resultRow.addClass("selected");
   }
 
-  function ifNoResults() {
-    $("#no-results").toggle(!$(".result:visible").length);
+  function noResults(bool) {
+    $("#no-results").toggle(bool);
   }
 
   // Locking ----------------------------
 
   // Toggle lock class on result rows
   function lock(resultRow) {
-    const tabId = tabIdOfResult(resultRow);
+    const tabId = tabIdOf(resultRow);
     const newState = $(resultRow).hasClass("locked") ? "unlocked" : "locked";
     $(resultRow).removeClass("locked unlocked").addClass(newState);
     chrome.runtime.sendMessage(
@@ -167,6 +196,7 @@ $(document).ready(function () {
         chrome.runtime.sendMessage({
           msg: "tab_locked",
           data: lockedTabIds,
+          id: tabId,
         });
       }
     );
@@ -175,20 +205,19 @@ $(document).ready(function () {
   // Apply lock to locked rows
   function lockIfLocked(selector) {
     $.each($(selector), (index, element) => {
-      const tabId = tabIdOfResult(element);
+      const tabId = tabIdOf(element);
       if (lockedTabIds.includes(tabId)) {
         $(element).removeClass("unlocked").addClass("locked");
       }
     });
   }
 
-  // Tagging ------------------------------------
+  // Tagging ------------------------------------------------------------------------------------------------------------------------
 
   function queryAndTag(queryObj, tagClass) {
     chrome.tabs.query(queryObj, function (tabs) {
-      var ids = tabs.map((tab) => tab.id);
       $(".result").each(function (index, result) {
-        if (ids.includes(tabIdOfResult(result))) {
+        if (tabs.some((tab) => tab.id == tabIdOf(result))) {
           $(this).find(".tab-domain").toggleClass(tagClass);
         }
       });
@@ -201,7 +230,7 @@ $(document).ready(function () {
     }
   }
 
-  // Filtering & Matching --------------------------------------
+  // Filtering & Matching -----------------------------------------------------------------------------------------------------------------
 
   function filterMatchCriteria(selector) {
     $(selector).filter(function () {
@@ -212,6 +241,8 @@ $(document).ready(function () {
           matchSearchTerm(this, $("#searchbox").val().toLowerCase())
         )
       );
+      changeSelectedRowTo($(selector + ":visible").first());
+      noResults($(selector + ":visible").length == 0);
     });
   }
 
@@ -229,21 +260,54 @@ $(document).ready(function () {
       case "Closed tabs":
         return isClosed && otherCriteria;
       case "Locked tabs":
-        return lockedTabIds.includes(tabIdOfResult(result)) && otherCriteria;
+        return lockedTabIds.includes(tabIdOf(result)) && otherCriteria;
       case "Unlocked tabs":
-        return !lockedTabIds.includes(tabIdOfResult(result)) && otherCriteria;
+        return (
+          !isClosed && !lockedTabIds.includes(tabIdOf(result)) && otherCriteria
+        );
     }
   }
 
-  /// MAIN -----------------------------------------------------------------------------------
+  // Settings ------------------------------------------------------------------------------------------------------------------------------
 
-  // Click events ------------------------------------------
+  function setSearchFilterValue() {
+    chrome.runtime.sendMessage(
+      {
+        msg: "get_setting",
+        key: "filterSelection",
+      },
+      function (responseObject) {
+        const value = responseObject.value;
+        $("#search-filter").val(value);
+      }
+    );
+  }
+
+  function setThemeValue() {
+    chrome.runtime.sendMessage(
+      {
+        msg: "get_setting",
+        key: "theme",
+      },
+      function (responseObject) {
+        const value = responseObject.value;
+        if (value == "dark") $("#theme-switch").trigger("click");
+      }
+    );
+  }
+
+  function updateSettings() {
+    setSearchFilterValue();
+    setThemeValue();
+  }
+
+  // Click events ----------------------------------------------------------------------------------------------------------------------------
 
   // When click on .result
   $(document).on("click", ".result", function () {
     changeSelectedRowTo($(this));
     //Then Open link
-    var id = tabIdOfResult(this);
+    var id = tabIdOf(this);
     if (id in openTabs) {
       setTimeout(function () {
         // make tab active
@@ -266,8 +330,11 @@ $(document).ready(function () {
   // When click on lock icon
   $(document).on("click", ".result .lock-toggle i", function (e) {
     var result = $(this).closest(".result")[0];
-    lock(result);
     e.stopPropagation();
+    lock(result);
+    setTimeout(function () {
+      filterMatchCriteria(".result");
+    }, 100);
   });
 
   // Close tab on x
@@ -275,7 +342,7 @@ $(document).ready(function () {
     e.stopPropagation();
     var result = $(this).closest(".result");
     var tabInfo = result.find(".tab-title, .tab-domain");
-    var tabId = tabIdOfResult(result[0]);
+    var tabId = tabIdOf(result[0]);
     result.fadeOut();
     tabInfo.animate({
       paddingLeft: 100,
@@ -294,7 +361,18 @@ $(document).ready(function () {
     }
     if (result.hasClass("selected")) {
       result.toggleClass("selected");
-      result.next().toggleClass("selected");
+      result.next(":visible").toggleClass("selected");
+    }
+  });
+
+  $(document).on("mouseenter", ".result td:nth-child(3)", function (e) {
+    $(this).find("i").removeClass("fa-volume-up");
+  });
+
+  $(document).on("mouseleave", ".result td:nth-child(3)", function (e) {
+    const isAudible = $(this).closest(".result").data("audible");
+    if (isAudible) {
+      $(this).find("i").addClass("fa-volume-up");
     }
   });
 
@@ -309,78 +387,104 @@ $(document).ready(function () {
     $("#pause-button").data("paused", !paused);
   });
 
-  // Key / Input / Selection events ------------------------------------------
-
-  $("#searchbox").on("keyup", function (e) {
-    var code = e.keyCode || e.which;
-    if (code == 37 || code == 38 || code == 39 || code == 40) {
-    } else {
-      filterMatchCriteria(".result");
-      //Re-set the selected result
-      if ($(".selected").first().is(":hidden") || !$(".selected").length) {
-        changeSelectedRowTo($(".result:visible").first());
-      }
-    }
+  $("#extend-button").on("click", function (e) {
+    var makeShortIcon = elementOfClasses("i", ["fas", "fa-angle-up"]);
+    var makeLongIcon = elementOfClasses("i", ["fas", "fa-angle-down"]);
+    var extended = $(this).data("extended");
+    e.preventDefault();
+    $("html").toggleClass("extended");
+    $(".tab-title").toggleClass("ttextended");
+    $(this).text(extended ? " Expand" : " Shrink");
+    $(this).prepend(extended ? makeLongIcon : makeShortIcon);
+    $(this).data("extended", !extended);
   });
 
-  //Keyup Up And Down Arrows ------------->
-  $(document).keyup(function (e) {
-    if ($(e.target).closest("#search-filter")[0]) {
-      return;
-    }
-    var element = $(".selected").first();
-    var y = $("#results-area").scrollTop();
-    // target one row up (-52) or down (52) or target no distance
-    var targetY = $(element).is(".result:visible:nth-child(n+5)")
-      ? 56
-      : $(element).is(".result:visible:nth-last-child(n+5)")
-      ? -56
-      : 0;
-    // downKey
-    if (e.which == 40) {
-      e.preventDefault();
-      element = $(".selected").first();
-      $(".result").removeClass("selected");
-      element.nextAll(".result").not(":hidden").first().addClass("selected");
-    }
-    // upkey
-    if (e.which == 38) {
-      e.preventDefault();
-      element = $(".selected").first();
-      $(".result").removeClass("selected");
-      element
-        .prevAll(".result:visible")
-        .not(":hidden")
-        .first()
-        .addClass("selected");
-    }
-    var lastRes = $(".result:visible").last();
-    var firstRes = $(".result:visible").first();
-
-    if (element.is(lastRes) && e.which == 40) {
-      $(".result").removeClass("selected");
-      firstRes.addClass("selected");
-      targetY = $(".result:visible").length * -45;
-    } else if (element.is(firstRes) && e.which == 38) {
-      $(".result").removeClass("selected");
-      lastRes.addClass("selected");
-      targetY = $(".result:visible").length * 45;
-    }
-    //enter or space
-    if (e.which == 32 || e.which == 13) {
-      element.trigger("click");
-    }
-    $("#results-area").scrollTop(y + targetY);
+  //Click theme switch
+  $("#theme-switch").on("click", function (e) {
+    e.preventDefault();
+    $(this).find("i").toggleClass("fa-sun fa-moon");
+    $("body").toggleClass("dark");
+    const theme = $("body").first().hasClass("dark") ? "dark" : "light";
+    chrome.runtime.sendMessage({
+      msg: "set_setting",
+      key: "theme",
+      value: theme,
+    });
   });
 
+  // Key & Change  events --------------------------------------------------------------------------------------------------------------------
+
+  var prevVal;
   // Filter results by dropdown
   $("#search-filter").change(function () {
     const val = $(this).val();
-    filterMatchCriteria(".result");
-    $("#searchbox").focus();
+    if (val == "-> Open history ->") {
+      chrome.tabs.create({ url: "chrome://history" });
+      $(this).val(prevVal);
+    } else {
+      filterMatchCriteria(".result");
+      $("#searchbox").focus();
+      chrome.runtime.sendMessage({
+        msg: "set_setting",
+        key: "filterSelection",
+        value: val,
+      });
+      prevVal = val;
+    }
   });
 
-  // Chrome Events ----------------------------------------------------------
+  // Filter results by search box
+  $("#searchbox").on("keyup", function (e) {
+    var code = e.keyCode || e.which;
+    if (code != 37 && code != 38 && code != 39 && code != 40) {
+      filterMatchCriteria(".result");
+    }
+  });
+
+  // Keyup Up And Down Arrows -------------
+  $(document).keyup(function (e) {
+    var row = $(".selected").first();
+    var rowUp = row.prevAll("tr").first(":visible");
+    var rowDown = row.nextAll("tr").first(":visible");
+    var firstRow = $("tr:visible").first();
+    var lastRow = $("tr:visible").last();
+
+    if ($(e.target).closest("#search-filter")[0]) {
+      return;
+    }
+    switch (e.which) {
+      // downKey
+      case 40:
+        e.preventDefault();
+        filterMatchCriteria(".result");
+        changeSelectedRowTo(row[0] == lastRow[0] ? firstRow : rowDown);
+        break;
+      // upkey
+      case 38:
+        e.preventDefault();
+        filterMatchCriteria(".result");
+        changeSelectedRowTo(row[0] == firstRow[0] ? lastRow : rowUp);
+        break;
+      // space, enter
+      case 13:
+      case 32:
+        element.trigger("click");
+        break;
+    }
+  });
+
+  // Scroll into view
+  $(document).keyup(function (e) {
+    $(".selected")[0].scrollIntoView(false);
+  });
+
+  // Shortcuts
+  $(document).keyup(function (e) {});
+
+  // Shortcuts
+  $(document).keyup(function (e) {});
+
+  // Chrome Listeners --------------------------------------------------------------------------------------------------------------------------
 
   chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
     updateAllResults();
@@ -396,28 +500,43 @@ $(document).ready(function () {
     updateAllResults();
   });
 
-  chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
-    switch (obj.msg) {
-      case "tab_locked":
-        if (obj.data.length != lockedTabIds.length) {
-          lockedTabIds = obj.data;
-        }
-        break;
-      case "tab_forgotten":
-        closedTabs = obj.data;
-        break;
-    }
-    applyTags([
-      [{ active: true }, "tag-active"],
-      [{ currentWindow: false }, "tag-otherwindow"],
-    ]);
-    emptyResultsTable();
-    displayTabRows([openTabs, closedTabs]);
-    lockIfLocked(".result");
-    filterMatchCriteria(".result");
-    changeSelectedRowTo($(".result:visible").first());
-    ifNoResults();
-  });
+  // Intervals --------------------------------------------------------------------------------------------------------------------------------
 
+  window.setInterval(function () {
+    $('.result[data-closed="false"]').each(function (index, result) {
+      const timer = $(result).find(".timer")[0];
+      const tabId = tabIdOf(result);
+      chrome.runtime.sendMessage(
+        { msg: "request_times", id: tabId },
+        function (responseObject) {
+          const time = responseObject.times;
+          const mins = Math.floor(time / 60);
+          const secs = time - mins * 60;
+          timer.innerText = mins + ":" + secs;
+        }
+      );
+    });
+  }, 1000);
+
+  window.setInterval(function () {
+    $('.result[data-closed="true"]').each(function (index, element) {
+      var tab = closedTabs[tabIdOf(element)];
+      const timeInMins = Math.round(
+        (parseInt(Date.now()) - tab.timeClosed) / 100000
+      );
+      const timeStr =
+        timeInMins < 60
+          ? timeInMins + " min ago"
+          : Math.round(timeInMins / 60) + " hrs ago";
+      $(element)
+        .find(".closed-tag")
+        .text("closed " + timeStr);
+    });
+
+    /// call your function here
+  }, 60000);
+
+  /// MAIN ----------------------------------------------------------------------------------------------------------------------------------
+  updateSettings();
   updateAllResults();
 });

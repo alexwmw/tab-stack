@@ -10,6 +10,10 @@ html {
   height: var(--html-height);
   width: var(--html-width);
 }
+.extended{
+  height: 504px;
+  width: 400px;
+}
 body {
   height: 100%;
   width: 100%;
@@ -20,7 +24,7 @@ body {
   background-color: var(--background);
   overflow: hidden;
 }
-/* animation */
+/* animation 
 @keyframes fadeIn {
   0% {
     opacity: 0;
@@ -29,13 +33,43 @@ body {
     opacity: 1;
   }
 }
-/* animation */
+/* animation 
 @keyframes fadeOut {
   0% {
     opacity: 1;
   }
   100% {
     opacity: 0;
+  }
+}
+ animation */
+@keyframes hoverToBackground {
+  0% {
+    color: var(--hover);
+    -webkit-text-stroke-color: var(--hover);
+  }
+  100% {
+    color: var(--unlocked);
+    -webkit-text-stroke-color: grey;
+  }
+}
+@keyframes hoverToText {
+  0% {
+    color: var(--hover);
+  }
+  100% {
+    color: var(--text);
+  }
+}
+
+@keyframes selectedToWhite{
+  0% {
+    color: var(--secondary-lighter);
+    -webkit-text-stroke-color: var(--secondary-lighter);
+  }
+  100% {
+    color: white;
+    -webkit-text-stroke-color: var(--text);
   }
 }
 /* animation */
@@ -50,73 +84,81 @@ body {
     opacity: 0.9;
   }
 }
-/* icon */
-.result i.fa-lock {
-  color: whitesmoke;
+/* lock icon */
+i.fa-lock:not(.fa-volume-up) {
+  color: var(--unlocked);
   visibility: hidden;
   cursor: pointer;
+  -webkit-text-stroke-width: 0.9px;
+  -webkit-text-stroke-color: grey;
 }
-.result td.cant-lock i.fa-lock {
+i.fa-volume-up{
+  font-size: 0.85em;
+  margin:0;
+  padding:0;
+}
+/* lock icon SELECTED */
+.selected i.fa-lock:not(.fa-volume-up) {
+  visibility: visible;
+  animation: selectedToBackground ease 0.5s;
+}
+/* lock icon LOCKED */
+.result.locked i.fa-lock:not(.fa-volume-up) {
+  color: var(--locked);
+  cursor: pointer;
+  visibility: visible;
+  opacity: 1;
+  -webkit-text-stroke-width: 0.5px;
+  -webkit-text-stroke-color: white;
+  padding-bottom: 2px;
+  border-bottom: 1.1px solid white;
+}
+
+/* lock icon LOCKED */
+
+/* lock icon LOCKED, HOVER */
+.result.locked:hover i.fa-lock:not(.fa-volume-up) {
+  visibility: visible;
+  animation: none;
+}
+/* lock icon HOVER, NOT-SELECTED, NOT-LOCKED  */
+.result:hover:not(.selected):not(.locked) i.fa-lock:not(.fa-volume-up) {
+  visibility: visible;
+  animation: hoverToBackground ease 0.5s;
+}
+/* lock icon CANT-LOCK */
+.result td.cant-lock i.fa-lock:not(.fa-volume-up) {
   cursor: default !important;
   display: none;
 }
-/* icon */
-.result.locked i.fa-lock {
-  color: var(--text) !important;
-  cursor: pointer;
-  visibility: visible;
-  animation: fadeIn ease 0.5s;
-}
-/* icon */
-.selected i.fa-lock {
-  color: peachpuff;
-  visibility: visible;
-  animation: fadeIn ease 0.5s;
-}
 
-/* icon */
-.result:hover i.fa-lock {
-  visibility: visible;
-  animation: fadeIn ease 0.5s;
-}
-/* icon */
+/* close icon */
 i.fa-times {
   visibility: hidden;
   cursor: pointer;
 }
-/* icon */
-
-/* icon */
-.result:hover i.fa-times {
+/* lock icon SELECTED */
+.selected i.fa-times {
   visibility: visible;
-  animation: fadeIn ease 0.5s;
+  animation: selectedToText ease 0.5s;
 }
 
-/* icon */
-.result:hover i.fa-times {
+/* close icon HOVER, NOT-SELECTED */
+.result:hover:not(.selected) i.fa-times {
   visibility: visible;
-  animation: fadeIn ease 0.5s;
+  animation: hoverToText ease 0.5s;
 }
-/* icon */
-.ts-icon {
-  text-align: left;
-  color: darkgrey;
-}
-/* icon */
-.selected .ts-icon {
-  color: var(--text);
-}
-/* icon */
-.result:hover .ts-icon {
-  color: var(--text);
-}
+
 /* results */
 #no-results {
   display: block;
   position: absolute;
   z-index: -2;
   left: 37%;
-  font-family: var(--heading-family);
+  font-family: var(--body-family);
+  font-size: 1.2em;
+  text-align: center;
+  color: var(--primary-lighter);
   display: none;
 }
 /* results */
@@ -156,7 +198,7 @@ i.fa-times {
 td {
   padding: 0 10px;
   position: relative;
-  /*border: 1px solid grey;*/
+  /*border: 1px solid darkgrey;*/
 }
 /* result cells */
 td:first-child {
@@ -181,47 +223,95 @@ td:nth-child(4) {
 .tab-title {
   display: inline-block;
   width: 218px;
-  font-size: 10pt;
+  font-size: 9.5pt;
   font-family: var(--body-family);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.ttextended{
+  width: 280px;
 }
 /* result cells */
 .tab-domain {
   display: block;
   width: 190px;
   font-family: var(--heading-family);
-  color: grey;
+  color: var(--tab-domain);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size:10.5pt
 }
 /* result rows */
 .result {
   width: 100%;
   height: 56px;
-  color: var(--charcoal);
+  color: var(--text);
 }
-.result[data-closed="true"] {
+.result[data-closed="true"]:not(.selected):not(:hover) {
   position: relative;
+  filter: saturate(0.5);
 }
-.result[data-closed="true"] td:nth-child(2)::before {
-  content: "";
+@keyframes leftBorder {
+  0% {
+    left: -90px;
+  }
+  100% {
+    left: -40px;
+  }
+}
+.timer{
+  display:none;
+}
+[data-active="true"] .timer{
+  display:none;
+}
+.result[data-closed="false"][data-active="false"][data-audible="false"]:not(.locked):hover
+  .timer {
+
+  padding-top: 1px;
   text-indent: 9px;
-  font-size: 4pt;
+  font-size: 7.5pt;
+  color: white;
+  font-family: var(--monospace);
   display: inline-block;
-  background-color: tan;
+  background-color: var(--tab-domain);
   position: absolute;
   z-index: 1000;
-  left: -37px;
-  top: 1px;
-  width: 1px;
-  height: 54px;
+  left: -40px;
+  top: 0px;
+  width: 45px;
+  height: 14px;
+  animation: leftBorder ease 0.6s;
+  opacity: 0.5;
+  border-radius: 0 0 4px 0;
 }
+.result[data-closed="false"][data-active="false"][data-audible="false"]:not(.locked).selected
+.timer{  
+/*td:nth-child(2)::before {*/
+
+  padding-top: 1px;
+  text-indent: 9px;
+  font-size: 7.5pt;
+  color: white;
+  font-family: var(--monospace);
+  display: inline-block;
+  background-color: var(--secondary);
+  position: absolute;
+  z-index: 1000;
+  left: -40px;
+  top: 0px;
+  width: 45px;
+  height: 14px;
+  animation: leftBorder ease 0.6s;
+  opacity: 0.5;
+  border-radius: 0 0 4px 0;
+}
+
 /* result rows */
 .result.selected {
-  background-color: var(--tertiary);
+  background-color: var(--secondary-lighter);
 }
 /* result rows */
 .result.locked .tab-title {
@@ -229,7 +319,7 @@ td:nth-child(4) {
 }
 /* result rows */
 .result:hover:not(.selected) {
-  background-color: lightgrey;
+  background-color: var(--hover);
 }
 /* search bar */
 #searchcontainer {
@@ -239,7 +329,6 @@ td:nth-child(4) {
   left: 0;
   right: 0;
   height: 45px;
-
   z-index: 5;
   display: block;
   background-color: none;
@@ -256,7 +345,7 @@ td:nth-child(4) {
   border: none;
   width: 10%;
   text-align: center;
-  color: var(--primary);
+  color: var(--search-icon);
   text-indent: 2px;
 }
 /* search bar */
@@ -266,6 +355,7 @@ td:nth-child(4) {
 /* search bar */
 #searchbox {
   z-index: inherit;
+  color: var(--text);
   background-color: inherit;
   padding: inherit;
   height: inherit;
@@ -284,11 +374,12 @@ td:nth-child(4) {
 #search-filter {
   position: absolute;
   display: block;
+  color: var(--text) !important;
   right: 1%;
   top: 10px;
   width: 82px;
   height: 22px;
-  background-color: lightgrey;
+  background-color: var(--hover);
   margin: 2px;
   font-size: 0.65em;
   color: var(--charcoal);
@@ -300,8 +391,7 @@ td:nth-child(4) {
 /* search bar */
 #search-filter:focus {
   outline: none;
-  background-color: #bbbbbb;
-  box-shadow: 0 0 0 1px var(--primary);
+  background-color: var(--primary-lighter);
 }
 /* search bar */
 #close-button {
@@ -312,31 +402,37 @@ td:nth-child(4) {
 /* tag */
 [class*="tag-"]::before {
   font-family: arial;
-  margin-right: 3px;
-  padding: 1px 4px;
+  margin-right: 5px;
+  padding: 1px 3px;
   font-size: 0.65em;
-  border-radius: 2px;
+  border-radius: 1px;
   content: "";
-  color: white;
+  color: var(--white);
   background-color: var(--primary);
 }
 /* tag */
 .tag-active::before {
   content: "active";
-  color: white;
-  background-color: var(--primary);
+  color: var(--white);
+  background-color: var(--active-tag);
 }
 /* tag */
 .tag-otherwindow::before {
-  content: "alt-win ";
-  color: darkgreen;
-  background-color: white;
+  content: "@window";
+  color: var(--alt-win-tag);
+  background-color: var(--white);
+}
+.tag-pinned::before {
+  content: "pinned";
+  color: var(--white);
+  background-color: orange;
 }
 /* tag */
-.tag-closed::before {
-  content: "closed";
-  color: tan;
-  background-color: white;
+.closed-tag {
+  font-family: arial;
+  margin-right: 5px;
+  font-size: 0.65em;
+  color: var(--closed-tag);
 }
 /* tooltip */
 i:after {
@@ -350,15 +446,16 @@ i:after {
   height: 15px;
   text-align: center;
   background-color: #fef4c5;
-  box-shadow: 2px 2px 5px grey;
-  color: var(--text);
+  box-shadow: 2px 2px 5px var(--shadow);
+  color: var(--charcoal);
   font-family: var(--heading-family);
   font-size: 10pt;
   border-radius: 2px;
   z-index: 999;
   animation: fadeInDelay ease 1s;
-  opacity: 0.9;
+  opacity: 0.9 !important;
 }
+/* tooltip * /
 td.ts-icon:after {
   padding: 2px;
   display: none;
@@ -370,7 +467,7 @@ td.ts-icon:after {
   height: 15px;
   text-align: center;
   background-color: #fef4c5;
-  box-shadow: 2px 2px 5px grey;
+  box-shadow: 2px 2px 5px darkgrey;
   color: var(--text);
   font-family: var(--heading-family);
   font-size: 10pt;
@@ -379,7 +476,7 @@ td.ts-icon:after {
   animation: fadeInDelay ease 1s;
   opacity: 0.9;
 }
-/* tooltip * /
+
 .tab-title:after {
   padding: 2px;
   display: none;
@@ -391,7 +488,7 @@ td.ts-icon:after {
   height: 15px;
   text-align: center;
   background-color: #fef4c5;
-  box-shadow: 2px 2px 5px grey;
+  box-shadow: 2px 2px 5px darkgrey;
   color: var(--text);
   font-family: var(--heading-family);
   font-size: 10pt;
@@ -409,10 +506,11 @@ td.cant-lock .fa-lock:after {
   content: "Lock disabled for chrome://";
   height: 40px;
 }
-/* tooltip */
+/* tooltip 
 .fa-lock:after {
+  text-shadow: none;
   content: "Toggle lock";
-}
+}*/
 /* tooltip */
 .fa-times:after {
   content: "Close tab";
@@ -421,11 +519,4 @@ td.cant-lock .fa-lock:after {
 .forget-x .fa-times:after {
   content: "Forget this tab";
   height: 25px;
-}
-/* tooltip */
-.fa-times:after {
-  content: "Close tab";
-}
-.ts-icon:after {
-  content: "Hellow";
 }

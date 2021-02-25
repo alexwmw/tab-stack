@@ -218,13 +218,7 @@ $(document).ready(function () {
 
   $("input[type='checkbox']").each(function () {
     if ($(this).is(":not(:checked)")) {
-      var dependentOnCheckbox = "." + $(this).attr("id") + "-dependent";
-      $(dependentOnCheckbox)
-        .find("input, select, button")
-        .prop("disabled", function (i, v) {
-          return !v;
-        });
-      $(dependentOnCheckbox).find("td").toggleClass("grey");
+      $(this).trigger("click");
     }
   });
 
@@ -236,6 +230,7 @@ $(document).ready(function () {
         return !v;
       });
     $(dependentOnCheckbox).find("td").toggleClass("grey");
+    $(dependentOnCheckbox).find("input").toggleClass("grey");
   });
 
   //Buttons ---------------------------------------------------------------------------------------
@@ -248,34 +243,21 @@ $(document).ready(function () {
     }
   });
 
-  /** Any element in class .change-view-button:
-					Must have a div with an id identical to id of this
-					appended with '-view'
-				
-					Must have a tab with an id identical this this
-					appended with '-tab'
-			*/
-  $(".change-view-button").click(function () {
-    var itemId = "#" + $(this).attr("id");
-    var view = itemId + "-view";
-    var tab = itemId + "-tab";
-    $('#title-border-box').hide()
-    $("#settings-view").hide();
-    $(".tab-container").children().hide();
-    $(tab + "," + view).fadeIn();
+  $("#list-button").click(function () {
+    $('#edit-list-link').trigger('click')
   });
 
   $(".exit-subsetting-view").click(function () {
     var view = $(this).closest("div[class$='-view']");
     $(".tab-container").children().show();
     $(view).hide();
-    $("#settings-view").fadeIn();
-    $('#title-border-box').slideDown()
+    $("#settings-view").show();
+    $("#title-border-box").show();
   });
 
   //Keyboard Shortcut Settings input -------------------------------------------------------------------
 
-  var osCmd = navigator.platform == "MacIntel" ? "command" : "control";
+    var osCmd = navigator.platform == "MacIntel" ? "command" : "control";
 
   $(".shortcut-input").each(function (index, element) {
     $(element).data().key
@@ -283,14 +265,21 @@ $(document).ready(function () {
       : "";
   });
 
-  $(".shortcut-row").append(
-    "<td>" +
-      '<button class="shortcut-buttons">Restore default</button>' +
-      "</td>"
-  );
-
   $(".shortcut-input").click(function () {
     this.select();
+  });
+
+  $("#dark-mode").on("click", function () {
+    $("html").addClass("dark");
+  });
+
+  $("#light-mode").on("click", function () {
+    $("html").removeClass("dark");
+  });
+
+  $("#system-mode").on("click", function () {
+    if (false) $("html").addClass("dark");
+    else $("html").removeClass("dark");
   });
 
   $(".shortcut-buttons").click(function () {
@@ -298,6 +287,10 @@ $(document).ready(function () {
     scInput.val(osCmd + " + shift + " + scInput.data("key"));
     return false;
   });
+
+  $('#chromeExt').on('click',function(){
+    chrome.tabs.create({ url: 'chrome://extensions/shortcuts'});
+  })
 
   var codeBuffer = [];
   $(".shortcut-input").keydown(function (e) {
@@ -330,150 +323,9 @@ $(document).ready(function () {
     }
   });
 
-  // Rules view - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  function createRow(size, ofClass) {
-    var row = create("tr");
-    if (ofClass) {
-      row.classList.add(ofClass);
-    }
-    for (i = 0; i < size; i++) {
-      row.append(create("td"));
-    }
-    return row;
-  }
-
-  function createRuleRow(ruleName) {
-    var row = createRow(7, "rule-row");
-    $(row)
-      .find("td:first-child")
-      .append(
-        '<label class="switch">' +
-          '<input checked type="checkbox">' +
-          '<span class="slider round"></span>' +
-          "</label>"
-      );
-    $(row).find("td:nth-child(2)").html(ruleName);
-    $(row).find("td:nth-child(3)").append("<i class='fas fa-angle-up'></i>");
-    $(row).find("td:nth-child(4)").append("<i class='fas fa-angle-down'></i>");
-    $(row).find("td:nth-child(5)").append("<i class='fas fa-pencil-alt'></i>");
-    $(row).find("td:nth-child(6)").append("<i class='fas fa-trash'></i>");
-    return row;
-  }
-
-  function createParameterRow() {
-    var row = createRow(6, "parameter-row");
-    $(row)
-      .find("td:first-child")
-      .append(
-        "<div class='and-or-switch'>" +
-          "<input type='button' class='selected' value='AND'>" +
-          "<input type='button' value='OR'>" +
-          "</div>"
-      );
-    $(row)
-      .find("td:nth-child(2)")
-      .append(
-        "<select>" +
-          "<option value='domain'>Domain name</option>" +
-          "<option value='title'>Page title</option>" +
-          "</select>"
-      );
-    $(row)
-      .find("td:nth-child(3)")
-      .append(
-        "<select>" +
-          "<option value='equals'>Equals</option>" +
-          "<option value='contains'>Contains</option>" +
-          "<option value='not-contains'>Does not contain</option>" +
-          "</select>"
-      );
-    $(row).find("td:nth-child(4)").append("<input type='text'></input>");
-    $(row).find("td:nth-child(5)").append("<i class='fas fa-trash'></i>");
-    $(row).find("td:nth-child(6)").append("<i class='fas fa-plus'></i>");
-    return row;
-  }
-
-  // Toggle AND OR
-  $(document).on("click", '.and-or-switch input[type="button"]', function (e) {
+  // Toggle OR
+  $(document).on("click", '.or-switch input[type="button"]', function (e) {
     $(e.target).parent().children().removeClass("selected");
     $(e.target).addClass("selected");
   });
-
-  // Ruls View Row icons and buttons ---------------------------------------------------------------------------------
-
-  const iconFunctions = {
-    ".fa-pencil-alt": function () {
-      $("#edit-rule-link").trigger("click");
-    },
-    ".fa-trash": function () {
-      if (confirm("Confirm delete this rule")) {
-        $(this).closest("tr").remove();
-      }
-      if (!$("#rules tr").length) {
-        $("#no-results").show();
-      }
-    },
-    ".fa-angle-up": function () {
-      // NOT WORKING
-      $(this).closest("tr").insertBefore($(this).closest("tr").prev());
-    },
-    ".fa-angle-down": function () {
-      // NOT WORKING
-      $(this).closest("tr").insertAfter($(this).closest("tr").next());
-    },
-  };
-
-  function applyClickEvents(node, obj) {
-    for (const [key, value] of Object.entries(obj)) {
-      $(node).find(key).on("click", value);
-    }
-  }
-
-  function resetParameterForm(tabl) {
-    $(tabl).find("form")[0].reset();
-    $(tabl).find("tr").remove();
-  }
-
-  $("#rules").on("DOMNodeInserted", function (e) {
-    applyClickEvents(e.target, iconFunctions);
-  });
-
-  $("#new-rule-parameters").on("DOMNodeInserted", function (e) {
-    applyClickEvents(e.target, {
-      ".fa-plus": function () {
-        $(createParameterRow()).insertAfter(e.target);
-      },
-      ".fa-trash": function () {
-        if ($("#new-rule-parameters tr").length > 1) {
-          $(this).closest("tr").remove();
-        }
-      },
-    });
-  });
-
-  // New rule modal open
-  $("#new-rule-button").on("click", function () {
-    resetParameterForm("#new-rule");
-    $("#new-rule-link").trigger("click");
-    $("#new-rule-parameters").append(createParameterRow());
-  });
-
-  // New rule modal close
-  $("#cancel-rule").on("click", function () {
-    $("#new-rule-close").trigger("click");
-  });
-
-  // Save new rule & add to table
-  $("#save-rule").on("click", function () {
-    var name = $("#new-rule-name").val();
-    $("#rules").append(createRuleRow(name));
-    $("#new-rule-close").trigger("click");
-    $("#no-results").hide();
-  });
-
-  // No results
-  if (!$("#rules tr").length) {
-    //$("#no-results").show();
-  }
 });

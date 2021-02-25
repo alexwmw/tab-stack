@@ -13,6 +13,7 @@
       <div id="close-button"><i class="fas fa-times"></i></div>
       <span id="pseudosearchbox"><i class="fas fa-search"></i></span>
       <input
+        tabindex="0"
         autofocus
         value=""
         type="text"
@@ -25,10 +26,13 @@
         <option>Closed tabs</option>
         <option>Locked tabs</option>
         <option>Unlocked tabs</option>
+        <option>-> Open history -></option>
       </select>
     </div>
     <div id="results-area">
-      <div id="no-results"><p>No Results</p></div>
+      <div id="no-results">
+        <p><i class="fas fa-frown"> </i><br />No Results<br /></p>
+      </div>
       <table id="results-table">
         <colgroup>
           <col class="favicon" />
@@ -40,19 +44,29 @@
       </table>
     </div>
     <div class="footer">
-      <span class="footer-links" id="monitor-link"
+      <!--span class="footer-links" id="monitor-link"
         ><a href="tab-history.html">
           <i class="fas fa-angle-double-left"></i> Expand</a
         ></span
-      >
+        -->
       <span class="footer-links" id="settings-link"
         ><a href="settings.html">
           <i class="fas fa-wrench"></i> Settings</a
         ></span
       >
       <span class="footer-links"
+        ><a id="theme-switch" href="">
+          <i class="fas fa-sun"></i> Theme</a
+        ></span
+      >
+      <span class="footer-links"
         ><a data-paused="true" id="pause-button" href="">
           <i class="fas fa-pause"></i> Pause</a
+        ></span
+      >
+      <span class="footer-links"
+        ><a data-extended="false" id="extend-button" href="">
+          <i class="fas fa-angle-down"></i> Extend</a
         ></span
       >
     </div>

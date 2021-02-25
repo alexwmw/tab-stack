@@ -1,13 +1,8 @@
 /* Settings Page */
 
 html {
-  
   margin: 0 auto;
   height: 90%;
-
-  --stripe: #cfd8dc;
-  --bg: #e1e1e1;
-
   background: linear-gradient(135deg, var(--bg) 25%, transparent 25%) -50px 0,
     linear-gradient(225deg, var(--bg) 25%, transparent 25%) -50px 0,
     linear-gradient(315deg, var(--bg) 25%, transparent 25%),
@@ -15,35 +10,64 @@ html {
   background-size: 100px 100px;
   background-color: var(--stripe);
 }
-.footer {
-  display: none;
+/* Input ****************************************************************/
+
+input,
+select {
+  background-color: var(--white);
+  color: var(--text);
 }
+input[type="button"],
+button {
+  color: white;
+  background-color: var(--primary);
+  border: solid 1px var(--table-border);
+  cursor: pointer;
+  outline: none;
+  min-width: 66px;
+}
+input[type="button"]:active,
+button {
+  background-color: var(--primary-lighter);
+}
+input[type="checkbox"] {
+  padding-top: 12px;
+  margin: 0 5px 0 0px;
+}
+
+input[type="number"] {
+  width: 4em;
+}
+/* Upper & Outer ****************************************************************/
+
 #settings {
-  min-height: 850px;
+  min-height: 1200px;
   height: 96vh;
   z-index: 9999999;
-  padding-left: 30px;
-  background-color: whitesmoke;
-  margin-bottom:0;
+  padding-left: 66px;
+  background-color: var(--background);
+  opacity: 0.95;
+  margin-bottom: 0;
 }
 #title-border-box {
   position: sticky;
   top: 0;
-  border-bottom: solid 2px var(--tertiary);
+  border-bottom: solid 2px var(--secondary-lighter);
   height: 90%;
-  background-color: white;
+  background-color: var(--white);
   z-index: 999;
 }
 .icon {
+  content: var(--icon);
   display: inline;
   position: relative;
-  left: 30px;
+  left: 66px;
   top: 4px;
   height: 37px;
 }
 #settings-title {
   position: relative;
-  left: 30px;
+  left: 66px;
   top: -11px;
   font-family: var(--heading-family);
   font-size: 18pt;
@@ -61,344 +85,104 @@ html {
   color: var(--primary);
   cursor: pointer;
 }
+
+/* Settings Table ***************************************************************/
+
 .settings-table {
+  color: var(--text);
   margin: 0;
-  margin-top: -10px;
   border-collapse: collapse;
   border-spacing: 0;
+  width: 550px;
+  line-height: 1.5em;
 }
-.col1 {
-  width: 300px;
-}
-.col2 {
-  width: 190px;
-}
-.extracol {
-  width: 90px;
-  text-align: right;
+.hr {
+  border-bottom: solid 1px var(--table-border);
+  height: 15px;
 }
 .setting-row {
-  height: 30px;
-  width: 80%;
+  height: 0px;
 }
-.setting-row.misc > td:first-child {
-  padding: 10px 0;
+.setting-row td {
+  height: 35px;
 }
-.blank_row {
-  height: 20px;
-  width: 100%;
-  border-bottom: solid var(--table-border) 1px;
+.settings-table a {
+  color: var(--primary);
 }
-.main-setting > td:first-child {
-  padding: 10px 0;
-  font-weight: bold;
+.shortcut-row td {
+  padding: 6px 20px;
+  width: 180px;
+  background-color: var(--white);
+  border: 2px solid var(--background);
 }
-.main-setting input[type="checkbox"] {
-  transform: scale(1.1);
-  margin-left: -3px;
+.shortcut-row td:first-child() {
+  width: 200px;
 }
-.indented input[type="checkbox"] {
-  transform: scale(1.1);
-  margin-left: -10px;
-}
-.time-input {
-  width: 35px;
-}
-.indented > td:nth-child(1) {
-  padding-left: 25px;
-}
-.indented > td:nth-child(2) {
-  text-align: left;
-  padding-left: 10px;
+.main-setting {
+  font-weight: 600;
 }
 .grey {
-  color: lightgrey;
+  color: var(--hover) !important;
 }
 .grey input {
-  background-color: whitesmoke !important;
-}
-#list-button-view {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-.list-form-buttons {
-  padding: 5px;
-  margin: 2px;
-}
-.shortcut-row {
-  height: 30px;
-  width: 80%;
-}
-.shortcut-row > td:nth-child(1) {
-  text-align: left;
-  padding-left: 25px;
-}
-.shortcut-row > td > input {
-  width: 100%;
-  margin-right: 15px;
-}
-.shortcut-buttons {
-  display: block;
-  margin-left: 16px;
-  font-size: 0.6em;
-  height: 25px;
-  min-width: 45px !important;
-}
-#dialog {
-  position: fixed;
-  left: 10%;
-  top: 10%;
-  width: 400px;
-  min-height: 200px;
-  background-color: white;
-  padding: 15px;
-  box-shadow: 0px 0px 20px lightgrey;
-  display: none;
-}
-#rules-container {
-  height: 400px;
-  border: 0.01px solid lightgrey;
-  border-radius: 2px;
-  width: 550px;
-  margin: 0 20px;
-  padding: 0;
-  overflow-x: scroll;
-  background-image: radial-gradient(lightgrey 0.2px, white 0.5px);
-  background-size: 6px 6px;
-}
-#rules {
-  width: 100%;
-  border-collapse: collapse;
-  overflow-x: scroll;
-}
-#rules-heading {
-  margin-left: 30px;
+  background-color: var(--background) !important;
 }
 
-#rules td {
-  height: 20px;
-  padding: 0 15px;
-  height: 2.5em;
+/* or switch ***************************************************************/
+@keyframes fadeColor {
+  0% {
+    background-color: var(--background);
+  }
+  100% {
+    background-color: var(--primary);
+  }
 }
-#rules td:nth-child(6) {
-  padding-right: 15px !important;
-}
-#rules tr {
-  background-color: white;
-  height: 20px;
-  border-bottom: 0.2px solid whitesmoke;
-}
-#rules tr:nth-child(2n + 2) {
-  background-color: whitesmoke;
-}
-#rules i {
-  background-color: white;
-  border: solid 2px white;
-  width: 15px;
-  color: grey;
-}
-#rules tr:nth-child(2n + 2) i {
-  background-color: whitesmoke;
-  border: solid 2px whitesmoke;
-  width: 15px;
-  color: grey;
-}
-#rules tr i:hover {
-  cursor: pointer;
-  background-color: var(--background);
-  border: solid 2px var(--background);
-  color: var(--primary);
-  width: 15px;
-  border-radius: 3px;
-  transition: 0.4s;
-}
-#rules td:not(td:nth-child(-n + 2)) {
-  text-align: center;
-  padding: 0 3px;
-}
-.rule-name {
-  width: 300px;
-  text-overflow: ellipsis;
-}
-#rule-buttons-container {
-  display: block;
-  position: relative;
-  left: 400px;
-  top: 10px;
-}
-.rules-form-buttons {
-  width: 80px;
-}
-/* The switch - the box around the slider */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 26px;
-  height: 14px;
-  margin-top: 5px;
-}
-
-/* Hide default HTML checkbox */
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-/* The slider */
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 10px;
-  width: 10px;
-  left: 2px;
-  bottom: 2px;
-  background-color: white;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
-}
-
-input:checked + .slider {
-  background-color: var(--primary);
-}
-input:hover:not(:checked) + .slider {
-  background-color: grey;
-}
-input:focus + .slider {
-  box-shadow: 0 0 1px teal;
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(12px);
-  -ms-transform: translateX(12px);
-  transform: translateX(12px);
-}
-
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
-}
-.modal {
-  border-radius: 3px;
-  box-shadow: 0 0 2px 0;
-  width: 100%;
-  height: 90%;
-}
-.blocker {
-  background-color: rgba(0, 0, 0, 0.2);
-}
-.close-modal {
-  display: none !important;
-}
-
-.modal-buttons-container {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-}
-.modal-buttons-container input[type="button"] {
+.or-switch input[type="button"] {
   display: inline;
-  width: 100px;
-}
-.rule-parameters {
-  margin: 20px 0 5px 0;
-  border-collapse: collapse;
-  width: 460px;
-}
-#new-rule-name {
-  width: 15em;
-  padding: 6px;
-}
-.rule-parameters td {
-  padding: 8px 0;
-}
-
-.rule-parameters select {
-  margin: 0;
-  height: 24px;
-  font-size: 8.3pt;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
-.rule-parameters input {
-  margin: 0;
-  height: 14px;
+  width: 48px;
+  padding: 0;
+  margin: -3px;
+  height: 20px;
   font-size: 8pt;
-}
-.rule-parameters i {
-  color: grey;
-  width: 25px;
-  text-align: center;
-  font-size: 1.1em;
-}
-.rule-parameters tr:only-child i.fa-trash-o {
-  color: lightgrey !important;
-  cursor: default;
-}
-.rule-parameters tr:nth-child(7) .fa-plus {
-  display: none;
-}
-.rule-parameters i:hover {
-  cursor: pointer;
-  color: var(--primary);
-}
-
-.and-or-switch {
-  display: inline;
-  width: 55px;
-  padding: 0;
-}
-.rule-parameters tr:first-child .and-or-switch input {
-  background-color: whitesmoke;
-  color: lightgrey;
-}
-.and-or-switch input[type="button"] {
-  display: inline-block;
-  width: 25px;
-  padding: auto;
-  height: 24px;
-  font-size: 5.5pt;
-  min-width: 0;
-  border: none;
-  background-color: whitesmoke;
+  background-color: var(--background);
   color: darkgrey;
   border: solid 1px lightgrey;
   border-radius: 2px;
   padding: 0;
   outline: none;
 }
-
-.and-or-switch input[type="button"]:focus {
+.or-switch input[type="button"]:focus {
   outline: none;
 }
-.and-or-switch input[type="button"]:hover {
+.or-switch input[type="button"]:hover {
   cursor: pointer;
 }
 
-.and-or-switch input[type="button"].selected {
+.or-switch input[type="button"].selected {
   background-color: teal;
   color: white;
   font-weight: bold;
+  animation: fadeColor ease 0.3s;
 }
 
-.and-or-switch input:nth-child(2) {
-  margin-left: -1px;
+.or-switch input:nth-child(2) {
+  margin-left: -2px;
+}
+
+/* Modals ***********************************************/
+#edit-list {
+  color: var(--text);
+  width: 600px;
+  height: 500px;
+  background-color: var(--background);
+}
+#edit-list textarea {
+  width: 90%;
+  height: 240px;
+  outline: none;
+  padding: 4px 8px;
+}
+.modal-buttons-container input {
+  margin: 10px 5px 0 0;
+  padding: 8px;
 }
