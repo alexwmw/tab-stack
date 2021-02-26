@@ -9,6 +9,7 @@ $(document).ready(function () {
   const control = [17];
   const command = [91, 93, 224];
   const osCmds = navigator.platform == "MacIntel" ? command : control;
+  var scrollCount = 0;
 
   // Constant = () =>  ------------------------------------------------------
 
@@ -27,6 +28,7 @@ $(document).ready(function () {
     });
     return elem;
   };
+  const noVisibleSelected = () => $(".selected:visible").length == 0;
 
   const isChromeTab = (tab) =>
     tab.url.substring(0, tab.url.indexOf(":")) == "chrome"
@@ -71,6 +73,8 @@ $(document).ready(function () {
         lockIfLocked(".result");
         filterMatchCriteria(".result");
         hideTimers();
+        changeSelectedRowTo($(".result").first());
+        scrollCount = 0;
       }
     );
   }
@@ -81,7 +85,10 @@ $(document).ready(function () {
     for (tabsObj of objList) {
       const tbody = $("#results-tbody");
       const table = $("#results-table");
-      const tabs = Object.values(tabsObj).reverse();
+      var tabs = Object.values(tabsObj);
+      if (tabsObj == openTabs) {
+        tabs.reverse();
+      } 
       tbody.detach();
       tbody.append(...tabs.map(createResultRow));
       table.append(tbody);
@@ -168,12 +175,6 @@ $(document).ready(function () {
     return row;
   }
 
-  function setAttributes(element, obj) {
-    Object.entries(obj).forEach(([key, value]) => {
-      row.setAttribute(key, value);
-    });
-  }
-
   function changeSelectedRowTo(resultRow) {
     $(".selected").removeClass("selected");
     resultRow.addClass("selected");
@@ -233,6 +234,7 @@ $(document).ready(function () {
       $(".result").each(function (index, result) {
         if (tabs.some((tab) => tab.id == tabIdOf(result))) {
           $(this).find(".timer").hide();
+          $(this).append($(this).closest(tbody));
         }
       });
     });
@@ -269,8 +271,9 @@ $(document).ready(function () {
           matchSearchTerm(this, $("#searchbox").val().toLowerCase())
         )
       );
-      $(".selected").removeClass("selected");
       noResults($(selector + ":visible").length == 0);
+      if ($(selector + ":visible").length != 0)
+        changeSelectedRowTo($(selector + ":visible").first());
     });
   }
 
@@ -479,34 +482,38 @@ $(document).ready(function () {
       .first(":visible");
     var firstRow = $("tr:not([style*='display: none'])").first();
     var lastRow = $("tr:not([style*='display: none'])").last();
+    var offTop = () => scrollCount == -1;
+    var offBottom = () => scrollCount == 5;
     if ($(e.target).closest("#search-filter")[0]) {
       return;
     }
     switch (e.which) {
       // downKey
       case 40:
-        if ($(".selected:visible").length == 0) {
-          changeSelectedRowTo($(".result:visible").first());
-        } else {
-          changeSelectedRowTo(row[0] == lastRow[0] ? firstRow : rowDown);
-        }
-        $(".selected")[0].scrollIntoView(false);
+        changeSelectedRowTo(row[0] == lastRow[0] ? firstRow : rowDown);
+        scrollCount = row[0] == firstRow[0] ? 1 : scrollCount + 1;
+
         break;
       // upkey
       case 38:
-        if ($(".selected:visible").length == 0) {
-          changeSelectedRowTo($(".result:visible").last());
-        } else {
-          changeSelectedRowTo(row[0] == firstRow[0] ? lastRow : rowUp);
-        }
-        $(".selected")[0].scrollIntoView();
+        changeSelectedRowTo(row[0] == firstRow[0] ? lastRow : rowUp);
+        scrollCount = row[0] == lastRow[0] ? 3 : scrollCount - 1;
+
         break;
       // space, enter
       case 13:
       case 32:
-        element.trigger("click");
+        row.trigger("click");
         break;
     }
+    if (offTop()) {
+      scrollCount++;
+      $(".selected")[0].scrollIntoView();
+    } else if (offBottom()) {
+      scrollCount--;
+      $(".selected")[0].scrollIntoView(false);
+    }
+    //(scrollCount)
   });
 
   $(document).keydown(function (e) {

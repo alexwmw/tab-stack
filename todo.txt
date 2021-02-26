@@ -15,21 +15,17 @@
 - Sort tabs by: closed-> time closed
 
 
-
-
-
 - Make settings work
 
 - Make settings persistent over time
 
+ -- cmd + shift + L = Lock/Unlock selected tab
 
-- Add two rule
+
 
 
 - Add keyboard shortcuts:
- -- 
 
- -- cmd + shift + L = Lock/Unlock selected tab
 
  -- cmd + shift + O = Filter Open Tabs
 

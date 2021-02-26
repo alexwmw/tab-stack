@@ -22,7 +22,7 @@ $(document).ready(function () {
     key = element.getAttribute("id"),
     value = element.value.toLowerCase()
   ) {
-    alert(key + ": " + element.value.toLowerCase());
+    //alert(key + ": " + element.value.toLowerCase());
     chrome.runtime.sendMessage({
       msg: "set_setting",
       key: key,
@@ -35,7 +35,7 @@ $(document).ready(function () {
     key = element.getAttribute("id"),
     value = element.checked
   ) {
-    alert(key + ": " + element.checked);
+    //alert(key + ": " + element.checked);
     chrome.runtime.sendMessage({
       msg: "set_setting",
       key: key,
@@ -221,38 +221,29 @@ $(document).ready(function () {
 
   // Load from background
 
-  function setValue(id, value) {
+  function setValue(id, value, type = $("#" + id).attr("type")) {
     const selector = "#" + id;
-    const type = $(selector).attr("type");
     //alert(JSON.stringify(id+", "+value+", "+type));
     switch (type) {
-      /*case "button":
+      case "button":
         $("#" + value + "-mode").trigger("click");
         break;
       case "number":
         $(selector).val(value);
         break;
       case "checkbox":
-        alert('$(' + selector + ").prop('checked', " + value+');');
         $(selector).prop("checked", value);
-        break;*/
+        break;
       case "textarea":
-        const txt = document.getElementById(selector);
+        const txt = document.getElementById(id);
         $(txt).val(value.join("\n"));
         break;
-      case "radio":
-        /*$("input [name='" + idStr + "']").attr(
-        "checked",
-        false
-      );*/
-        $("input [name='" + id + "'][value='" + value + "']").attr(
-          "checked",
-          true
-        );
+      case "select":
+        $(selector).val(value);
         break;
-      case "option":
-        $(selector + " select").val(value);
-        break;
+    }
+    if(id == 'auto_locking'){
+      $("#" + id + "_" + value).attr("checked", true);
     }
   }
 

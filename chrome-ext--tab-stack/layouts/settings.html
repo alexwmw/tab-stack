@@ -134,11 +134,10 @@
             >
               <td colspan="2">
                 <input
-                  checked
                   type="radio"
-                  id="O-clear-criteria"
+                  id="auto_locking_none"
                   name="auto_locking"
-                  value="lock-none"
+                  value="none"
                 />
                 Do not lock any tabs automatically
               </td>
@@ -150,9 +149,9 @@
               <td colspan="2">
                 <input
                   type="radio"
-                  id="O-clear-criteria"
+                  id="auto_locking_matches"
                   name="auto_locking"
-                  value="lock-matches"
+                  value="matches"
                 />
                 Automatically lock any tabs that match:&nbsp;
                 <input
@@ -171,9 +170,9 @@
               <td colspan="2">
                 <input
                   type="radio"
-                  id="O-clear-criteria"
+                  id="auto_locking_non_matches"
                   name="auto_locking"
-                  value="lock-non-matches"
+                  value="non_matches"
                 />
                 Automatically lock any tabs that don't match:&nbsp;
                 <input
@@ -192,9 +191,9 @@
               <td colspan="2">
                 <input
                   type="radio"
-                  id="lock-new-tabs"
+                  id="auto_locking_all"
                   name="auto_locking"
-                  value="lock-all"
+                  value="all"
                 />
                 Lock all new tabs by default
               </td>
@@ -223,9 +222,10 @@
               </td>
             </tr-->
 
-            <tr class="hr">
+            <tr height="200" class="hr">
               <td></td>
             </tr>
+
             <tr class="setting-row">
               <td colspan="2">
                 <input
@@ -233,14 +233,23 @@
                   id="clear_on_quit"
                   name="O-clear-criteria"
                 />
-                Clear closed tabs list on quit
+                Clear closed tabs list on quit.
               </td>
             </tr>
 
+            <!--tr>
+              <td>
+                <input
+                  type="button"
+                  id="clear-tabs"
+                  value="Clear closed tabs now"
+                />
+              </td>
+            </tr-->
             <tr class="setting-row">
               <td colspan="2">
                 Search popup window size:&nbsp;
-                <select id="window_size">
+                <select type='select' id="window_size">
                   <option value="small">Small</option>
                   <option value="large">Large</option>
                 </select>
@@ -261,7 +270,7 @@
             <tr class="setting-row">
               <td colspan="2">
                 Do not duplicate closed tabs:&nbsp;
-                <select id="prevent_dup" name="duplicate-select">
+                <select type='select' id="prevent_dup" name="duplicate-select">
                   <option value="allow">Allow duplicates</option>
                   <option value="url">If URL matches an existing tab</option>
                   <option value="title_domain">
@@ -382,7 +391,7 @@
         <p style="font-size: 9pt">
           <strong>Automatically lock any tabs that match:</strong>
         </p>
-        <textarea id="match_rules"></textarea>
+        <textarea type="textarea" id="match_rules"></textarea>
         <div class="modal-buttons-container">
           <a style="display: none" rel="modal:close" href="#">Close</a>
           <input class="cancel-rule-changes" type="button" value="Cancel" />
@@ -417,7 +426,7 @@
         <p style="font-size: 9pt">
           <strong>Automatically lock any tabs that <u>don't</u> match:</strong>
         </p>
-        <textarea id="not_match_rules"></textarea>
+        <textarea type="textarea" id="not_match_rules"></textarea>
         <div class="modal-buttons-container">
           <a style="display: none" rel="modal:close" href="#">Close</a>
           <input class="cancel-rule-changes" type="button" value="Cancel" />
