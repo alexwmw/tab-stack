@@ -10,20 +10,24 @@
 
 --------------------------------------------Show timer in time :before class
 
-- Sort Ctrl+Shift+T issue
+- - - - - - - - - - - - - - - - - - - - - - Sort Ctrl+Shift+T issue NOT DOABLE
 
 - Sort tabs by: closed-> time closed
 
-- Remove time from pinned
+
+
+
 
 - Make settings work
 
 - Make settings persistent over time
 
-- Add popup on each page --'Tab Stack: Locked!
+
+- Add two rule
 
 
 - Add keyboard shortcuts:
+ -- 
 
  -- cmd + shift + L = Lock/Unlock selected tab
 

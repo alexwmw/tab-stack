@@ -2,18 +2,25 @@ const openTabs = {};
 const times = {};
 var activeTabIds = [];
 var lockedTabIds = [];
+//const control = [17];
+//const command = [91, 93, 224];
+//const osCmds = navigator.platform == "MacIntel" ? command : control;
+var tsClosed = false;
 
 var settings = {
   filterSelection: "All tabs",
   theme: "light",
   allow_closing: true,
-  audio_keep_open: true,
   _time_min: 15,
   _time_sec: 0,
   max_allowed: 5,
-  reset_time: 1,
-  rules: "",
+  reset_delay: 1,
+  auto_locking: "lock-none",
+  match_rules: [],
+  not_match_rules: [],
+  audible_lock: true,
   clear_on_quit: true,
+  window_size: "normal",
   max_stored: 100,
   prevent_dup: "url",
   paused: false,
@@ -41,21 +48,32 @@ class ClosedTab {
     this.windowId = tab.windowId;
     this.timeClosed = parseInt(Date.now());
     this.isClosed = true;
+    this.closedByTs = false;
   }
+
+  static mostRecent = 0;
 
   static tabs = {};
 
-  static onRemoved(tabId) {
+  static onRemoved(tabId, bool) {
+    this.mostRecent = tabId;
+
     const removedTab = openTabs[tabId];
     if (removedTab) {
       this.tabs[tabId] = new ClosedTab(removedTab);
+      this.tabs[tabId].closedByTs = bool;
       console.log("Added to ClosedTab.tabs: " + this.tabs[tabId].url);
+      if (this.tabs[tabId].closedByTs) console.log("    - closed by ts");
     }
     this.closedBy = "user";
   }
 
   forget() {
     delete ClosedTab.tabs[this.id];
+  }
+
+  static includes(x) {
+    return Object.keys(this.tabs).includes(x);
   }
 
   resurrect() {
@@ -138,6 +156,7 @@ var everySecond = window.setInterval(function () {
   });
   Object.keys(times).forEach((tabId) => {
     if (times[tabId] == 0) {
+      tsClosed = true;
       chrome.tabs.remove(parseInt(tabId));
     }
   });
@@ -153,6 +172,7 @@ chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
         openTabData: openTabs,
         closedTabsData: ClosedTab.tabs,
         lockedTabIdsData: lockedTabIds,
+        mostRecentClosed: ClosedTab.mostRecent,
       });
       break;
     case "resurrect":
@@ -175,9 +195,9 @@ chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
       break;
     case "forget_closed_tab":
       delete ClosedTab.tabs[obj.data];
-      //sendResponse({
-      //  closedTabs: ClosedTab.tabs,
-      //});
+      sendResponse({
+        closedTabs: ClosedTab.tabs,
+      });
       chrome.runtime.sendMessage({
         msg: "tab_forgotten",
         data: ClosedTab.tabs,
@@ -188,6 +208,11 @@ chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
     case "get_setting":
       sendResponse({
         value: settings[obj.key],
+      });
+      break;
+    case "get_all_settings":
+      sendResponse({
+        settings: settings,
       });
       break;
     case "request_times":
@@ -220,7 +245,9 @@ chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
 });
 
 chrome.tabs.onRemoved.addListener(function (tabId) {
-  ClosedTab.onRemoved(tabId);
+  ClosedTab.onRemoved(tabId, tsClosed);
+  tsClosed = false;
+
   delete openTabs[tabId];
   delete times[tabId];
   lockedTabIds = lockedTabIds.filter((item) => item != tabId);

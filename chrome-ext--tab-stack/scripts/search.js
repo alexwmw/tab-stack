@@ -4,6 +4,11 @@ $(document).ready(function () {
   var closedTabs = {};
   var lockedTabIds = [];
   var settings = {};
+  var keys = {};
+  var mostRecentClosed = 0;
+  const control = [17];
+  const command = [91, 93, 224];
+  const osCmds = navigator.platform == "MacIntel" ? command : control;
 
   // Constant = () =>  ------------------------------------------------------
 
@@ -56,6 +61,7 @@ $(document).ready(function () {
         openTabs = responseObject.openTabData;
         closedTabs = responseObject.closedTabsData;
         lockedTabIds = responseObject.lockedTabIdsData;
+        mostRecentClosed = responseObject.mostRecentClosed;
         applyTags([
           [{ active: true }, "tag-active"],
           [{ pinned: true }, "tag-pinned"],
@@ -64,6 +70,7 @@ $(document).ready(function () {
         displayTabRows([openTabs, closedTabs]);
         lockIfLocked(".result");
         filterMatchCriteria(".result");
+        hideTimers();
       }
     );
   }
@@ -125,7 +132,7 @@ $(document).ready(function () {
     const icon1 = createRowIcons(tab)[1];
     url.textContent = parsedUrl;
     title.textContent = tab.title;
-    timer.innerText = " ";
+    timer.innerText = "00:00";
     fav_img.setAttribute("src", tab.favIconUrl);
     favicon.append(!tab.favIconUrl && !isChrome ? globe : fav_img);
     info.append(title, url);
@@ -152,21 +159,18 @@ $(document).ready(function () {
       $(closedTag).text("closed " + timeStr);
       $(url).prepend(closedTag);
     }
-    setAttributes(row, {
-      "data-audible": tab.audible,
-      "data-pinned": tab.pinned,
-      "data-active": tab.active,
-      "data-url": tab.url,
-      "data-tabid": tab.id,
-      "data-closed": isClosed,
-    });
-
+    row.setAttribute("data-audible", tab.audible);
+    row.setAttribute("data-pinned", tab.pinned);
+    row.setAttribute("data-active", tab.active);
+    row.setAttribute("data-url", tab.url);
+    row.setAttribute("data-tabid", tab.id);
+    row.setAttribute("data-closed", isClosed);
     return row;
   }
 
   function setAttributes(element, obj) {
     Object.entries(obj).forEach(([key, value]) => {
-      element.setAttribute(key, value);
+      row.setAttribute(key, value);
     });
   }
 
@@ -224,6 +228,30 @@ $(document).ready(function () {
     });
   }
 
+  function hideTimers() {
+    chrome.tabs.query({ active: true }, function (tabs) {
+      $(".result").each(function (index, result) {
+        if (tabs.some((tab) => tab.id == tabIdOf(result))) {
+          $(this).find(".timer").hide();
+        }
+      });
+    });
+    chrome.tabs.query({ pinned: true }, function (tabs) {
+      $(".result").each(function (index, result) {
+        if (tabs.some((tab) => tab.id == tabIdOf(result))) {
+          $(this).find(".timer").hide();
+        }
+      });
+    });
+    chrome.tabs.query({ audible: true }, function (tabs) {
+      $(".result").each(function (index, result) {
+        if (tabs.some((tab) => tab.id == tabIdOf(result))) {
+          $(this).find(".timer").hide();
+        }
+      });
+    });
+  }
+
   function applyTags(queryTagPairs) {
     for (pair of queryTagPairs) {
       queryAndTag(pair[0], pair[1]);
@@ -241,7 +269,7 @@ $(document).ready(function () {
           matchSearchTerm(this, $("#searchbox").val().toLowerCase())
         )
       );
-      changeSelectedRowTo($(selector + ":visible").first());
+      $(".selected").removeClass("selected");
       noResults($(selector + ":visible").length == 0);
     });
   }
@@ -252,6 +280,9 @@ $(document).ready(function () {
 
   function matchSelectCriteria(result, value, otherCriteria = true) {
     const isClosed = $(result).data("closed");
+    const isClosedByTs = isClosed
+      ? closedTabs[tabIdOf(result)].closedByTs
+      : null;
     switch (value) {
       case "All tabs":
         return true && otherCriteria;
@@ -259,6 +290,8 @@ $(document).ready(function () {
         return !isClosed && otherCriteria;
       case "Closed tabs":
         return isClosed && otherCriteria;
+      case "Closed by tab stack":
+        return isClosed && isClosedByTs && otherCriteria;
       case "Locked tabs":
         return lockedTabIds.includes(tabIdOf(result)) && otherCriteria;
       case "Unlocked tabs":
@@ -305,7 +338,6 @@ $(document).ready(function () {
 
   // When click on .result
   $(document).on("click", ".result", function () {
-    changeSelectedRowTo($(this));
     //Then Open link
     var id = tabIdOf(this);
     if (id in openTabs) {
@@ -341,21 +373,16 @@ $(document).ready(function () {
   $(document).on("click", ".result .fa-times", function (e) {
     e.stopPropagation();
     var result = $(this).closest(".result");
-    var tabInfo = result.find(".tab-title, .tab-domain");
     var tabId = tabIdOf(result[0]);
-    result.fadeOut();
-    tabInfo.animate({
-      paddingLeft: 100,
-      width: 118,
-    });
-    setTimeout(function () {
+    result.hide();
+    if (openTabs[tabId]) {
       chrome.tabs.remove(tabId);
-    }, 300);
-    if ($(result).data("closed")) {
+    }
+    if (closedTabs[tabId]) {
       chrome.runtime.sendMessage(
         { msg: "forget_closed_tab", data: tabId },
         function (responseObject) {
-          //closedTabs = responseObject.closedTabs;
+          closedTabs = responseObject.closedTabs;
         }
       );
     }
@@ -444,26 +471,35 @@ $(document).ready(function () {
   // Keyup Up And Down Arrows -------------
   $(document).keyup(function (e) {
     var row = $(".selected").first();
-    var rowUp = row.prevAll("tr").first(":visible");
-    var rowDown = row.nextAll("tr").first(":visible");
-    var firstRow = $("tr:visible").first();
-    var lastRow = $("tr:visible").last();
-
+    var rowUp = row
+      .prevAll("tr:not([style*='display: none'])")
+      .first(":visible");
+    var rowDown = row
+      .nextAll("tr:not([style*='display: none'])")
+      .first(":visible");
+    var firstRow = $("tr:not([style*='display: none'])").first();
+    var lastRow = $("tr:not([style*='display: none'])").last();
     if ($(e.target).closest("#search-filter")[0]) {
       return;
     }
     switch (e.which) {
       // downKey
       case 40:
-        e.preventDefault();
-        filterMatchCriteria(".result");
-        changeSelectedRowTo(row[0] == lastRow[0] ? firstRow : rowDown);
+        if ($(".selected:visible").length == 0) {
+          changeSelectedRowTo($(".result:visible").first());
+        } else {
+          changeSelectedRowTo(row[0] == lastRow[0] ? firstRow : rowDown);
+        }
+        $(".selected")[0].scrollIntoView(false);
         break;
       // upkey
       case 38:
-        e.preventDefault();
-        filterMatchCriteria(".result");
-        changeSelectedRowTo(row[0] == firstRow[0] ? lastRow : rowUp);
+        if ($(".selected:visible").length == 0) {
+          changeSelectedRowTo($(".result:visible").last());
+        } else {
+          changeSelectedRowTo(row[0] == firstRow[0] ? lastRow : rowUp);
+        }
+        $(".selected")[0].scrollIntoView();
         break;
       // space, enter
       case 13:
@@ -473,9 +509,16 @@ $(document).ready(function () {
     }
   });
 
-  // Scroll into view
-  $(document).keyup(function (e) {
-    $(".selected")[0].scrollIntoView(false);
+  $(document).keydown(function (e) {
+    if ($(e.target).closest("#search-filter")[0]) {
+      return;
+    }
+    switch (e.which) {
+      // downKey
+      case 40:
+      case 38:
+        e.preventDefault();
+    }
   });
 
   // Shortcuts
@@ -502,17 +545,18 @@ $(document).ready(function () {
 
   // Intervals --------------------------------------------------------------------------------------------------------------------------------
 
-  window.setInterval(function () {
+  window.setInterval(function x() {
     $('.result[data-closed="false"]').each(function (index, result) {
       const timer = $(result).find(".timer")[0];
       const tabId = tabIdOf(result);
+      const addZero = (n) => (n < 10 ? "0" : "");
       chrome.runtime.sendMessage(
         { msg: "request_times", id: tabId },
         function (responseObject) {
           const time = responseObject.times;
           const mins = Math.floor(time / 60);
           const secs = time - mins * 60;
-          timer.innerText = mins + ":" + secs;
+          timer.innerText = addZero(mins) + mins + ":" + addZero(secs) + secs;
         }
       );
     });

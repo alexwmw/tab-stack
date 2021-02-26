@@ -39,6 +39,7 @@
             <tr class="main-setting setting-row indented">
               <td colspan="2">
                 Select theme:&nbsp;&nbsp;
+                <input id="theme" style="display: none" type="button" />
                 <span class="or-switch">
                   <input
                     id="light-mode"
@@ -47,15 +48,15 @@
                     class="selected"
                     value="Light" />
                   <input
-                    id="dark-mode"
-                    style="border-radius: 0 0"
-                    type="button"
-                    value="Dark" />
-                  <input
                     id="system-mode"
+                    type="button"
+                    style="display: none; border-radius: 0 0"
+                    value="System" />
+                  <input
+                    id="dark-mode"
                     style="border-radius: 0 10px 10px 0"
                     type="button"
-                    value="System"
+                    value="Dark"
                 /></span>
               </td>
             </tr>
@@ -63,9 +64,9 @@
             <tr class="setting-row main-setting">
               <td colspan="2">
                 <input
-                  type="checkbox"
                   checked
-                  id="cb-close-tabs"
+                  type="checkbox"
+                  id="allow_closing"
                   name="close-tabs"
                 />
                 Allow automatic closing of tabs
@@ -79,7 +80,7 @@
                   min="0"
                   max="180"
                   type="number"
-                  id="timeout-m"
+                  id="_time_min"
                   value="15"
                 />
                 min(s) &nbsp;&nbsp;
@@ -89,7 +90,7 @@
                   max="59"
                   class="time-input"
                   type="number"
-                  id="timeout-s"
+                  id="_time_sec"
                   value="0"
                 />
                 sec(s)
@@ -102,7 +103,7 @@
                 <input
                   min="1"
                   max="99"
-                  id="max-allowed"
+                  id="max_allowed"
                   type="number"
                   value="1"
                 />
@@ -113,7 +114,7 @@
               <td colspan="2">
                 To reset a tab's timer, the tab must be active for:&nbsp;
                 <input
-                  id="delay_reset"
+                  id="reset_delay"
                   min="0"
                   max="99"
                   type="number"
@@ -136,7 +137,7 @@
                   checked
                   type="radio"
                   id="O-clear-criteria"
-                  name="auto-lock-criteria"
+                  name="auto_locking"
                   value="lock-none"
                 />
                 Do not lock any tabs automatically
@@ -150,7 +151,7 @@
                 <input
                   type="radio"
                   id="O-clear-criteria"
-                  name="auto-lock-criteria"
+                  name="auto_locking"
                   value="lock-matches"
                 />
                 Automatically lock any tabs that match:&nbsp;
@@ -158,7 +159,7 @@
                   style="padding: 5px"
                   type="button"
                   class="change-view-button"
-                  id="list-button"
+                  id="match-list-button"
                   value="Rules..."
                 />
               </td>
@@ -171,7 +172,7 @@
                 <input
                   type="radio"
                   id="O-clear-criteria"
-                  name="auto-lock-criteria"
+                  name="auto_locking"
                   value="lock-non-matches"
                 />
                 Automatically lock any tabs that don't match:&nbsp;
@@ -179,12 +180,12 @@
                   style="padding: 5px"
                   type="button"
                   class="change-view-button"
-                  id="list-button"
+                  id="not-match-list-button"
                   value="Rules..."
                 />
               </td>
             </tr>
-            <tr
+            <!--tr
               id="list-button-row"
               class="setting-row cb-close-tabs-dependent"
             >
@@ -192,18 +193,22 @@
                 <input
                   type="radio"
                   id="lock-new-tabs"
-                  name="auto-lock-criteria"
+                  name="auto_locking"
                   value="lock-all"
                 />
                 Lock all new tabs by default
               </td>
+            </tr-->
+            <tr height="10">
+              <td></td>
             </tr>
             <tr class="setting-row cb-close-tabs-dependent">
               <td colspan="2">
-                <input type="checkbox" /> Prevent closing of tabs playing audio
+                <input id="audible_lock" type="checkbox" /> Prevent closing of
+                tabs playing audio
               </td>
             </tr>
-            <tr class="setting-row cb-close-tabs-dependent">
+            <!--tr class="setting-row cb-close-tabs-dependent">
               <td colspan="2">
                 <input type="checkbox" id="show-lock-popup" />
                 Show a notification when when a tab becomes locked/unlocked
@@ -216,7 +221,7 @@
                 <input id="popup-secs" type="number" min="1" value='30'/> second(s)
                 remaining
               </td>
-            </tr>
+            </tr-->
 
             <tr class="hr">
               <td></td>
@@ -225,7 +230,7 @@
               <td colspan="2">
                 <input
                   type="checkbox"
-                  id="O-clear-criteria"
+                  id="clear_on_quit"
                   name="O-clear-criteria"
                 />
                 Clear closed tabs list on quit
@@ -234,26 +239,34 @@
 
             <tr class="setting-row">
               <td colspan="2">
-                Search popup window height:&nbsp;
-                <select id="duplicate-select" name="duplicate-select">
-                  <option value="origin">Normal</option>
-                  <option value="domain">Expanded</option>
+                Search popup window size:&nbsp;
+                <select id="window_size">
+                  <option value="small">Small</option>
+                  <option value="large">Large</option>
                 </select>
               </td>
             </tr>
             <tr class="setting-row">
               <td colspan="2">
                 Maximum number of closed tabs to store:&nbsp;
-                <input id="max-stored" min="10" max="999" type="number" value='100'/>
+                <input
+                  id="max_stored"
+                  min="10"
+                  max="300"
+                  type="number"
+                  value="100"
+                />
               </td>
             </tr>
             <tr class="setting-row">
               <td colspan="2">
-                Prevent duplicate closed tabs:&nbsp;
-                <select id="duplicate-select" name="duplicate-select">
-                  <option value="origin">Never</option>
-                  <option value="domain">If URL exists</option>
-                  <option value="domain">If Title+Domain Name exists</option>
+                Do not duplicate closed tabs:&nbsp;
+                <select id="prevent_dup" name="duplicate-select">
+                  <option value="allow">Allow duplicates</option>
+                  <option value="url">If URL matches an existing tab</option>
+                  <option value="title_domain">
+                    If {title, domain name} match an existing tab
+                  </option>
                 </select>
               </td>
             </tr>
@@ -273,9 +286,9 @@
             <tr height="5">
               <td></td>
             </tr>
-            <tr>
+            <tr id="universal-shortcuts">
               <td colspan="2">
-                The following shortcuts are universal.
+                The following shortcuts work from anywhere inside Chrome.
                 <a id="chromeExt" href="">Edit these shortcuts</a>.
               </td>
             </tr>
@@ -288,7 +301,7 @@
                 <span class="">Open tab search:</span>
               </td>
               <td>
-                <span class="">ctrl + shift + s / cmd + shift + s</span>
+                <span id="sc1"></span>
               </td>
             </tr>
             <tr class="shortcut-row">
@@ -296,7 +309,7 @@
                 <span class="">Lock/unlock current tab:</span>
               </td>
               <td>
-                <span class="">tbc</span>
+                <span id="sc2"></span>
               </td>
             </tr>
             <tr height="10">
@@ -317,30 +330,30 @@
             <tr></tr>
             <tr class="shortcut-row">
               <td>
-                <span class=" ">Close/delete the selected tab:</span>
+                <span>Close/delete the selected tab:</span>
               </td>
-              <td><span class="">tbc</span></td>
+              <td><span id="sc3">tbc</span></td>
             </tr>
             <tr class="shortcut-row">
               <td>
-                <span class=" ">Lock/unlock the selected tab:</span>
+                <span>Lock/unlock the selected tab:</span>
               </td>
-              <td><span class="">tbc</span></td>
+              <td><span id="sc4">tbc</span></td>
             </tr>
             <tr class="shortcut-row">
               <td>
-                <span class=" ">Filter for open tabs:</span>
+                <span>Filter for open tabs:</span>
               </td>
               <td>
-                <span class="shortcut">tbc</span>
+                <span id="sc5">tbc</span>
               </td>
             </tr>
             <tr class="shortcut-row">
               <td>
-                <span class=" ">Filter for closed aabs:</span>
+                <span>Filter for closed tabs:</span>
               </td>
               <td>
-                <span class="">tbc</span>
+                <span id="sc6">tbc</span>
               </td>
             </tr>
             <tr class="shortcut-row">
@@ -348,47 +361,79 @@
                 <span class=" ">Filter for all tabs:</span>
               </td>
               <td>
-                <span class="">tbc</span>
+                <span id="sc7">tbc</span>
               </td>
             </tr>
           </table>
         </form>
       </div>
       <!-- Modals ------------------------->
-      <div id="edit-list" class="modal">
-        <h2>Edit list</h2>
+      <div id="edit-match-list" class="edit-list modal">
+        <h2>Match rules</h2>
         <p>
           URLs can be entered below, one per line, in the form
           [host].[domain]/[path]
         </p>
         <p>For example: google.com, bbc.co.uk/weather</p>
         <p>
-          The wildcard character '*' can be used to replace and field. For
+          The wildcard character '*' can be used to replace any field. For
           example, website.com/*/bar would match website.com/foo/bar
         </p>
-        <textarea></textarea>
+        <p style="font-size: 9pt">
+          <strong>Automatically lock any tabs that match:</strong>
+        </p>
+        <textarea id="match_rules"></textarea>
         <div class="modal-buttons-container">
           <a style="display: none" rel="modal:close" href="#">Close</a>
+          <input class="cancel-rule-changes" type="button" value="Cancel" />
           <input
-            id="cancel-rule-changes"
-            class="rules-form-buttons"
-            type="button"
-            value="Cancel"
-          />
-          <input
-            id="save-rule-changes"
+            id="save-match-list"
             rel="modal:close"
-            class="rules-form-buttons"
+            class="save-rules-btn"
             type="button"
             value="Save Changes"
           />
         </div>
       </div>
-
       <a
         style="display: none"
-        id="edit-list-link"
-        href="#edit-list"
+        id="edit-match-list-link"
+        href="#edit-match-list"
+        rel="modal:open"
+        >Open Modal</a
+      >
+
+      <div id="edit-not-match-list" class="edit-list modal">
+        <h2>Match rules</h2>
+        <p>
+          URLs can be entered below, one per line, in the form
+          [host].[domain]/[path]
+        </p>
+        <p>For example: google.com, bbc.co.uk/weather</p>
+        <p>
+          The wildcard character '*' can be used to replace any field. For
+          example, website.com/*/bar would match website.com/foo/bar
+        </p>
+        <p style="font-size: 9pt">
+          <strong>Automatically lock any tabs that <u>don't</u> match:</strong>
+        </p>
+        <textarea id="not_match_rules"></textarea>
+        <div class="modal-buttons-container">
+          <a style="display: none" rel="modal:close" href="#">Close</a>
+          <input class="cancel-rule-changes" type="button" value="Cancel" />
+          <input
+            id="save-not-match-list"
+            rel="modal:close"
+            class="save-rules-btn"
+            type="button"
+            value="Save Changes"
+          />
+        </div>
+      </div>
+      <a
+        style="display: none"
+        id="edit-not-match-list-link"
+        href="#edit-not-match-list"
         rel="modal:open"
         >Open Modal</a
       >
