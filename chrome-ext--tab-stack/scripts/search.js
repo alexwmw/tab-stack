@@ -3,6 +3,7 @@ $(document).ready(function () {
   var openTabs = {};
   var closedTabs = {};
   var lockedTabIds = [];
+  var closedOrder = [];
   var settings = {};
   var keys = {};
   var mostRecentClosed = 0;
@@ -10,6 +11,7 @@ $(document).ready(function () {
   const command = [91, 93, 224];
   const osCmds = navigator.platform == "MacIntel" ? command : control;
   var scrollCount = 0;
+  var largeWindow = false;
 
   // Constant = () =>  ------------------------------------------------------
 
@@ -28,7 +30,6 @@ $(document).ready(function () {
     });
     return elem;
   };
-  const noVisibleSelected = () => $(".selected:visible").length == 0;
 
   const isChromeTab = (tab) =>
     tab.url.substring(0, tab.url.indexOf(":")) == "chrome"
@@ -64,6 +65,7 @@ $(document).ready(function () {
         closedTabs = responseObject.closedTabsData;
         lockedTabIds = responseObject.lockedTabIdsData;
         mostRecentClosed = responseObject.mostRecentClosed;
+        closedOrder = responseObject.closedOrder;
         applyTags([
           [{ active: true }, "tag-active"],
           [{ pinned: true }, "tag-pinned"],
@@ -71,10 +73,21 @@ $(document).ready(function () {
         emptyResultsTable();
         displayTabRows([openTabs, closedTabs]);
         lockIfLocked(".result");
-        filterMatchCriteria(".result");
         hideTimers();
-        changeSelectedRowTo($(".result").first());
+        filterMatchCriteria(".result");
+        if ($(".result:visible").length == 0) {
+          changeSelectedRowTo($(".result:visible").first());
+        }
+        noResults($(".result:visible").length == 0);
+        changeStatus();
+        setTimeout(function () {
+          const tbody = $("#results-tbody");
+          $(tbody).prepend($(".tag-active").closest(".result"));
+          changeSelectedRowTo($(".result:visible").first());
+          //scrollCount = 0;
+        }, 5);
         scrollCount = 0;
+        $(".selected")[0].scrollIntoView();
       }
     );
   }
@@ -86,9 +99,7 @@ $(document).ready(function () {
       const tbody = $("#results-tbody");
       const table = $("#results-table");
       var tabs = Object.values(tabsObj);
-      if (tabsObj == openTabs) {
-        tabs.reverse();
-      } 
+      tabs.reverse();
       tbody.detach();
       tbody.append(...tabs.map(createResultRow));
       table.append(tbody);
@@ -139,6 +150,7 @@ $(document).ready(function () {
     const icon1 = createRowIcons(tab)[1];
     url.textContent = parsedUrl;
     title.textContent = tab.title;
+    if (largeWindow) title.classList.add("ttextended");
     timer.innerText = "00:00";
     fav_img.setAttribute("src", tab.favIconUrl);
     favicon.append(!tab.favIconUrl && !isChrome ? globe : fav_img);
@@ -177,6 +189,10 @@ $(document).ready(function () {
 
   function changeSelectedRowTo(resultRow) {
     $(".selected").removeClass("selected");
+    resultRow.addClass("selected");
+  }
+
+  function addSelectedRow(resultRow) {
     resultRow.addClass("selected");
   }
 
@@ -234,7 +250,6 @@ $(document).ready(function () {
       $(".result").each(function (index, result) {
         if (tabs.some((tab) => tab.id == tabIdOf(result))) {
           $(this).find(".timer").hide();
-          $(this).append($(this).closest(tbody));
         }
       });
     });
@@ -260,7 +275,7 @@ $(document).ready(function () {
     }
   }
 
-  // Filtering & Matching -----------------------------------------------------------------------------------------------------------------
+  // Filtering, Sorting & Matching -----------------------------------------------------------------------------------------------------------------
 
   function filterMatchCriteria(selector) {
     $(selector).filter(function () {
@@ -274,6 +289,7 @@ $(document).ready(function () {
       noResults($(selector + ":visible").length == 0);
       if ($(selector + ":visible").length != 0)
         changeSelectedRowTo($(selector + ":visible").first());
+      $(".selected")[0].scrollIntoView();
     });
   }
 
@@ -294,7 +310,11 @@ $(document).ready(function () {
       case "Closed tabs":
         return isClosed && otherCriteria;
       case "Closed by tab stack":
-        return isClosed && isClosedByTs && otherCriteria;
+        if (isClosed) {
+          return isClosedByTs && otherCriteria;
+        } else {
+          return false;
+        }
       case "Locked tabs":
         return lockedTabIds.includes(tabIdOf(result)) && otherCriteria;
       case "Unlocked tabs":
@@ -302,6 +322,13 @@ $(document).ready(function () {
           !isClosed && !lockedTabIds.includes(tabIdOf(result)) && otherCriteria
         );
     }
+  }
+
+  function sortRows() {
+    const tbody = $("#results-tbody");
+    tbody.detach();
+
+    //$("#results-table").append(tbody);
   }
 
   // Settings ------------------------------------------------------------------------------------------------------------------------------
@@ -332,33 +359,85 @@ $(document).ready(function () {
     );
   }
 
+  function setExtendedValue() {
+    chrome.runtime.sendMessage(
+      {
+        msg: "get_setting",
+        key: "window_size",
+      },
+      function (responseObject) {
+        const large = responseObject.value == "large";
+        const icon = elementOfClasses("i", [
+          "fas",
+          large ? "fa-expand" : "fa-compress",
+        ]);
+        largeWindow = large;
+        $("html").toggleClass("extended", large);
+        //$("#extend-button").text(large ? " Shrink" : " Expand");
+        //$("#extend-button").data("extended", large);
+        $("#extend-button i").replaceWith(icon);
+      }
+    );
+  }
+
+  function setPausedValue() {
+    chrome.runtime.sendMessage(
+      { msg: "get_setting", key: "paused" },
+      function (responseObject) {
+        const paused = responseObject.value;
+        if (paused) $("#pause-button").trigger("click");
+      }
+    );
+  }
+
   function updateSettings() {
     setSearchFilterValue();
     setThemeValue();
+    setExtendedValue();
+    setPausedValue();
+  }
+
+  function changeStatus() {
+    const icon = $(".footer-status i")[0];
+    chrome.runtime.sendMessage(
+      { msg: "get_status" },
+      function (responseObject) {
+        const status = responseObject.status;
+        Object.entries(status).forEach(function ([key, value]) {
+          $(icon).toggleClass(key, value);
+        });
+        $("#pause-button").toggle(!status.disabled);
+      }
+    );
   }
 
   // Click events ----------------------------------------------------------------------------------------------------------------------------
 
   // When click on .result
   $(document).on("click", ".result", function () {
-    //Then Open link
-    var id = tabIdOf(this);
-    if (id in openTabs) {
-      setTimeout(function () {
-        // make tab active
-        chrome.tabs.update(id, { active: true });
-        // make window focused
-        chrome.tabs.get(id, function (tab) {
-          chrome.windows.update(tab.windowId, { focused: true });
-        });
-        updateAllResults();
-        self.close();
-      }, 100);
-    } else if (id in closedTabs) {
-      chrome.runtime.sendMessage(
-        { msg: "resurrect", tabId: id },
-        function (responseObject) {}
-      );
+    // Check if cmd / ctrl is being pressed.
+    // If so, do not trigger actions below.
+    // Instead, appley .selected to the row
+    if (false) {
+    } else {
+      var id = tabIdOf(this);
+      if (id in openTabs) {
+        setTimeout(function () {
+          // make tab active
+          chrome.tabs.update(id, { active: true });
+          // make window focused
+          chrome.tabs.get(id, function (tab) {
+            chrome.windows.update(tab.windowId, { focused: true });
+          });
+          updateAllResults();
+          self.close();
+        }, 100);
+      } else if (id in closedTabs) {
+        chrome.runtime.sendMessage(
+          { msg: "resurrect", tabId: id },
+          function (responseObject) {}
+        );
+      }
     }
   });
 
@@ -386,6 +465,7 @@ $(document).ready(function () {
         { msg: "forget_closed_tab", data: tabId },
         function (responseObject) {
           closedTabs = responseObject.closedTabs;
+          closedOrder = responseObject.closedOrder;
         }
       );
     }
@@ -412,21 +492,34 @@ $(document).ready(function () {
     var playIcon = elementOfClasses("i", ["fas", "fa-play"]);
     var pauseIcon = elementOfClasses("i", ["fas", "fa-pause"]);
     var paused = $("#pause-button").data("paused");
-    $("#pause-button").text(paused ? " Continue" : " Pause");
-    $("#pause-button").prepend(paused ? playIcon : pauseIcon);
+    $("#pause-button").text(paused ? " Paused" : " Active");
+    $("#pause-button").prepend(paused ? pauseIcon : playIcon);
     $("#pause-button").data("paused", !paused);
+    chrome.runtime.sendMessage({
+      msg: "set_setting",
+      key: "paused",
+      value: paused,
+    });
+    changeStatus();
   });
 
   $("#extend-button").on("click", function (e) {
-    var makeShortIcon = elementOfClasses("i", ["fas", "fa-angle-up"]);
-    var makeLongIcon = elementOfClasses("i", ["fas", "fa-angle-down"]);
-    var extended = $(this).data("extended");
     e.preventDefault();
-    $("html").toggleClass("extended");
-    $(".tab-title").toggleClass("ttextended");
-    $(this).text(extended ? " Expand" : " Shrink");
-    $(this).prepend(extended ? makeLongIcon : makeShortIcon);
-    $(this).data("extended", !extended);
+    var makeShortIcon = elementOfClasses("i", ["fas", "fa-expand"]);
+    var makeLongIcon = elementOfClasses("i", ["fas", "fa-compress"]);
+    var makeLarge = !$("html").hasClass("extended");
+    $("html").toggleClass("extended", makeLarge);
+    $(".tab-title").toggleClass("ttextended", makeLarge);
+    //$(this).text(!makeLarge ? " Expand" : " Shrink");
+    $(this)
+      .find("i")
+      .replaceWith(!makeLarge ? makeLongIcon : makeShortIcon);
+
+    chrome.runtime.sendMessage({
+      msg: "set_setting",
+      key: "window_size",
+      value: makeLarge ? "large" : "small",
+    });
   });
 
   //Click theme switch
@@ -466,22 +559,25 @@ $(document).ready(function () {
   // Filter results by search box
   $("#searchbox").on("keyup", function (e) {
     var code = e.keyCode || e.which;
-    if (code != 37 && code != 38 && code != 39 && code != 40) {
+    if (code != 37 && code != 38 && code != 39 && code != 40 && code != 16) {
       filterMatchCriteria(".result");
     }
   });
 
-  // Keyup Up And Down Arrows -------------
   $(document).keyup(function (e) {
-    var row = $(".selected").first();
-    var rowUp = row
-      .prevAll("tr:not([style*='display: none'])")
-      .first(":visible");
-    var rowDown = row
-      .nextAll("tr:not([style*='display: none'])")
-      .first(":visible");
-    var firstRow = $("tr:not([style*='display: none'])").first();
-    var lastRow = $("tr:not([style*='display: none'])").last();
+    if (e.keyCode == 16) {
+      e.stopPropagation;
+    }
+  });
+
+  // Keyup Up And Down Arrows -------------
+  $(document).keydown(function (e) {
+    var rowUp = (row) =>
+      row.prevAll("tr:not([style*='display: none'])").first(":visible");
+    var rowDown = (row) =>
+      row.nextAll("tr:not([style*='display: none'])").first(":visible");
+    var firstRow = () => $("tr:not([style*='display: none'])").first();
+    var lastRow = () => $("tr:not([style*='display: none'])").last();
     var offTop = () => scrollCount == -1;
     var offBottom = () => scrollCount == 5;
     if ($(e.target).closest("#search-filter")[0]) {
@@ -490,15 +586,27 @@ $(document).ready(function () {
     switch (e.which) {
       // downKey
       case 40:
-        changeSelectedRowTo(row[0] == lastRow[0] ? firstRow : rowDown);
-        scrollCount = row[0] == firstRow[0] ? 1 : scrollCount + 1;
-
+        var row = $(".selected").last();
+        changeFunc = e.shiftKey ? addSelectedRow : changeSelectedRowTo;
+        changeFunc(
+          row[0] == lastRow()[0] && !e.shiftKey ? firstRow() : rowDown(row)
+        );
+        scrollCount = row[0] == firstRow()[0] ? 1 : scrollCount + 1;
         break;
       // upkey
       case 38:
-        changeSelectedRowTo(row[0] == firstRow[0] ? lastRow : rowUp);
-        scrollCount = row[0] == lastRow[0] ? 3 : scrollCount - 1;
+        var row = $(".selected").first();
+        changeFunc = e.shiftKey ? addSelectedRow : changeSelectedRowTo;
 
+        changeFunc(
+          row[$(".selected").length - 1] == firstRow()[0] && !e.shiftKey
+            ? lastRow()
+            : rowUp(row)
+        );
+        scrollCount = row[0] == lastRow[0] ? 3 : scrollCount - 1;
+        if ($(".selected:visible").length == 0) {
+          changeSelectedRowTo(lastRow());
+        }
         break;
       // space, enter
       case 13:
@@ -511,7 +619,7 @@ $(document).ready(function () {
       $(".selected")[0].scrollIntoView();
     } else if (offBottom()) {
       scrollCount--;
-      $(".selected")[0].scrollIntoView(false);
+      $(".selected")[$(".selected").length - 1].scrollIntoView(false);
     }
     //(scrollCount)
   });
@@ -548,6 +656,19 @@ $(document).ready(function () {
       result.next().toggleClass("selected");
     }
     updateAllResults();
+  });
+
+  chrome.runtime.onMessage.addListener(function (obj, sender, sendReponse) {
+    if (obj.msg == "command_lock_toggle") {
+      sendReponse({ confirmed: true });
+      var selected = $(".selected").first();
+      $(".selected").each(function (i, element) {
+        lock(this);
+        setTimeout(function () {
+          //filterMatchCriteria(".result");
+        }, 100);
+      });
+    }
   });
 
   // Intervals --------------------------------------------------------------------------------------------------------------------------------

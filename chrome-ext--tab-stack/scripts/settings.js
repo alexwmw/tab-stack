@@ -15,57 +15,54 @@ $(document).ready(function () {
   };
 
   // Settings
-  //  These can be refactored as many functions are essentially the same
 
   function sendValToBG(
     element,
     key = element.getAttribute("id"),
     value = element.value.toLowerCase()
   ) {
-    //alert(key + ": " + element.value.toLowerCase());
-    chrome.runtime.sendMessage({
-      msg: "set_setting",
-      key: key,
-      value: value,
-    });
-  }
-
-  function sendCheckToBG(
-    element,
-    key = element.getAttribute("id"),
-    value = element.checked
-  ) {
-    //alert(key + ": " + element.checked);
-    chrome.runtime.sendMessage({
-      msg: "set_setting",
-      key: key,
-      value: value,
-    });
-  }
-
-  function invalidAlert(element) {
-    element.value = "";
-    alert("Please enter a valid input");
+    if ($(element).is(":checkbox")) {
+      value = element.checked;
+    }
+    chrome.runtime.sendMessage(
+      {
+        msg: "set_setting",
+        key: key,
+        value: value,
+      },
+      function () {
+        $("#saved-notification").show();
+        $("#saved-notification").fadeOut(2000);
+        return true;
+      }
+    );
   }
 
   // Select theme:
   $("#dark-mode, #light-mode, #system-mode").data("type", "button");
 
-  $("#dark-mode").on("click", function () {
-    $("html").addClass("dark");
-    sendValToBG(this, "theme");
-  });
-  $("#light-mode").on("click", function () {
-    $("html").removeClass("dark");
-    sendValToBG(this, "theme");
-  });
-  $("#system-mode").on("click", function () {
-    // get system preference
-    if (true) {
-      $("html").addClass("dark");
-    } else {
-      $("html").removeClass("dark");
+  function applyTheme(element) {
+    var id = $(element).attr("id");
+    switch (id) {
+      case "dark-mode":
+        $("html").addClass("dark");
+        break;
+      case "light-mode":
+        $("html").removeClass("dark");
+        break;
+      case "system-mode":
+        // get system preference
+        if (bool) {
+          $("html").addClass("dark");
+        } else {
+          $("html").removeClass("dark");
+        }
+        break;
     }
+  }
+
+  $(".theme-switch").on("click", function () {
+    applyTheme(this);
     sendValToBG(this, "theme");
   });
 
@@ -76,56 +73,11 @@ $(document).ready(function () {
   });
 
   // Allow automatic closing of tabs:
-  $("#allow_closing").data("typ", "checkbox");
   $("#allow_closing").on("click", function () {
     $(".cb-close-tabs-dependent")
       .find("td, input, button")
       .prop("disabled", !$(this).is(":checked"))
       .toggleClass("grey", !$(this).is(":checked"));
-  });
-  $("#allow_closing").on("change", function () {
-    sendCheckToBG(this);
-  });
-
-  $("input").on("change", function () {
-    if ($(this).val() == "") {
-      $(this).css("border", "solid 1px red");
-    } else {
-      $(this).css("border", "solid 1px var(--table-border)");
-    }
-  });
-
-  // Close tabs after: _time_min _time_sec
-  $("#_time_min, #_time_sec").data("typ", "number");
-  $("#_time_min").on("change", function () {
-    sendValToBG(this);
-  });
-  $("#_time_min").keyup(function () {
-    this.value < 0 || this.value > 180 ? invalidAlert(this) : null;
-  });
-  $("#_time_sec").on("change", function () {
-    sendValToBG(this);
-  });
-  $("#_time_sec").keyup(function () {
-    this.value < 0 || this.value > 59 ? invalidAlert(this) : null;
-  });
-
-  //Start closing tabs when more than:
-  $("#max_allowed").data("typ", "number");
-  $("#max_allowed").on("change", function () {
-    sendValToBG(this);
-  });
-  $("#max_allowed").keyup(function () {
-    this.value < 1 || this.value > 99 ? invalidAlert(this) : null;
-  });
-
-  //To reset a tab's timer, the tab must be active for:
-  $("#reset_delay").data("typ", "number");
-  $("#reset_delay").on("change", function () {
-    sendValToBG(this);
-  });
-  $("#reset_delay").keyup(function () {
-    this.value < 0 || this.value > 99 ? invalidAlert(this) : null;
   });
 
   //Automatic locking
@@ -135,8 +87,9 @@ $(document).ready(function () {
     }
   });
 
+  // MODALS ------------------------------------------
+
   //match rule 1
-  $("match_rules").data("typ", "textarea");
   $("#save-match-list").on("click", function (e) {
     const txt = document.getElementById("match_rules");
     const matchRules = $(txt).val().split("\n");
@@ -144,53 +97,16 @@ $(document).ready(function () {
   });
 
   //match rule 2
-  $("not_match_rules").data("typ", "textarea");
   $("#save-not-match-list").on("click", function (e) {
     const txt = document.getElementById("not_match_rules");
     const matchRules = $(txt).val().split("\n");
     sendValToBG(txt, txt.getAttribute("id"), matchRules);
   });
 
-  //Prevent closing of tabs playing audio
-  $("#audible_lock").data("typ", "checkbox");
-  $("#audible_lock").on("change", function () {
-    sendCheckToBG(this);
-  });
-
-  //Clear closed tabs on quit
-  $("#clear_on_quit").data("typ", "checkbox");
-  $("#clear_on_quit").on("change", function () {
-    sendCheckToBG(this);
-  });
-
-  //Search popup window size
-  $("#window_size").data("typ", "option");
-  $("#window_size").on("change", function () {
-    sendValToBG(this);
-  });
-
-  //Maximum number of closed tabs to store
-  $("#max_stored").on("change", function () {
-    sendValToBG(this);
-  });
-  $("#max_stored").data("typ", "number");
-  $("#max_stored").keyup(function () {
-    this.value < 1 || this.value > 300 ? invalidAlert(this) : null;
-  });
-  //Prevent duplicate closed tabs:
-  $("#prevent_dup").data("typ", "option");
-  $("#prevent_dup").on("change", function () {
-    sendValToBG(this);
-  });
-
-  //Buttons ---------------------------------------------------------------------------------------
+  //Buttons & Clicks ---------------------------------------------------------------------------------------
 
   $("#close-settings").on("click", function () {
-    if (window.history.length == 1) {
-      window.close();
-    } else {
-      window.history.back();
-    }
+    window.close();
   });
 
   $("#match-list-button").click(function () {
@@ -203,21 +119,73 @@ $(document).ready(function () {
     // Load textarea with not_match_rules
   });
 
+  $("#chromeExt").on("click", function () {
+    chrome.tabs.create({ url: "chrome://extensions/shortcuts" });
+  });
+
+  // Delete closed tabs
+  $("#clear-tabs").on("click", function () {
+    if (window.confirm("Are you sure you want to delete closed tab history?")) {
+      chrome.runtime.sendMessage({ msg: "replace_closed_tabs", data: {} });
+      alert("Closed tabs deleted");
+    }
+  });
+
+  // Validation ------------------------------------------------------------------------------------
+
+  //.send-value-to-bg
+  $(".send-value-to-bg").change(function () {
+    if (this.type == "number") {
+      if (validate(this)) {
+        sendValToBG(this);
+      }
+    } else {
+      sendValToBG(this);
+    }
+  });
+
+  function validate(inp) {
+    var min = parseInt(inp.getAttribute("min"));
+    var max = parseInt(inp.getAttribute("max"));
+    var value = parseInt(inp.value);
+    if (value >= min && value <= max) {
+      return true;
+    } else if (inp.value == "") {
+      $(inp).focus();
+      inp.value = min;
+    } else {
+      alert(
+        `Value outside of permitted range.\n` +
+          `Please enter a value between ${min} and ${max}.`
+      );
+      $(inp).focus();
+      inp.value = min;
+    }
+  }
+
   //Keyboard Shortcut Settings input -------------------------------------------------------------------
 
   var osCmd = navigator.platform == "MacIntel" ? "Command" : "Control";
 
-  $("#sc1").text(`${osCmd} + Shift + S`);
-  $("#sc2").text(`${osCmd} + Shift + L`);
-  $("#sc3").text(`${osCmd} + Backspace`);
+  chrome.commands.getAll(function (commands) {
+    commands.forEach((com) => {
+      switch (com.name) {
+        case "_execute_browser_action":
+          $("#sc1").text(com.shortcut);
+          break;
+        case "lock-toggle":
+          $("#sc2").text(com.shortcut);
+          break;
+      }
+    });
+  });
+  //$("#sc1").text(`${osCmd} + Shift + S`);
+  //$("#sc2").text(`${osCmd} + Shift + L`);
+  /*$("#sc3").text(`${osCmd} + Backspace`);
   $("#sc4").text(`${osCmd} + L`);
   $("#sc5").text(`${osCmd} + O`);
   $("#sc6").text(`${osCmd} + C`);
-  $("#sc7").text(`${osCmd} + A`);
-
-  $("#chromeExt").on("click", function () {
-    chrome.tabs.create({ url: "chrome://extensions/shortcuts" });
-  });
+  $("#sc7").text(`${osCmd} + A`);*/
 
   // Load from background
 
@@ -226,7 +194,11 @@ $(document).ready(function () {
     //alert(JSON.stringify(id+", "+value+", "+type));
     switch (type) {
       case "button":
-        $("#" + value + "-mode").trigger("click");
+        var element = $("#" + value + "-mode")[0];
+        applyTheme(element);
+        $(element).parent().children().removeClass("selected");
+        $(element).addClass("selected");
+
         break;
       case "number":
         $(selector).val(value);
@@ -242,7 +214,7 @@ $(document).ready(function () {
         $(selector).val(value);
         break;
     }
-    if(id == 'auto_locking'){
+    if (id == "auto_locking") {
       $("#" + id + "_" + value).attr("checked", true);
     }
   }
@@ -254,6 +226,12 @@ $(document).ready(function () {
       Object.entries(settings).forEach(([id, value]) => {
         setValue(id, value);
       });
+      if (!$("#allow_closing").prop("checked")) {
+        $(".cb-close-tabs-dependent")
+          .find("td, input, button")
+          .prop("disabled", true)
+          .toggleClass("grey", true);
+      }
     }
   );
 

@@ -1,28 +1,15 @@
---------------------------------------------Fix scroll issue
-
---------------------------------------------Remove 'Expand'
-
---------------------------------------------Add timer to each tab that restarts when tab made active
-
---------------------------------------------Remember last filter selection
-
---------------------------------------------Check is closed tag > 1 hour works
-
---------------------------------------------Show timer in time :before class
-
-- - - - - - - - - - - - - - - - - - - - - - Sort Ctrl+Shift+T issue NOT DOABLE
-
 - Sort tabs by: closed-> time closed
 
 
-- Make settings work
-
 - Make settings persistent over time
 
- -- cmd + shift + L = Lock/Unlock selected tab
 
 
 
+
+
+
+DO NOT DO
 
 - Add keyboard shortcuts:
 

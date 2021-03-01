@@ -1,8 +1,8 @@
 {
   "name": "tab stack",
-  "version": "0.4",
-  "description": "Arranges your tabs into groups, closes tabs you don't need and makes it easy to restore closed tabs.",
-  "permissions": ["tabs"],
+  "version": "1.0",
+  "description": "Closes tabs you don't need and makes it easy to restore closed tabs.",
+  "permissions": ["tabs","storage", "notifications"],
   "background": {
     "scripts": ["scripts/jquery-3.4.1.js", "scripts/background.js"],
     "persistent": true
@@ -12,13 +12,6 @@
   },
   "options_page": "layouts/settings.html",
   "commands": {
-    "pin-toggle": {
-      "description": "Pin/unpin the current tab",
-      "suggested_key": {
-        "windows": "Ctrl+Shift+P",
-        "mac": "Command+Shift+P"
-      }
-    },
     "_execute_browser_action": {
       "description": "Perform a search",
       "suggested_key": {
@@ -31,13 +24,13 @@
       "suggested_key": {
         "windows": "Ctrl+Shift+L",
         "mac": "Command+Shift+L"
-      }
-    },
-    "expand-toggle": {
-      "description": "Expand/collpse all groups",
-      "suggested_key": {
-        "windows": "Ctrl+Shift+E",
-        "mac": "Command+Shift+E"
+      },
+      "lock-toggle": {
+        "description": "Lock/unlock current tab",
+        "suggested_key": {
+          "windows": "Ctrl+Shift+L",
+          "mac": "Command+Shift+L"
+        }
       }
     }
   },

@@ -2,38 +2,47 @@ const openTabs = {};
 const times = {};
 var activeTabIds = [];
 var lockedTabIds = [];
+var openTabOrder = [];
 //const control = [17];
 //const command = [91, 93, 224];
 //const osCmds = navigator.platform == "MacIntel" ? command : control;
 var tsClosed = false;
+const status = {
+  working: true,
+  pending: false,
+  disabled: false,
+  paused: false,
+};
 
 var settings = {
+  // Default settings
   filterSelection: "All tabs",
   theme: "light",
   allow_closing: true,
-  _time_min: 15,
+  _time_min: 16,
   _time_sec: 0,
-  max_allowed: 5,
-  reset_delay: 1,
-  auto_locking: "lock-none",
+  max_allowed: 3,
+  reset_delay: 5,
+  auto_locking: "none",
   match_rules: [],
   not_match_rules: [],
   audible_lock: true,
   clear_on_quit: true,
-  window_size: "normal",
-  max_stored: 100,
+  window_size: "small",
+  max_stored: 50,
   prevent_dup: "url",
   paused: false,
 };
 
-const time = () => settings._time_min * 60 + settings._time_sec;
-
-function logTabLengths() {
-  console.log("open tabs: " + Object.keys(openTabs).length);
-  console.log("closed tabs: " + Object.keys(ClosedTab.tabs).length);
-}
+const time = () => settings._time_min * 60 + settings._time_sec / 1;
+const tabLocked = (tabId) => lockedTabIds.includes(parseInt(tabId));
+const tabActive = (tabId) => activeTabIds.includes(parseInt(tabId));
+const tabAudible = (tabId) => openTabs[tabId].audible;
+const tabPinned = (tabId) => openTabs[tabId].pinned;
 
 class ClosedTab {
+  static tabs = {};
+  static closedOrder = [];
   constructor(tab) {
     this.id = tab.id;
     this.favIconUrl = tab.favIconUrl;
@@ -51,26 +60,23 @@ class ClosedTab {
     this.closedByTs = false;
   }
 
-  static mostRecent = 0;
-
-  static tabs = {};
-
-  static onRemoved(tabId, bool) {
-    this.mostRecent = tabId;
-
+  static onRemoved(tabId, closedByTs) {
+    ClosedTab.closedOrder.push(tabId);
     const removedTab = openTabs[tabId];
     if (removedTab) {
       this.tabs[tabId] = new ClosedTab(removedTab);
-      this.tabs[tabId].closedByTs = bool;
-      console.log("Added to ClosedTab.tabs: " + this.tabs[tabId].url);
-      if (this.tabs[tabId].closedByTs) console.log("    - closed by ts");
+      this.tabs[tabId].closedByTs = closedByTs;
+      deleteOverMaxClosed();
     }
-    this.closedBy = "user";
+    saveChanges();
   }
 
   forget() {
-    delete ClosedTab.tabs[this.id];
+    delete this.tabs[this.id];
+    tabOrder.pop(this.id);
   }
+
+  static length = () => Object.keys(this.tabs).length;
 
   static includes(x) {
     return Object.keys(this.tabs).includes(x);
@@ -96,12 +102,39 @@ class ClosedTab {
             reject(chrome.runtime.lastError);
           } else {
             delete ClosedTab.tabs[thisId];
+            ClosedTab.closedOrder.pop(thisId);
             chrome.windows.update(tab.windowId, { focused: true });
+            saveChanges();
             resolve(tab);
           }
         });
       });
     });
+  }
+}
+
+const closedTabs = new Proxy(ClosedTab.tabs, {
+  get: function (target, prop) {
+    return target[prop];
+  },
+  set: function (target, prop, value) {
+    target[prop] = value;
+    saveChanges();
+    return true;
+  },
+});
+
+function resetTimers(key) {
+  switch (key) {
+    case "allow_closing":
+      setTimesOnStartup(Object.values(openTabs));
+      break;
+    case "_time_min":
+      setTimesOnStartup(Object.values(openTabs));
+      break;
+    case "_time_sec":
+      setTimesOnStartup(Object.values(openTabs));
+      break;
   }
 }
 
@@ -128,39 +161,75 @@ function setTimesOnStartup(tabs) {
   });
 }
 
+function setPendingStatus() {
+  chrome.tabs.query({}, function (tabs) {
+    if (tabs.length < settings.max_allowed + 1) {
+      status.pending = true;
+      setTimesOnStartup(Object.values(openTabs));
+    } else {
+      status.pending = false;
+    }
+    updateBroswerAction();
+  });
+}
+
+function updateBroswerAction() {
+  var iconPath = status.paused
+    ? "../images/paused_icon.png"
+    : "../images/icon128.png";
+  var title = status.paused
+    ? "Paused"
+    : status.disabled
+    ? "Disabled. Enable automatic closing in settings."
+    : status.pending
+    ? "Pending: Too few tabs open"
+    : "Active";
+  chrome.browserAction.setIcon({ path: iconPath });
+  chrome.browserAction.setTitle({ title: title });
+}
+
 var everySecond = window.setInterval(function () {
-  Object.keys(times).forEach((tabId) => {
-    if (
-      Object.keys(openTabs).includes(tabId) &&
-      lockedTabIds.indexOf(parseInt(tabId)) < 0 &&
-      activeTabIds.indexOf(parseInt(tabId)) < 0 &&
-      !openTabs[tabId].audible &&
-      !openTabs[tabId].pinned
-    ) {
-      times[tabId] = times[tabId] - 1;
-    }
-    if (
-      Object.keys(openTabs).includes(tabId) &&
-      activeTabIds.indexOf(parseInt(tabId)) >= 0
-    ) {
-      console.log(tabId + " is active");
-      times[tabId] = time();
-    }
-    if (
-      Object.keys(openTabs).includes(tabId) &&
-      lockedTabIds.indexOf(parseInt(tabId)) >= 0
-    ) {
-      console.log(tabId + " is locked");
-    }
-    console.log(tabId + ": " + times[tabId]);
-  });
-  Object.keys(times).forEach((tabId) => {
-    if (times[tabId] == 0) {
-      tsClosed = true;
-      chrome.tabs.remove(parseInt(tabId));
-    }
-  });
+  if (!status.pending && !status.paused && !status.disabled) {
+    Object.keys(times).forEach((tabId) => {
+      if (
+        !tabLocked(tabId) &&
+        !tabActive(tabId) &&
+        !tabPinned(tabId) &&
+        (!tabAudible(tabId) || !settings.audible_lock)
+      ) {
+        times[tabId] = times[tabId] - 1;
+      }
+      if (times[tabId] == 0) {
+        chrome.tabs.remove(parseInt(tabId));
+      }
+    });
+  }
 }, 1000);
+
+function saveChanges() {
+  const tabsObj = settings.clear_on_quit ? {} : ClosedTab.tabs;
+  const orderArr = settings.clear_on_quit ? [] : ClosedTab.closedOrder;
+  chrome.storage.sync.set(
+    {
+      settings: settings,
+      closedTabs: tabsObj,
+      closedOrder: orderArr,
+    },
+    function () {}
+  );
+}
+
+function deleteOverMaxClosed() {
+  if (parseInt(settings.max_stored) < parseInt(ClosedTab.closedOrder.length)) {
+    var difference =
+      parseInt(ClosedTab.closedOrder.length) - parseInt(settings.max_stored);
+    for (var i = 0; i < difference; i++) {
+      var idToRemove = ClosedTab.closedOrder[0];
+      delete ClosedTab.tabs[idToRemove];
+      ClosedTab.closedOrder.shift();
+    }
+  }
+}
 
 // Add Listeners - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -172,12 +241,14 @@ chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
         openTabData: openTabs,
         closedTabsData: ClosedTab.tabs,
         lockedTabIdsData: lockedTabIds,
-        mostRecentClosed: ClosedTab.mostRecent,
+        closedOrder: ClosedTab.closedOrder,
+        openOrder: openTabOrder,
       });
       break;
     case "resurrect":
       ClosedTab.tabs[obj.tabId].resurrect();
       sendResponse({});
+      ClosedTab.tabs;
       break;
     case "request_locked_tabs":
       sendResponse({
@@ -192,18 +263,26 @@ chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
         msg: "tab_locked",
         data: lockedTabIds,
       });
+      sendResponse({});
       break;
     case "forget_closed_tab":
       delete ClosedTab.tabs[obj.data];
+      ClosedTab.closedOrder.pop(obj.data);
+      saveChanges();
       sendResponse({
         closedTabs: ClosedTab.tabs,
+        closedOrder: ClosedTab.closedOrder,
       });
-      chrome.runtime.sendMessage({
-        msg: "tab_forgotten",
-        data: ClosedTab.tabs,
-      });
+      break;
     case "set_setting":
       settings[obj.key] = obj.value;
+      resetTimers(obj.key);
+      status.paused = settings.paused;
+      status.disabled = !settings.allow_closing;
+      deleteOverMaxClosed();
+      saveChanges();
+      updateBroswerAction();
+      sendResponse({});
       break;
     case "get_setting":
       sendResponse({
@@ -220,44 +299,113 @@ chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
         times: times[obj.id],
       });
       break;
+    case "get_status":
+      sendResponse({
+        status: status,
+      });
+      break;
+    case "replace_closed_tabs":
+      ClosedTab.tabs = obj.data;
+      ClosedTab.closedOrder = [];
+      saveChanges();
+      break;
   }
 });
 
 chrome.tabs.onCreated.addListener(function (tab) {
   updateOpenTabs();
   times[tab.id] = time();
+  setPendingStatus();
 });
 
 chrome.tabs.onActivated.addListener(function (activeInfo) {
   chrome.tabs.query({ active: true }, function (tabs) {
     activeTabIds = [];
-    console.log("ATIs blank");
-    tabs.forEach((tab) => activeTabIds.push(tab.id));
-    console.log("ATIs =" + JSON.stringify(activeTabIds));
-    times[activeInfo.tabId] = time();
+    tabs.forEach((tab) => {
+      activeTabIds.push(tab.id);
+      setTimeout(function () {
+        if (tabActive(tab.id)) {
+          times[tab.id] = time();
+        }
+      }, settings.reset_delay * 1000);
+    });
   });
 });
 
-function onStartUp() {}
-
 chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
   updateOpenTabs();
+  setPendingStatus();
 });
 
 chrome.tabs.onRemoved.addListener(function (tabId) {
   ClosedTab.onRemoved(tabId, tsClosed);
   tsClosed = false;
-
   delete openTabs[tabId];
   delete times[tabId];
   lockedTabIds = lockedTabIds.filter((item) => item != tabId);
   activeTabIds = activeTabIds.filter((item) => item != tabId);
   updateOpenTabs();
+  setPendingStatus();
+});
+
+chrome.commands.onCommand.addListener(function (command) {
+  switch (command) {
+    case "lock-toggle":
+      chrome.runtime.sendMessage(
+        { msg: "command_lock_toggle" },
+        function (responseObject) {
+          if (chrome.runtime.lastError) {
+            chrome.tabs.query(
+              { active: true, lastFocusedWindow: true },
+              function (tabs) {
+                const tab = tabs[0];
+                if (lockedTabIds.includes(tab.id)) {
+                  lockedTabIds.pop(tab.id);
+                  chrome.notifications.create({
+                    iconUrl: "../images/icon128.png",
+                    type: "basic",
+                    title: "Tab Unlocked",
+                    message: `${tab.title}`,
+                  });
+                } else {
+                  lockedTabIds.push(tab.id);
+                  chrome.notifications.create({
+                    iconUrl: "../images/icon128.png",
+                    type: "basic",
+                    title: "Tab Locked",
+                    message: `${tab.title}`,
+                  });
+                }
+              }
+            );
+          } else if (responseObject.confirmed) {
+          }
+        }
+      );
+  }
 });
 
 // Main  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+chrome.storage.sync.get(
+  ["settings", "closedTabs", "closedOrder"],
+  function (result) {
+    if (result["settings"]) {
+      settings = result["settings"];
+    }
+    if (result["closedTabs"]) {
+      Object.entries(result["closedTabs"]).map(function ([id, tab]) {
+        ClosedTab.tabs[id] = new ClosedTab(tab);
+      });
+    }
+    if (result["closedOrder"]) {
+      ClosedTab.closedOrder = result["closedOrder"];
+    }
+  }
+);
+
 updateOpenTabs(setTimesOnStartup);
+setPendingStatus();
 Object.keys(openTabs).forEach((id) => {
   times[id] = time();
 });

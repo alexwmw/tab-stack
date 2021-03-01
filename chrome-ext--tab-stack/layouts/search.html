@@ -24,10 +24,10 @@
         <option>All tabs</option>
         <option>Open tabs</option>
         <option>Closed tabs</option>
-        <option>Closed by tab stack</option>
+        <!--option>Closed by tab stack</option-->
         <option>Locked tabs</option>
         <option>Unlocked tabs</option>
-        <option>-> Open history -></option>
+        <!--option>-> Open history -></option-->
       </select>
     </div>
     <div id="results-area">
@@ -51,25 +51,26 @@
         ></span
         -->
       <span class="footer-links" id="settings-link"
-        ><a href="settings.html">
+        ><a target="_blank" href="settings.html">
           <i class="fas fa-wrench"></i> Settings</a
         ></span
       >
       <span class="footer-links"
-        ><a id="theme-switch" href="">
+        ><a  id="theme-switch" href="">
           <i class="fas fa-sun"></i> Theme</a
         ></span
       >
       <span class="footer-links"
-        ><a data-paused="true" id="pause-button" href="">
-          <i class="fas fa-pause"></i> Pause</a
+        ><a data-extended="false" id="extend-button" href="">
+          <i class="fas"></i> Size</a
         ></span
       >
       <span class="footer-links"
-        ><a data-extended="false" id="extend-button" href="">
-          <i class="fas fa-angle-down"></i> Extend</a
+        ><a data-paused="true" id="pause-button" href="">
+          <i class="fas fa-play"></i> Active</a
         ></span
       >
+      <span class="footer-status"><i class='fas fa-circle'></i></span>
     </div>
   </body>
 </html>

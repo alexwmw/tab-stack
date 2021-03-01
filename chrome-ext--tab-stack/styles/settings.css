@@ -17,13 +17,17 @@ select {
   background-color: var(--white);
   color: var(--text);
 }
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 input[type="button"],
 button {
   color: white;
   background-color: var(--primary);
   border: solid 1px var(--table-border);
   cursor: pointer;
-  outline: none;
   min-width: 66px;
   padding: 5px;
 }
@@ -42,7 +46,7 @@ input[type="number"] {
 /* Upper & Outer ****************************************************************/
 
 #settings {
-  min-height: 1200px;
+  min-height: 750px;
   height: 96vh;
   z-index: 9999999;
   padding-left: 66px;
@@ -86,7 +90,17 @@ input[type="number"] {
   color: var(--primary);
   cursor: pointer;
 }
-
+#saved-notification {
+  display: none;
+  position: absolute;
+  right: 15px;
+  top: 60px;
+  color: rgb(70, 129, 14);
+  font-size: 1.1em;
+  max-width: 140px;
+  text-align: center;
+  padding: 2px;
+}
 /* Settings Table ***************************************************************/
 
 .settings-table {
@@ -100,9 +114,6 @@ input[type="number"] {
 .hr {
   border-bottom: solid 1px var(--table-border);
   height: 15px;
-}
-.setting-row {
-  height: 0px;
 }
 .setting-row td {
   height: 35px;
@@ -142,7 +153,7 @@ input[type="number"] {
   display: inline;
   width: 48px;
   padding: 0;
-  margin: -3px;
+  margin: -2px;
   height: 20px;
   font-size: 8pt;
   background-color: var(--background);
@@ -150,10 +161,10 @@ input[type="number"] {
   border: solid 1px lightgrey;
   border-radius: 2px;
   padding: 0;
-  outline: none;
 }
 .or-switch input[type="button"]:focus {
   outline: none;
+  border: 2px solid grey;
 }
 .or-switch input[type="button"]:hover {
   cursor: pointer;

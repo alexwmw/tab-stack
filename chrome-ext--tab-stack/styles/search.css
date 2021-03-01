@@ -275,15 +275,15 @@ td:nth-child(4) {
   top: 0px;
   width: 45px;
   height: 14px;
-  animation: leftBorder ease 0.6s;
   opacity: 0.65;
   border-radius: 0 0 4px 0;
+  animation: leftBorder ease 0.6s;
 }
-.result[data-closed='false']:not(.locked):hover .timer {
+.result[data-closed="false"]:not(.locked):hover .timer {
   display: inline-block;
   background-color: var(--tab-domain);
 }
-.result[data-closed='false']:not(.locked).selected .timer {
+.result[data-closed="false"]:not(.locked).selected .timer {
   display: inline-block;
   background-color: var(--secondary);
 }
@@ -494,11 +494,14 @@ td.cant-lock .fa-lock:after {
   content: "Lock disabled for chrome://";
   height: 40px;
 }
-/* tooltip 
+/* tooltip */
 .fa-lock:after {
   text-shadow: none;
   content: "Toggle lock";
-}*/
+  -webkit-text-stroke-color: #000 !important;
+  -webkit-text-stroke-width: 0.2px !important;
+  font-weight: 200;
+}
 /* tooltip */
 .fa-times:after {
   content: "Close tab";
@@ -506,5 +509,80 @@ td.cant-lock .fa-lock:after {
 /* tooltip */
 .forget-x .fa-times:after {
   content: "Forget this tab";
+  width: 100px;
+}
+/* tooltip */
+.fa-circle:after {
+  content: "Status";
+  color: var(--charcoal);
+  -webkit-text-stroke-color: var(--charcoal);
+  -webkit-text-stroke-width: 0.2px;
+  text-shadow: none;
+  font-weight: 100;
+  top: -30px;
+  right: 0px;
+}
+.working:after{
+  content: "Active";
+  width: 40px;
+}
+.pending:after{
+  content: "Not enough tabs open";
+  width: 120px;
+}
+.disabled:after{
+  content: "Disabled";
+  width: 80px;
+}
+.paused:after{
+  content: "Paused";
+  width: 50px;
+}
+/* Footer * * * * * * * * * * * * * * * * * * * * * * */
+.footer {
+  display: block;
+  width: 100%;
+  bottom: 0;
   height: 25px;
+  box-shadow: 0px 0px 6px var(--shadow);
+  background-color: var(--footer-bg);
+  padding: 6px 4px 4px 4px;
+  text-align: left;
+  z-index: 999999;
+}
+.footer-links {
+  font-family: var(--heading-family);
+  padding: 6px;
+  text-decoration: none;
+}
+.footer-links a {
+  color: var(--footer-link);
+  text-decoration: none;
+}
+
+.footer-links i {
+  font-size: 0.8em;
+}
+.footer-status {
+  position: absolute;
+  right: 12px;
+  bottom: 13px;
+  font-size: 0.65em;
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: white;
+  text-shadow: 0 0 3px var(--shadow);
+  color: grey;
+  cursor: pointer;
+}
+.footer-status .working {
+  color: rgb(70, 129, 14);
+}
+.footer-status .pending {
+  color: rgb(218, 205, 136);
+}
+.footer-status .disabled {
+  color: maroon;
+}
+.footer-status .paused {
+  color: grey;
 }

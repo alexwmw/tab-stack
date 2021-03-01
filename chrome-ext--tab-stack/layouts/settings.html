@@ -22,7 +22,9 @@
       <a target="_blank" href="https://github.com/alexwmw/tab-stack"
         ><img class="icon" src="../images/title.png" title="Link to github"
       /></a>
-
+      <span id="saved-notification"
+        ><i class="fas fa-check"> </i>&nbsp;saved</span
+      >
       <span id="settings-title"></span>
       <span id="close-settings">close</span>
     </div>
@@ -45,17 +47,19 @@
                     id="light-mode"
                     style="border-radius: 10px 0 0 10px"
                     type="button"
-                    class="selected"
+                    class="theme-switch"
                     value="Light" />
                   <input
                     id="system-mode"
                     type="button"
                     style="display: none; border-radius: 0 0"
+                    class="theme-switch"
                     value="System" />
                   <input
                     id="dark-mode"
                     style="border-radius: 0 10px 10px 0"
                     type="button"
+                    class="theme-switch"
                     value="Dark"
                 /></span>
               </td>
@@ -68,6 +72,7 @@
                   type="checkbox"
                   id="allow_closing"
                   name="close-tabs"
+                  class="send-value-to-bg"
                 />
                 Allow automatic closing of tabs
               </td>
@@ -76,22 +81,19 @@
               <td colspan="2">
                 Close tabs after:&nbsp;
                 <input
-                  class="time-input"
-                  min="0"
+                  class="time-input send-value-to-bg"
+                  min="1"
                   max="180"
                   type="number"
                   id="_time_min"
-                  value="15"
                 />
                 min(s) &nbsp;&nbsp;
                 <input
-                  size="2"
                   min="0"
                   max="59"
-                  class="time-input"
+                  class="time-input send-value-to-bg"
                   type="number"
                   id="_time_sec"
-                  value="0"
                 />
                 sec(s)
               </td>
@@ -105,7 +107,7 @@
                   max="99"
                   id="max_allowed"
                   type="number"
-                  value="1"
+                  class="send-value-to-bg"
                 />
                 tabs are open
               </td>
@@ -118,11 +120,12 @@
                   min="0"
                   max="99"
                   type="number"
-                  value="0"
+                  class="send-value-to-bg"
                 />
                 second(s)
               </td>
             </tr>
+            <!--
             <tr class="setting-row cb-close-tabs-dependent">
               <td colspan="2">
                 <b>Automatic locking:</b>
@@ -197,30 +200,21 @@
                 />
                 Lock all new tabs by default
               </td>
-            </tr-->
+            </tr>-->
+
             <tr height="10">
               <td></td>
             </tr>
             <tr class="setting-row cb-close-tabs-dependent">
               <td colspan="2">
-                <input id="audible_lock" type="checkbox" /> Prevent closing of
-                tabs playing audio
+                <input
+                  id="audible_lock"
+                  class="send-value-to-bg"
+                  type="checkbox"
+                />
+                Prevent closing of tabs playing audio
               </td>
             </tr>
-            <!--tr class="setting-row cb-close-tabs-dependent">
-              <td colspan="2">
-                <input type="checkbox" id="show-lock-popup" />
-                Show a notification when when a tab becomes locked/unlocked
-              </td>
-            </tr>
-            <tr class="setting-row cb-close-tabs-dependent">
-              <td colspan="2">
-                <input value="false" type="checkbox" id="show-time-popup" />
-                Show a notification when when a tab has
-                <input id="popup-secs" type="number" min="1" value='30'/> second(s)
-                remaining
-              </td>
-            </tr-->
 
             <tr height="200" class="hr">
               <td></td>
@@ -232,24 +226,16 @@
                   type="checkbox"
                   id="clear_on_quit"
                   name="O-clear-criteria"
+                  class="send-value-to-bg"
                 />
                 Clear closed tabs list on quit.
               </td>
             </tr>
 
-            <!--tr>
-              <td>
-                <input
-                  type="button"
-                  id="clear-tabs"
-                  value="Clear closed tabs now"
-                />
-              </td>
-            </tr-->
             <tr class="setting-row">
               <td colspan="2">
                 Search popup window size:&nbsp;
-                <select type='select' id="window_size">
+                <select class="send-value-to-bg" type="select" id="window_size">
                   <option value="small">Small</option>
                   <option value="large">Large</option>
                 </select>
@@ -260,25 +246,41 @@
                 Maximum number of closed tabs to store:&nbsp;
                 <input
                   id="max_stored"
-                  min="10"
-                  max="300"
+                  class="send-value-to-bg"
+                  min="5"
+                  max="100"
                   type="number"
-                  value="100"
                 />
               </td>
             </tr>
             <tr class="setting-row">
               <td colspan="2">
-                Do not duplicate closed tabs:&nbsp;
-                <select type='select' id="prevent_dup" name="duplicate-select">
+                Do not duplicate closed tabs if:&nbsp;
+                <select
+                  class="send-value-to-bg"
+                  type="select"
+                  id="prevent_dup"
+                  name="duplicate-select"
+                >
                   <option value="allow">Allow duplicates</option>
-                  <option value="url">If URL matches an existing tab</option>
+                  <option value="url">URL matches an existing tab</option>
                   <option value="title_domain">
-                    If {title, domain name} match an existing tab
+                    Title & host name match an existing tab
                   </option>
                 </select>
               </td>
             </tr>
+
+            <tr>
+              <td>Delete closed tabs history: &nbsp; 
+                <input
+                  type="button"
+                  id="clear-tabs"
+                  value="Delete history"
+                />
+              </td>
+            </tr>
+
             <tr class="hr">
               <td></td>
             </tr>
@@ -336,6 +338,14 @@
             <tr height="10">
               <td></td>
             </tr>
+            <tr>
+              <td colspan="2">
+                <i>Coming soon</i>
+              </td>
+            </tr>
+            <!--tr height="10">
+              <td></td>
+            </tr>
             <tr></tr>
             <tr class="shortcut-row">
               <td>
@@ -372,7 +382,7 @@
               <td>
                 <span id="sc7">tbc</span>
               </td>
-            </tr>
+            </tr-->
           </table>
         </form>
       </div>
