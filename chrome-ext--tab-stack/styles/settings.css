@@ -46,8 +46,7 @@ input[type="number"] {
 /* Upper & Outer ****************************************************************/
 
 #settings {
-  min-height: 750px;
-  height: 96vh;
+  height:1100px;
   z-index: 9999999;
   padding-left: 66px;
   background-color: var(--background);

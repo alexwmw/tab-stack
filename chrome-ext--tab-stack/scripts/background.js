@@ -2,7 +2,6 @@ const openTabs = {};
 const times = {};
 var activeTabIds = [];
 var lockedTabIds = [];
-var openTabOrder = [];
 //const control = [17];
 //const command = [91, 93, 224];
 //const osCmds = navigator.platform == "MacIntel" ? command : control;
@@ -42,7 +41,6 @@ const tabPinned = (tabId) => openTabs[tabId].pinned;
 
 class ClosedTab {
   static tabs = {};
-  static closedOrder = [];
   constructor(tab) {
     this.id = tab.id;
     this.favIconUrl = tab.favIconUrl;
@@ -66,8 +64,7 @@ class ClosedTab {
     if (settings.prevent_dup == "url") {
       $.each(ClosedTab.tabs, function (id, tab) {
         if (tab.url == removedTab.url) {
-          delete ClosedTab.tabs[id];
-          ClosedTab.closedOrder.pop(id);
+          ClosedTab.remove(id);
         }
       });
     } else if (settings.prevent_dup == "title_host") {
@@ -76,12 +73,10 @@ class ClosedTab {
           tabUrl(tab).hostname == tabUrl(removedTab).hostname &&
           tab.title == removedTab.title
         ) {
-          delete ClosedTab.tabs[id];
-          ClosedTab.closedOrder.pop(id);
+          ClosedTab.remove(id);
         }
       });
     }
-    ClosedTab.closedOrder.push(tabId);
     if (removedTab) {
       this.tabs[tabId] = new ClosedTab(removedTab);
       this.tabs[tabId].closedByTs = closedByTs;
@@ -90,15 +85,14 @@ class ClosedTab {
     saveChanges();
   }
 
-  forget() {
-    delete this.tabs[this.id];
-    tabOrder.pop(this.id);
-  }
-
   static length = () => Object.keys(this.tabs).length;
 
   static includes(x) {
     return Object.keys(this.tabs).includes(x);
+  }
+
+  static remove(tabId) {
+    delete ClosedTab.tabs[tabId];
   }
 
   resurrect() {
@@ -120,8 +114,7 @@ class ClosedTab {
           if (chrome.runtime.lastError) {
             reject(chrome.runtime.lastError);
           } else {
-            delete ClosedTab.tabs[thisId];
-            ClosedTab.closedOrder.pop(thisId);
+            ClosedTab.remove(thisId);
             chrome.windows.update(tab.windowId, { focused: true });
             saveChanges();
             resolve(tab);
@@ -131,17 +124,6 @@ class ClosedTab {
     });
   }
 }
-
-const closedTabs = new Proxy(ClosedTab.tabs, {
-  get: function (target, prop) {
-    return target[prop];
-  },
-  set: function (target, prop, value) {
-    target[prop] = value;
-    saveChanges();
-    return true;
-  },
-});
 
 function resetTimers(key) {
   switch (key) {
@@ -227,25 +209,26 @@ var everySecond = window.setInterval(function () {
 
 function saveChanges() {
   const tabsObj = settings.clear_on_quit ? {} : ClosedTab.tabs;
-  const orderArr = settings.clear_on_quit ? [] : ClosedTab.closedOrder;
   chrome.storage.sync.set(
     {
       settings: settings,
       closedTabs: tabsObj,
-      closedOrder: orderArr,
     },
     function () {}
   );
 }
 
 function deleteOverMaxClosed() {
-  if (parseInt(settings.max_stored) < parseInt(ClosedTab.closedOrder.length)) {
+  if (
+    parseInt(settings.max_stored) < parseInt(Object.keys(ClosedTab.tabs).length)
+  ) {
     var difference =
-      parseInt(ClosedTab.closedOrder.length) - parseInt(settings.max_stored);
+      parseInt(Object.keys(ClosedTab.tabs).length) -
+      parseInt(settings.max_stored);
     for (var i = 0; i < difference; i++) {
-      var idToRemove = ClosedTab.closedOrder[0];
-      delete ClosedTab.tabs[idToRemove];
-      ClosedTab.closedOrder.shift();
+      //   todo    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      //var idToRemove = ClosedTab.closedOrder[0];
+      //delete ClosedTab.tabs[idToRemove];
     }
   }
 }
@@ -260,14 +243,11 @@ chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
         openTabData: openTabs,
         closedTabsData: ClosedTab.tabs,
         lockedTabIdsData: lockedTabIds,
-        closedOrder: ClosedTab.closedOrder,
-        openOrder: openTabOrder,
       });
       break;
     case "resurrect":
       ClosedTab.tabs[obj.tabId].resurrect();
       sendResponse({});
-      ClosedTab.tabs;
       break;
     case "request_locked_tabs":
       sendResponse({
@@ -285,12 +265,10 @@ chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
       sendResponse({});
       break;
     case "forget_closed_tab":
-      delete ClosedTab.tabs[obj.data];
-      ClosedTab.closedOrder.pop(obj.data);
+      ClosedTab.remove(obj.data);
       saveChanges();
       sendResponse({
         closedTabs: ClosedTab.tabs,
-        closedOrder: ClosedTab.closedOrder,
       });
       break;
     case "set_setting":
@@ -325,7 +303,6 @@ chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
       break;
     case "replace_closed_tabs":
       ClosedTab.tabs = obj.data;
-      ClosedTab.closedOrder = [];
       saveChanges();
       break;
   }
@@ -407,23 +384,16 @@ chrome.commands.onCommand.addListener(function (command) {
 
 // Main  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-chrome.storage.sync.get(
-  ["settings", "closedTabs", "closedOrder"],
-  function (result) {
-    if (result["settings"]) {
-      settings = result["settings"];
-    }
-    if (result["closedTabs"]) {
-      Object.entries(result["closedTabs"]).map(function ([id, tab]) {
-        ClosedTab.tabs[id] = new ClosedTab(tab);
-      });
-    }
-    if (result["closedOrder"]) {
-      ClosedTab.closedOrder = result["closedOrder"];
-    }
+chrome.storage.sync.get(["settings", "closedTabs"], function (result) {
+  if (result["settings"]) {
+    settings = result["settings"];
   }
-);
-
+  if (result["closedTabs"]) {
+    Object.entries(result["closedTabs"]).map(function ([id, tab]) {
+      ClosedTab.tabs[id] = new ClosedTab(tab);
+    });
+  }
+});
 updateOpenTabs(setTimesOnStartup);
 setPendingStatus();
 Object.keys(openTabs).forEach((id) => {

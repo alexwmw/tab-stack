@@ -3,7 +3,6 @@ $(document).ready(function () {
   var openTabs = {};
   var closedTabs = {};
   var lockedTabIds = [];
-  var closedOrder = [];
   var settings = {};
   var keys = {};
   var mostRecentClosed = 0;
@@ -57,6 +56,10 @@ $(document).ready(function () {
 
   // Functions ----------------------------------------------------------------------
 
+  function oldestToNewest(a, b) {
+    return a.timeClosed - b.timeClosed;
+  }
+  
   function updateAllResults() {
     chrome.runtime.sendMessage(
       { msg: "request_tabs" },
@@ -65,7 +68,6 @@ $(document).ready(function () {
         closedTabs = responseObject.closedTabsData;
         lockedTabIds = responseObject.lockedTabIdsData;
         mostRecentClosed = responseObject.mostRecentClosed;
-        closedOrder = responseObject.closedOrder;
         applyTags([
           [{ active: true }, "tag-active"],
           [{ pinned: true }, "tag-pinned"],
@@ -101,6 +103,9 @@ $(document).ready(function () {
       const tbody = $("#results-tbody");
       const table = $("#results-table");
       var tabs = Object.values(tabsObj);
+      if (tabsObj == closedTabs) {
+        tabs = Object.values(closedTabs).sort(oldestToNewest);
+      }
       tabs.reverse();
       tbody.detach();
       tbody.append(...tabs.map(createResultRow));
@@ -494,7 +499,6 @@ $(document).ready(function () {
         { msg: "forget_closed_tab", data: tabId },
         function (responseObject) {
           closedTabs = responseObject.closedTabs;
-          closedOrder = responseObject.closedOrder;
         }
       );
     }
@@ -650,7 +654,6 @@ $(document).ready(function () {
       scrollCount--;
       $(".selected")[$(".selected").length - 1].scrollIntoView(false);
     }
-    //(scrollCount)
   });
 
   $(document).keydown(function (e) {
