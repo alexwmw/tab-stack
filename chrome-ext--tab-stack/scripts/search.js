@@ -87,7 +87,9 @@ $(document).ready(function () {
           //scrollCount = 0;
         }, 5);
         scrollCount = 0;
-        $(".selected")[0].scrollIntoView();
+        if ($(".selected").length > 0) {
+          $(".selected")[0].scrollIntoView();
+        }
       }
     );
   }
@@ -414,11 +416,38 @@ $(document).ready(function () {
   // Click events ----------------------------------------------------------------------------------------------------------------------------
 
   // When click on .result
-  $(document).on("click", ".result", function () {
+  $(document).on("click", ".result:visible", function (evt) {
     // Check if cmd / ctrl is being pressed.
     // If so, do not trigger actions below.
     // Instead, appley .selected to the row
-    if (false) {
+    const osKey = navigator.platform == "MacIntel" ? evt.metaKey : evt.ctrlKey;
+    if (osKey) {
+      $(this).toggleClass("selected");
+    } else if (evt.shiftKey) {
+      var first = $(".selected").last();
+      var last = $(".selected").first();
+      var below =
+        $(".result:visible").index(this) > $(".result:visible").index(last);
+      if (below) {
+        $(".result:visible")
+          .slice(
+            $(".result:visible").index(last),
+            $(".result:visible").index(this) + 1
+          )
+          .addClass("selected");
+      } else {
+        $(".result:visible")
+          .slice(
+            $(".result:visible").index(this),
+            $(".result:visible").index(last)
+          )
+          .addClass("selected");
+      }
+
+      alert(range);
+      // for each between below ? last and this : this and first{
+      //    addClass slected
+      //  }
     } else {
       var id = tabIdOf(this);
       if (id in openTabs) {
@@ -611,7 +640,7 @@ $(document).ready(function () {
       // space, enter
       case 13:
       case 32:
-        row.trigger("click");
+        $(".selected").trigger("click");
         break;
     }
     if (offTop()) {
@@ -668,6 +697,14 @@ $(document).ready(function () {
           //filterMatchCriteria(".result");
         }, 100);
       });
+    }
+  });
+
+  chrome.commands.onCommand.addListener(function (command) {
+    switch (command) {
+      case "delete-selected":
+        $(".selected .fa-times").trigger("click");
+        break;
     }
   });
 

@@ -61,8 +61,27 @@ class ClosedTab {
   }
 
   static onRemoved(tabId, closedByTs) {
-    ClosedTab.closedOrder.push(tabId);
     const removedTab = openTabs[tabId];
+    const tabUrl = (tab) => new URL(tab.url);
+    if (settings.prevent_dup == "url") {
+      $.each(ClosedTab.tabs, function (id, tab) {
+        if (tab.url == removedTab.url) {
+          delete ClosedTab.tabs[id];
+          ClosedTab.closedOrder.pop(id);
+        }
+      });
+    } else if (settings.prevent_dup == "title_host") {
+      $.each(ClosedTab.tabs, function (id, tab) {
+        if (
+          tabUrl(tab).hostname == tabUrl(removedTab).hostname &&
+          tab.title == removedTab.title
+        ) {
+          delete ClosedTab.tabs[id];
+          ClosedTab.closedOrder.pop(id);
+        }
+      });
+    }
+    ClosedTab.closedOrder.push(tabId);
     if (removedTab) {
       this.tabs[tabId] = new ClosedTab(removedTab);
       this.tabs[tabId].closedByTs = closedByTs;
@@ -193,8 +212,8 @@ var everySecond = window.setInterval(function () {
     Object.keys(times).forEach((tabId) => {
       if (
         !tabLocked(tabId) &&
-        !tabActive(tabId) &&
         !tabPinned(tabId) &&
+        !tabActive(tabId) &&
         (!tabAudible(tabId) || !settings.audible_lock)
       ) {
         times[tabId] = times[tabId] - 1;
@@ -382,6 +401,7 @@ chrome.commands.onCommand.addListener(function (command) {
           }
         }
       );
+      break;
   }
 });
 

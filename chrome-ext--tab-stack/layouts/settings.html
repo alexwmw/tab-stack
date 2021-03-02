@@ -125,7 +125,7 @@
                 second(s)
               </td>
             </tr>
-            <!--
+
             <tr class="setting-row cb-close-tabs-dependent">
               <td colspan="2">
                 <b>Automatic locking:</b>
@@ -187,20 +187,6 @@
                 />
               </td>
             </tr>
-            <!--tr
-              id="list-button-row"
-              class="setting-row cb-close-tabs-dependent"
-            >
-              <td colspan="2">
-                <input
-                  type="radio"
-                  id="auto_locking_all"
-                  name="auto_locking"
-                  value="all"
-                />
-                Lock all new tabs by default
-              </td>
-            </tr>-->
 
             <tr height="10">
               <td></td>
@@ -264,7 +250,7 @@
                 >
                   <option value="allow">Allow duplicates</option>
                   <option value="url">URL matches an existing tab</option>
-                  <option value="title_domain">
+                  <option value="title_host">
                     Title & host name match an existing tab
                   </option>
                 </select>
@@ -272,12 +258,9 @@
             </tr>
 
             <tr>
-              <td>Delete closed tabs history: &nbsp; 
-                <input
-                  type="button"
-                  id="clear-tabs"
-                  value="Delete history"
-                />
+              <td>
+                Delete closed tabs history: &nbsp;
+                <input type="button" id="clear-tabs" value="Delete history" />
               </td>
             </tr>
 
@@ -331,48 +314,45 @@
             </tr>
             <tr>
               <td colspan="2">
-                The following shortcuts only work inside the 'search' popup, and
-                cannot be customised.
+                The following shortcuts only work inside the 'search' popup.
               </td>
             </tr>
             <tr height="10">
               <td></td>
             </tr>
             <tr>
-              <td colspan="2">
-                <i>Coming soon</i>
-              </td>
+              <td colspan="2"></td>
             </tr>
-            <!--tr height="10">
+            <tr height="10">
               <td></td>
             </tr>
             <tr></tr>
             <tr class="shortcut-row">
               <td>
-                <span>Close/delete the selected tab:</span>
+                <span>Lock/unlock the highlighted tab(s):</span>
+              </td>
+              <td><span id="sc4"></span></td>
+            </tr>
+            <tr class="shortcut-row">
+              <td>
+                <span>Go-to/re-open the selected tab(s):</span>
+              </td>
+              <td>
+                <span id="sc6">Space | Enter</span>
+              </td>
+            </tr>
+            <tr class="shortcut-row">
+              <td>
+                <span>Close/delete the selected tab(s):</span>
               </td>
               <td><span id="sc3">tbc</span></td>
             </tr>
             <tr class="shortcut-row">
               <td>
-                <span>Lock/unlock the selected tab:</span>
-              </td>
-              <td><span id="sc4">tbc</span></td>
-            </tr>
-            <tr class="shortcut-row">
-              <td>
-                <span>Filter for open tabs:</span>
+                <span>Select multiple rows:</span>
               </td>
               <td>
-                <span id="sc5">tbc</span>
-              </td>
-            </tr>
-            <tr class="shortcut-row">
-              <td>
-                <span>Filter for closed tabs:</span>
-              </td>
-              <td>
-                <span id="sc6">tbc</span>
+                <span id="sc5">&#8679;Up / &#8679;Down</span>
               </td>
             </tr>
             <tr class="shortcut-row">
@@ -382,36 +362,81 @@
               <td>
                 <span id="sc7">tbc</span>
               </td>
-            </tr-->
+            </tr>
           </table>
         </form>
       </div>
       <!-- Modals ------------------------->
       <div id="edit-match-list" class="edit-list modal">
-        <h2>Match rules</h2>
-        <p>
-          URLs can be entered below, one per line, in the form
-          [host].[domain]/[path]
-        </p>
-        <p>For example: google.com, bbc.co.uk/weather</p>
-        <p>
-          The wildcard character '*' can be used to replace any field. For
-          example, website.com/*/bar would match website.com/foo/bar
-        </p>
-        <p style="font-size: 9pt">
-          <strong>Automatically lock any tabs that match:</strong>
-        </p>
-        <textarea type="textarea" id="match_rules"></textarea>
-        <div class="modal-buttons-container">
-          <a style="display: none" rel="modal:close" href="#">Close</a>
-          <input class="cancel-rule-changes" type="button" value="Cancel" />
-          <input
-            id="save-match-list"
-            rel="modal:close"
-            class="save-rules-btn"
-            type="button"
-            value="Save Changes"
-          />
+        <h2 class="match-rules-button">
+          <i class="fas fa-plus-square"></i> Match rules
+        </h2>
+        <div style="display: none" class="match-rules">
+          <p>
+            URL-matching criteria can be entered, one per line in the form:<br />
+
+            <code>[procotol]</code> // <code>[hostname]</code> /
+            <code>[path]</code>
+          </p>
+          <p>
+            If omitted, <code>[protocol]</code> will be replaced with
+            <code>https:</code> by default. The wildcard character '*' can be
+            used to replace any field or the beginning or end of a field string.
+            Below are some examples of valid criteria:
+          </p>
+          <ul>
+            <li>
+              <code>www.website.com/</code> will match
+              <u>only</u> www.website.com and no paths
+            </li>
+            <li>
+              <code>*website.com/*</code> will match any hostname ending in
+              "website.com" and with any path
+            </li>
+            <li>
+              <code>www.videos.com/watch*</code> will match with www.videos.com
+              with any path beginning 'watch'
+            </li>
+            <li>
+              <code>chrome://*</code> will match any page using the
+              <code>chrome</code> protocol
+            </li>
+          </ul>
+          <p>
+            Alternatively, you may enter a subtring to search for using one of
+            the <code>identifiers:</code> below:
+          </p>
+          <ul>
+            <li>
+              <code>title:foo</code> will match any page with 'foo' in the
+              title
+            </li>
+            <li>
+              <code>hostname:org.uk</code> will match any page with 'org.uk' in the
+              hostname
+            </li>
+            <li>
+              <code>url:admin</code> will match any page with 'admin' in the url
+            </li>
+          </ul>
+        </div>
+        <!--span id='match-rules-info'><u>More</u></span-->
+        <div class="textarea-area">
+          <h3>
+            <strong>Automatically lock any tabs that match:</strong>
+          </h3>
+          <textarea type="textarea" id="match_rules"></textarea>
+          <div class="modal-buttons-container">
+            <a style="display: none" rel="modal:close" href="#">Close</a>
+            <input class="cancel-rule-changes" type="button" value="Cancel" />
+            <input
+              id="save-match-list"
+              rel="modal:close"
+              class="save-rules-btn"
+              type="button"
+              value="Save Changes"
+            />
+          </div>
         </div>
       </div>
       <a

@@ -186,15 +186,34 @@ input[type="number"] {
   position: absolute;
   top: 4%;
   color: var(--text);
-  width: 600px;
-  height: 510px;
-  background-color: var(--background);
+  width: 660px !important;
+  height: 450px;
+  background-color: var(--background) !important;
 }
 .edit-list textarea {
-  width: 90%;
-  height: 220px;
+  display: block;
+  width: 95%;
+  height: 250px;
   outline: none;
   padding: 4px 4px;
+}
+.edit-list li {
+  margin: 0.5em 0;
+}
+.edit-list p,
+ul {
+  font-size: 9.5pt;
+  line-height: 1.5em;
+}
+.edit-list code {
+  color: var(--primary-lighter);
+}
+.match-rules {
+  padding-top: 0.1px;;
+}
+.edit-list h3 {
+  font-size: 12pt;
+  margin-top: 23px;
 }
 .modal-buttons-container input {
   margin: 10px 5px 0 0;

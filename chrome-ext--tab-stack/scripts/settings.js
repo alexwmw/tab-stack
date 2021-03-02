@@ -1,18 +1,5 @@
 $(document).ready(function () {
   // Element Creation
-  const create = (str) => document.createElement(str);
-  const createWithClass = (typ, clas) => {
-    var elem = create(typ);
-    elem.classList.add(clas);
-    return elem;
-  };
-  const createWithClasses = (typ, cList) => {
-    var elem = create(typ);
-    $.each(cList, function (i, c) {
-      elem.classList.add(c);
-    });
-    return elem;
-  };
 
   // Settings
 
@@ -37,6 +24,54 @@ $(document).ready(function () {
       }
     );
   }
+
+  // Load from background
+
+  function setValue(id, value, type = $("#" + id).attr("type")) {
+    const selector = "#" + id;
+    //alert(JSON.stringify(id+", "+value+", "+type));
+    switch (type) {
+      case "button":
+        var element = $("#" + value + "-mode")[0];
+        applyTheme(element);
+        $(element).parent().children().removeClass("selected");
+        $(element).addClass("selected");
+
+        break;
+      case "number":
+        $(selector).val(value);
+        break;
+      case "checkbox":
+        $(selector).prop("checked", value);
+        break;
+      case "textarea":
+        const txt = document.getElementById(id);
+        $(txt).val(value.join("\n"));
+        break;
+      case "select":
+        $(selector).val(value);
+        break;
+    }
+    if (id == "auto_locking") {
+      $("#" + id + "_" + value).attr("checked", true);
+    }
+  }
+
+  chrome.runtime.sendMessage(
+    { msg: "get_all_settings" },
+    function (responseObject) {
+      var settings = responseObject.settings;
+      Object.entries(settings).forEach(([id, value]) => {
+        setValue(id, value);
+      });
+      if (!$("#allow_closing").prop("checked")) {
+        $(".cb-close-tabs-dependent")
+          .find("td, input, button")
+          .prop("disabled", true)
+          .toggleClass("grey", true);
+      }
+    }
+  );
 
   // Select theme:
   $("#dark-mode, #light-mode, #system-mode").data("type", "button");
@@ -131,6 +166,12 @@ $(document).ready(function () {
     }
   });
 
+  $(".match-rules-button").on("click", function () {
+    $(this).parent().find(".match-rules").slideToggle();
+    $(this).parent().find(".textarea-area").slideToggle();
+    $(this).find("i").toggleClass("fa-plus-square").toggleClass("fa-minus-square");
+  });
+
   // Validation ------------------------------------------------------------------------------------
 
   //.send-value-to-bg
@@ -175,65 +216,44 @@ $(document).ready(function () {
           break;
         case "lock-toggle":
           $("#sc2").text(com.shortcut);
+          $("#sc4").text(com.shortcut);
+          break;
+        case "delete-selected":
+          $("#sc3").text(com.shortcut);
+
           break;
       }
     });
   });
-  //$("#sc1").text(`${osCmd} + Shift + S`);
-  //$("#sc2").text(`${osCmd} + Shift + L`);
-  /*$("#sc3").text(`${osCmd} + Backspace`);
-  $("#sc4").text(`${osCmd} + L`);
-  $("#sc5").text(`${osCmd} + O`);
-  $("#sc6").text(`${osCmd} + C`);
-  $("#sc7").text(`${osCmd} + A`);*/
-
-  // Load from background
-
-  function setValue(id, value, type = $("#" + id).attr("type")) {
-    const selector = "#" + id;
-    //alert(JSON.stringify(id+", "+value+", "+type));
-    switch (type) {
-      case "button":
-        var element = $("#" + value + "-mode")[0];
-        applyTheme(element);
-        $(element).parent().children().removeClass("selected");
-        $(element).addClass("selected");
-
-        break;
-      case "number":
-        $(selector).val(value);
-        break;
-      case "checkbox":
-        $(selector).prop("checked", value);
-        break;
-      case "textarea":
-        const txt = document.getElementById(id);
-        $(txt).val(value.join("\n"));
-        break;
-      case "select":
-        $(selector).val(value);
-        break;
-    }
-    if (id == "auto_locking") {
-      $("#" + id + "_" + value).attr("checked", true);
-    }
-  }
-
-  chrome.runtime.sendMessage(
-    { msg: "get_all_settings" },
-    function (responseObject) {
-      var settings = responseObject.settings;
-      Object.entries(settings).forEach(([id, value]) => {
-        setValue(id, value);
-      });
-      if (!$("#allow_closing").prop("checked")) {
-        $(".cb-close-tabs-dependent")
-          .find("td, input, button")
-          .prop("disabled", true)
-          .toggleClass("grey", true);
-      }
-    }
-  );
 
   // MAIN -----------------------------------------------------------------
+
+  /*
+  var url1 = "chrome://extensions";
+  var url2 = "www.google.com/watch*";
+  var url3 = "https://www.*.com/*";
+  var url4a = "* /watch";
+  var url4b = "*.* /watch";
+  var url5 = "*.google.*";
+  var url6 = "www.*.com/";
+  var url7 = "*//*.*.com/";
+  var urls = [url1, url2, url3, url4a, url4b, url5, url6, url7];
+
+  $.each(urls, function (index, urlStr) {
+    if (urlStr.toLowerCase().indexOf("//") == -1) {
+      urlStr = "https://" + urlStr;
+    }
+    var newline = "\n";
+    var u = new URL(urlStr);
+    var ustring = [
+      "URL: " + u,
+      "Host: " + u.host,
+      "Hostname: " + u.hostname,
+      "Protocol: " + u.protocol,
+      "Pathname: " + u.pathname,
+      "\n",
+    ].join("\n");
+    console.log(ustring);
+  });
+  */
 });
