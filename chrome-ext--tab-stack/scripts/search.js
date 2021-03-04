@@ -431,7 +431,7 @@ $(document).ready(function () {
     // If so, do not trigger actions below.
     // Instead, appley .selected to the row
     const osKey = navigator.platform == "MacIntel" ? evt.metaKey : evt.ctrlKey;
-    if (osKey && $(".selected").length > 1) {
+    if (osKey) {
       $(this).toggleClass("selected");
     } else if (evt.shiftKey) {
       var first = $(".selected").last();
