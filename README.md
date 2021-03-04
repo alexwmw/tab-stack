@@ -4,7 +4,7 @@ A Chrome extension that arranges your tabs into groups, closes tabs you don't ne
 
 You can view and install it from <a href="https://chrome.google.com/webstore/detail/tab-stack/agjealbfpkdojoonkdjchophopohpaco">the chrome webstore</a>.
 
-**Note:** I plan to do some significant refactoring and commenting of the code, as well as adding additional features; however I am taking a break from this for the time being to focus on other projects.
+**Note:** I plan to do some significant refactoring and commenting of the code, as well as adding additional features; however I am taking a break from this for the time being.
 
 # Description [Version 1.0] #
 
