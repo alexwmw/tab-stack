@@ -1,6 +1,6 @@
 <img src="./chrome-ext--tab-stack/images/title.png" width="20%">
 
-A Chrome extension that arranges closes tabs you don't need and makes it easy to restore closed tabs.
+A Chrome extension that closes tabs you don't need and makes it easy to restore closed tabs.
 
 You can view and install it from <a href="https://chrome.google.com/webstore/detail/tab-stack/agjealbfpkdojoonkdjchophopohpaco">the chrome webstore</a>.
 
