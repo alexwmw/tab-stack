@@ -28,61 +28,30 @@
       <span id="settings-title"></span>
       <span id="close-settings">close</span>
     </div>
-
     <!-- Settings ------------------------------------------------>
     <div id="settings">
       <div id="settings-view">
         <form>
           <table class="settings-table">
-            <tr height="25">
-              <td></td>
-            </tr>
-
-            <tr class="main-setting setting-row indented">
-              <td colspan="2">
-                Select theme:&nbsp;&nbsp;
-                <input id="theme" style="display: none" type="button" />
-                <span class="or-switch">
-                  <input
-                    id="light-mode"
-                    style="border-radius: 10px 0 0 10px"
-                    type="button"
-                    class="theme-switch"
-                    value="Light" />
-                  <input
-                    id="system-mode"
-                    type="button"
-                    style="display: none; border-radius: 0 0"
-                    class="theme-switch"
-                    value="System" />
-                  <input
-                    id="dark-mode"
-                    style="border-radius: 0 10px 10px 0"
-                    type="button"
-                    class="theme-switch"
-                    value="Dark"
-                /></span>
-              </td>
-            </tr>
-
+            <!-- AUTOMATIC CLOSING ------------------------------->
             <tr class="setting-row main-setting">
               <td colspan="2">
-                <input
+                <!--input
                   checked
                   type="checkbox"
                   id="allow_closing"
                   name="close-tabs"
                   class="send-value-to-bg"
-                />
-                Allow automatic closing of tabs
+                /-->
+                Automatic closing:
               </td>
             </tr>
-            <tr class="setting-row cb-close-tabs-dependent">
+            <tr class="setting-row">
               <td colspan="2">
                 Close tabs after:&nbsp;
                 <input
                   class="time-input send-value-to-bg"
-                  min="1"
+                  min="0"
                   max="180"
                   type="number"
                   id="_time_min"
@@ -98,21 +67,7 @@
                 sec(s)
               </td>
             </tr>
-
-            <tr class="setting-row cb-close-tabs-dependent">
-              <td colspan="2">
-                Start closing tabs when more than:&nbsp;
-                <input
-                  min="1"
-                  max="99"
-                  id="max_allowed"
-                  type="number"
-                  class="send-value-to-bg"
-                />
-                tabs are open
-              </td>
-            </tr>
-            <tr class="setting-row cb-close-tabs-dependent">
+            <tr class="setting-row">
               <td colspan="2">
                 To reset a tab's timer, the tab must be active for:&nbsp;
                 <input
@@ -125,36 +80,64 @@
                 second(s)
               </td>
             </tr>
-
-            <tr class="setting-row cb-close-tabs-dependent">
+            <tr class="setting-row">
               <td colspan="2">
-                <b>Automatic locking:</b>
+                Start closing tabs when more than:&nbsp;
+                <input
+                  min="1"
+                  max="99"
+                  id="max_allowed"
+                  type="number"
+                  class="send-value-to-bg"
+                />
+                tabs are open
               </td>
             </tr>
-            <tr
-              id="list-button-row"
-              class="setting-row cb-close-tabs-dependent"
-            >
+            <tr class="setting-row">
+              <td colspan="2">
+                If not enough tabs are open:&nbsp;
+                <select class="send-value-to-bg" type="select" id="timer_reset">
+                  <option value="reset">Reset timers</option>
+                  <option value="continue">Continue timers</option>
+                  <option value="pause">Pause timers</option>
+                </select>
+              </td>
+            </tr>
+            <!--tr class="setting-row">
+              <td colspan="2">
+                <input
+                  id="audible_lock"
+                  class="send-value-to-bg"
+                  type="checkbox"
+                />
+                Prevent closing of tabs playing audio
+              </td>
+            </tr-->
+
+            <!--AUTOMATIC LOCKING--------------------------
+            <tr class="setting-row main-setting">
+              <td colspan="2">
+                Automatic locking:
+              </td>
+            </tr>
+            <tr id="list-button-row" class="setting-row">
               <td colspan="2">
                 <input
                   type="radio"
-                  id="auto_locking_none"
                   name="auto_locking"
                   value="none"
+                  id="auto_locking_none"
                 />
                 Do not lock any tabs automatically
               </td>
             </tr>
-            <tr
-              id="list-button-row"
-              class="setting-row cb-close-tabs-dependent"
-            >
+            <tr id="list-button-row" class="setting-row">
               <td colspan="2">
                 <input
                   type="radio"
-                  id="auto_locking_matches"
                   name="auto_locking"
                   value="matches"
+                  id="auto_locking_matches"
                 />
                 Automatically lock any tabs that match:&nbsp;
                 <input
@@ -166,16 +149,13 @@
                 />
               </td>
             </tr>
-            <tr
-              id="list-button-row"
-              class="setting-row cb-close-tabs-dependent"
-            >
+            <tr id="list-button-row" class="setting-row">
               <td colspan="2">
                 <input
                   type="radio"
-                  id="auto_locking_non_matches"
                   name="auto_locking"
-                  value="non_matches"
+                  value="not_matches"
+                  id="auto_locking_not_matches"
                 />
                 Automatically lock any tabs that don't match:&nbsp;
                 <input
@@ -186,26 +166,12 @@
                   value="Rules..."
                 />
               </td>
+            </tr-->
+ 
+            <!--TAB HISTORY----------------------------->
+            <tr class="setting-row main-setting">
+              <td colspan="2">Tab history:</td>
             </tr>
-
-            <tr height="10">
-              <td></td>
-            </tr>
-            <tr class="setting-row cb-close-tabs-dependent">
-              <td colspan="2">
-                <input
-                  id="audible_lock"
-                  class="send-value-to-bg"
-                  type="checkbox"
-                />
-                Prevent closing of tabs playing audio
-              </td>
-            </tr>
-
-            <tr height="200" class="hr">
-              <td></td>
-            </tr>
-
             <tr class="setting-row">
               <td colspan="2">
                 <input
@@ -217,23 +183,13 @@
                 Clear closed tabs list on quit.
               </td>
             </tr>
-
-            <tr class="setting-row">
-              <td colspan="2">
-                Search popup window size:&nbsp;
-                <select class="send-value-to-bg" type="select" id="window_size">
-                  <option value="small">Small</option>
-                  <option value="large">Large</option>
-                </select>
-              </td>
-            </tr>
             <tr class="setting-row">
               <td colspan="2">
                 Maximum number of closed tabs to store:&nbsp;
                 <input
                   id="max_stored"
                   class="send-value-to-bg"
-                  min="5"
+                  min="3"
                   max="100"
                   type="number"
                 />
@@ -249,20 +205,71 @@
                   name="duplicate-select"
                 >
                   <option value="allow">Allow duplicates</option>
-                  <option value="url">URL matches an existing tab</option>
+                  <option value="url">URL exists</option>
                   <option value="title_host">
-                    Title & host name match an existing tab
+                    Title and host name exist
                   </option>
                 </select>
               </td>
             </tr>
-
-            <tr>
-              <td>
+            <tr class="setting-row">
+              <td colspan="2">
                 Delete closed tabs history: &nbsp;
                 <input type="button" id="clear-tabs" value="Delete history" />
               </td>
             </tr>
+
+            <!--INTERFACE SETTINGS----------------------------->
+            <tr class="setting-row main-setting">
+              <td colspan="2">Interface settings:</td>
+            </tr>
+            <tr class="setting-row indented">
+              <td colspan="2">
+                Select theme:&nbsp;&nbsp;
+                <input id="theme" style="display: none" type="button" />
+                <span class="or-switch">
+                  <input
+                    id="light-mode"
+                    style="border-radius: 4px 0 0 4px"
+                    type="button"
+                    class="theme-switch"
+                    value="Light" />
+                  <input
+                    id="system-mode"
+                    type="button"
+                    style="display: none; border-radius: 0 0"
+                    class="theme-switch"
+                    value="System" />
+                  <input
+                    id="dark-mode"
+                    style="border-radius: 0 4px 4px 0"
+                    type="button"
+                    class="theme-switch"
+                    value="Dark"
+                /></span>
+              </td>
+            </tr>
+            <tr class="setting-row">
+              <td colspan="2">
+                Search popup window size:&nbsp;
+                <select class="send-value-to-bg" type="select" id="window_size">
+                  <option value="small">Small</option>
+                  <option value="large">Large</option>
+                </select>
+              </td>
+            </tr>
+            <tr class="setting-row">
+              <td colspan="2">
+                <input
+                  type="checkbox"
+                  id="show_notifications"
+                  name="O-clear-criteria"
+                  class="send-value-to-bg"
+                />
+                Show a notification when a tab is locked
+              </td>
+            </tr>
+
 
             <tr class="hr">
               <td></td>
@@ -271,23 +278,14 @@
             <tr class="blank_row">
               <td style="height: 0" colspan="3"></td>
             </tr>
-            <tr>
-              <td colspan="2"><h3>Keyboard Shortcuts</h3></td>
+            <tr class='main-setting'>
+              <td colspan="2">Keyboard shortcuts:</td>
             </tr>
-            <tr>
-              <td></td>
-            </tr>
-            <tr height="5">
-              <td></td>
-            </tr>
-            <tr id="universal-shortcuts">
+            <tr class="shortcut-info" id="universal-shortcuts">
               <td colspan="2">
                 The following shortcuts work from anywhere inside Chrome.
                 <a id="chromeExt" href="">Edit these shortcuts</a>.
               </td>
-            </tr>
-            <tr height="10">
-              <td></td>
             </tr>
             <tr></tr>
             <tr class="shortcut-row">
@@ -306,25 +304,10 @@
                 <span id="sc2"></span>
               </td>
             </tr>
-            <tr height="10">
-              <td></td>
-            </tr>
-            <tr height="10">
-              <td></td>
-            </tr>
-            <tr>
+            <tr class="shortcut-info">
               <td colspan="2">
                 The following shortcuts only work inside the 'search' popup.
               </td>
-            </tr>
-            <tr height="10">
-              <td></td>
-            </tr>
-            <tr>
-              <td colspan="2"></td>
-            </tr>
-            <tr height="10">
-              <td></td>
             </tr>
             <tr></tr>
             <tr class="shortcut-row">
@@ -353,14 +336,6 @@
               </td>
               <td>
                 <span id="sc5">&#8679;Up / &#8679;Down</span>
-              </td>
-            </tr>
-            <tr class="shortcut-row">
-              <td>
-                <span class=" ">Filter for all tabs:</span>
-              </td>
-              <td>
-                <span id="sc7">tbc</span>
               </td>
             </tr>
           </table>
@@ -404,19 +379,18 @@
           </ul>
           <p>
             Alternatively, you may enter a substring to search for using one of
-            the <code>identifiers:</code> below:
+            the <code>:identifiers:</code> below. There are three identifiers. Identifiers begin and end with a colon ':' and should be followed by the substring to match with:
           </p>
           <ul>
             <li>
-              <code>title:foo</code> will match any page with 'foo' in the
-              title
+              <code>:title:foo</code> will match any page with 'foo' in the title
             </li>
             <li>
-              <code>hostname:org.uk</code> will match any page with 'org.uk' in the
-              hostname
+              <code>:hostname:org.uk</code> will match any page with 'org.uk' in
+              the hostname
             </li>
             <li>
-              <code>url:admin</code> will match any page with 'admin' in the url
+              <code>:url:admin</code> will match any page with 'admin' in the url
             </li>
           </ul>
         </div>

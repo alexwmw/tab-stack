@@ -36,7 +36,6 @@ $(document).ready(function () {
         applyTheme(element);
         $(element).parent().children().removeClass("selected");
         $(element).addClass("selected");
-
         break;
       case "number":
         $(selector).val(value);
@@ -64,12 +63,13 @@ $(document).ready(function () {
       Object.entries(settings).forEach(([id, value]) => {
         setValue(id, value);
       });
+      /*
       if (!$("#allow_closing").prop("checked")) {
         $(".cb-close-tabs-dependent")
           .find("td, input, button")
           .prop("disabled", true)
           .toggleClass("grey", true);
-      }
+      }*/
     }
   );
 
@@ -107,13 +107,13 @@ $(document).ready(function () {
     $(e.target).addClass("selected");
   });
 
-  // Allow automatic closing of tabs:
+  /* Allow automatic closing of tabs:
   $("#allow_closing").on("click", function () {
     $(".cb-close-tabs-dependent")
       .find("td, input, button")
       .prop("disabled", !$(this).is(":checked"))
       .toggleClass("grey", !$(this).is(":checked"));
-  });
+  });*/
 
   //Automatic locking
   $("input[name='auto_locking']").on("change", function () {
@@ -169,7 +169,10 @@ $(document).ready(function () {
   $(".match-rules-button").on("click", function () {
     $(this).parent().find(".match-rules").slideToggle();
     $(this).parent().find(".textarea-area").slideToggle();
-    $(this).find("i").toggleClass("fa-plus-square").toggleClass("fa-minus-square");
+    $(this)
+      .find("i")
+      .toggleClass("fa-plus-square")
+      .toggleClass("fa-minus-square");
   });
 
   // Validation ------------------------------------------------------------------------------------
@@ -189,11 +192,22 @@ $(document).ready(function () {
     var min = parseInt(inp.getAttribute("min"));
     var max = parseInt(inp.getAttribute("max"));
     var value = parseInt(inp.value);
+    if ($("#_time_min").val() == 0 && $("#_time_sec").val() < 10) {
+      alert(`Total time cannot be less than 10 seconds`);
+      $("#_time_sec").val(59);
+      setTimeout(() => {
+        $("#_time_min").val(0);
+        $(inp).blur();
+      }, 100);
+      $(inp).focus();
+      return true;
+    }
     if (value >= min && value <= max) {
       return true;
     } else if (inp.value == "") {
       $(inp).focus();
       inp.value = min;
+      return false;
     } else {
       alert(
         `Value outside of permitted range.\n` +
@@ -201,6 +215,7 @@ $(document).ready(function () {
       );
       $(inp).focus();
       inp.value = min;
+      return false;
     }
   }
 
@@ -224,19 +239,7 @@ $(document).ready(function () {
           break;
       }
     });
-  });
-
-  // MAIN -----------------------------------------------------------------
-
-  /*
-  var url1 = "chrome://extensions";
-  var url2 = "www.google.com/watch*";
-  var url3 = "https://www.*.com/*";
-  var url4a = "* /watch";
-  var url4b = "*.* /watch";
-  var url5 = "*.google.*";
-  var url6 = "www.*.com/";
-  var url7 = "*//*.*.com/";
+  }); /*.*.com/";
   var urls = [url1, url2, url3, url4a, url4b, url5, url6, url7];
 
   $.each(urls, function (index, urlStr) {
@@ -256,4 +259,16 @@ $(document).ready(function () {
     console.log(ustring);
   });
   */
+
+  // MAIN -----------------------------------------------------------------
+
+  /*
+  var url1 = "chrome://extensions";
+  var url2 = "www.google.com/watch*";
+  var url3 = "https://www.*.com/*";
+  var url4a = "* /watch";
+  var url4b = "*.* /watch";
+  var url5 = "*.google.*";
+  var url6 = "www.*.com/";
+  var url7 = "*/
 });

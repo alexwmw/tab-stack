@@ -9,19 +9,19 @@ var tsClosed = false;
 const status = {
   working: true,
   pending: false,
-  disabled: false,
+  //  disabled: false,
   paused: false,
 };
 
 var settings = {
-  // Default settings
   filterSelection: "All tabs",
   theme: "light",
   allow_closing: true,
   _time_min: 16,
   _time_sec: 0,
-  max_allowed: 3,
   reset_delay: 5,
+  max_allowed: 3,
+  timer_reset: "reset",
   auto_locking: "none",
   match_rules: [],
   not_match_rules: [],
@@ -31,13 +31,20 @@ var settings = {
   max_stored: 50,
   prevent_dup: "url",
   paused: false,
+  show_notifications: true,
 };
 
 const time = () => settings._time_min * 60 + settings._time_sec / 1;
 const tabLocked = (tabId) => lockedTabIds.includes(parseInt(tabId));
 const tabActive = (tabId) => activeTabIds.includes(parseInt(tabId));
 const tabAudible = (tabId) => openTabs[tabId].audible;
-const tabPinned = (tabId) => openTabs[tabId].pinned;
+const tabPinned = (tabId) => {
+  try {
+    return openTabs[tabId].pinned;
+  } catch (e) {
+    return false;
+  }
+};
 
 class ClosedTab {
   static tabs = {};
@@ -80,7 +87,7 @@ class ClosedTab {
     if (removedTab) {
       this.tabs[tabId] = new ClosedTab(removedTab);
       this.tabs[tabId].closedByTs = closedByTs;
-      deleteOverMaxClosed();
+      keepClosedTabsBelowMax();
     }
     saveChanges();
   }
@@ -125,6 +132,55 @@ class ClosedTab {
   }
 }
 
+function isAutoLockable(tab) {
+  const rules =
+    settings.auto_locking == "matches"
+      ? settings.match_rules
+      : settings.auto_locking == "non_matches"
+      ? settings.not_match_rules
+      : false;
+  var isMatch = false;
+  if (rules) {
+    isMatch = rules.some((rule) =>
+      settings.auto_locking == "matches"
+        ? matchesRule(tab, rule)
+        : !matchesRule(tab, rule)
+    );
+    //alert(`${tab.title} isAutoLockAble returns ${isMatch}`);
+    return isMatch;
+  }
+}
+
+function matchesRule(tabObj, ruleStr) {
+  // return true if tab matches rule
+  const tabURL = new URL(tabObj.url.toLowerCase());
+  const ruleURL = ruleStr[0] == ":" ? false : new URL(ruleStr.trim());
+  if (ruleURL) {
+    //macth according to url string
+  } else {
+    // else match according to identifier
+    const identifier = ruleStr.slice(1, ruleStr.substring(1).indexOf(":") + 1);
+    const substr = ruleStr
+      .substring(ruleStr.substring(1).indexOf(":") + 2)
+      .trim()
+      .toLowerCase();
+    switch (identifier) {
+      case "protocol":
+        return tabURL.protocol.includes(substr);
+      case "url":
+        return tabObj.url.includes(substr);
+      case "title":
+        return tabObj.title.toLowerCase().includes(substr);
+      case "hostname":
+        return tabURL.hostname.includes(substr);
+      default:
+        return false;
+    }
+  }
+  alert("tab stack: Bad formatted rule.\nCheck your rules in settings!");
+  return false;
+}
+
 function resetTimers(key) {
   switch (key) {
     case "allow_closing":
@@ -164,9 +220,11 @@ function setTimesOnStartup(tabs) {
 
 function setPendingStatus() {
   chrome.tabs.query({}, function (tabs) {
-    if (tabs.length < settings.max_allowed + 1) {
+    if (parseInt(tabs.length) <= parseInt(settings.max_allowed)) {
       status.pending = true;
-      setTimesOnStartup(Object.values(openTabs));
+      if (settings.timer_reset == "reset") {
+        setTimesOnStartup(Object.values(openTabs));
+      }
     } else {
       status.pending = false;
     }
@@ -180,9 +238,9 @@ function updateBroswerAction() {
     : "../images/icon128.png";
   var title = status.paused
     ? "Paused"
-    : status.disabled
-    ? "Disabled. Enable automatic closing in settings."
-    : status.pending
+    : //: status.disabled
+    //? "Disabled. Enable automatic closing in settings."
+    status.pending
     ? "Pending: Too few tabs open"
     : "Active";
   chrome.browserAction.setIcon({ path: iconPath });
@@ -190,17 +248,26 @@ function updateBroswerAction() {
 }
 
 var everySecond = window.setInterval(function () {
-  if (!status.pending && !status.paused && !status.disabled) {
+  var tick =
+    !status.paused &&
+    //(!status.disabled || (status.disabled && settings.timer_reset == "continue")) &&
+    (!status.pending || (status.pending && settings.timer_reset == "continue"));
+
+  if (tick) {
     Object.keys(times).forEach((tabId) => {
-      if (
+      if (!Object.keys(openTabs).includes(tabId)) {
+        delete times[tabId];
+      } else if (
         !tabLocked(tabId) &&
         !tabPinned(tabId) &&
         !tabActive(tabId) &&
+        times[tabId] > 0 &&
         (!tabAudible(tabId) || !settings.audible_lock)
       ) {
         times[tabId] = times[tabId] - 1;
       }
-      if (times[tabId] == 0) {
+
+      if (times[tabId] == 0 && !status.pending) {
         chrome.tabs.remove(parseInt(tabId));
       }
     });
@@ -218,18 +285,29 @@ function saveChanges() {
   );
 }
 
-function deleteOverMaxClosed() {
-  if (
-    parseInt(settings.max_stored) < parseInt(Object.keys(ClosedTab.tabs).length)
-  ) {
-    var difference =
-      parseInt(Object.keys(ClosedTab.tabs).length) -
-      parseInt(settings.max_stored);
-    for (var i = 0; i < difference; i++) {
-      //   todo    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      //var idToRemove = ClosedTab.closedOrder[0];
-      //delete ClosedTab.tabs[idToRemove];
+function keepClosedTabsBelowMax() {
+  const nClosedTabs = parseInt(Object.keys(ClosedTab.tabs).length);
+  const max = parseInt(settings.max_stored);
+  if (nClosedTabs > max) {
+    const idByTime = Object.keys(ClosedTab.tabs).sort(function (id_a, id_b) {
+      ClosedTab.tabs[id_a].timeClosed < ClosedTab.tabs[id_b].timeClosed;
+    });
+    for (var i = 0; i < nClosedTabs - max; i++) {
+      delete ClosedTab.tabs[idByTime[0]];
     }
+  }
+}
+
+function notification(tab) {
+  const isLocked = lockedTabIds.includes(tab.id);
+  const tString = isLocked ? "Tab Locked" : "Tab Unlocked";
+  if (settings.show_notifications) {
+    chrome.notifications.create({
+      iconUrl: "../images/icon128.png",
+      type: "basic",
+      title: tString,
+      message: `${tab.title}`,
+    });
   }
 }
 
@@ -275,8 +353,9 @@ chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
       settings[obj.key] = obj.value;
       resetTimers(obj.key);
       status.paused = settings.paused;
-      status.disabled = !settings.allow_closing;
-      deleteOverMaxClosed();
+      //status.disabled = !settings.allow_closing;
+      keepClosedTabsBelowMax();
+      setPendingStatus();
       saveChanges();
       updateBroswerAction();
       sendResponse({});
@@ -323,21 +402,31 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
         if (tabActive(tab.id)) {
           times[tab.id] = time();
         }
-      }, settings.reset_delay * 1000);
+      }, settings.timer_reset_delay * 1000);
     });
   });
 });
 
 chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
-  updateOpenTabs();
-  setPendingStatus();
+  if (info.status == "complete") {
+    updateOpenTabs();
+    setPendingStatus();
+    /*if (isAutoLockable(tab)) {
+      lockedTabIds.push(tab);
+      notification(tab);
+      chrome.browserAction.setBadgeText({ tabId: tab.id, text: "lock" });
+    }
+    if (lockedTabIds.includes(tab.id)) {
+      chrome.browserAction.setBadgeText({ tabId: tab.id, text: "lock" });
+    }*/
+  }
 });
 
 chrome.tabs.onRemoved.addListener(function (tabId) {
+  var tsClosed = times[tabId] <= 0;
   ClosedTab.onRemoved(tabId, tsClosed);
-  tsClosed = false;
-  delete openTabs[tabId];
   delete times[tabId];
+  delete openTabs[tabId];
   lockedTabIds = lockedTabIds.filter((item) => item != tabId);
   activeTabIds = activeTabIds.filter((item) => item != tabId);
   updateOpenTabs();
@@ -355,26 +444,18 @@ chrome.commands.onCommand.addListener(function (command) {
               { active: true, lastFocusedWindow: true },
               function (tabs) {
                 const tab = tabs[0];
-                if (lockedTabIds.includes(tab.id)) {
-                  lockedTabIds.pop(tab.id);
-                  chrome.notifications.create({
-                    iconUrl: "../images/icon128.png",
-                    type: "basic",
-                    title: "Tab Unlocked",
-                    message: `${tab.title}`,
-                  });
-                } else {
-                  lockedTabIds.push(tab.id);
-                  chrome.notifications.create({
-                    iconUrl: "../images/icon128.png",
-                    type: "basic",
-                    title: "Tab Locked",
-                    message: `${tab.title}`,
-                  });
-                }
+                lockedTabIds.includes(tab.id)
+                  ? lockedTabIds.pop(tab.id)
+                  : lockedTabIds.push(tab.id);
+                notification(tab);
+                chrome.browserAction.setBadgeText({
+                  tabId: tab.id,
+                  text: tabLocked(tab.id) ? "lock" : "",
+                });
               }
             );
           } else if (responseObject.confirmed) {
+            // handled in search.js
           }
         }
       );
@@ -393,9 +474,10 @@ chrome.storage.sync.get(["settings", "closedTabs"], function (result) {
       ClosedTab.tabs[id] = new ClosedTab(tab);
     });
   }
+  updateOpenTabs(setTimesOnStartup);
+  setPendingStatus();
+  Object.keys(openTabs).forEach((id) => {
+    times[id] = time();
+  });
 });
-updateOpenTabs(setTimesOnStartup);
-setPendingStatus();
-Object.keys(openTabs).forEach((id) => {
-  times[id] = time();
-});
+chrome.browserAction.setBadgeBackgroundColor({ color: "#008080" });

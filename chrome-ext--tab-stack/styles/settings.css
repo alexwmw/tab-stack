@@ -9,6 +9,7 @@ html {
     linear-gradient(45deg, var(--bg) 25%, transparent 25%);
   background-size: 100px 100px;
   background-color: var(--stripe);
+  background-attachment: fixed;
 }
 /* Input ****************************************************************/
 
@@ -41,12 +42,12 @@ input[type="checkbox"] {
 }
 
 input[type="number"] {
-  width: 4em;
+  width: 3em;
 }
 /* Upper & Outer ****************************************************************/
 
 #settings {
-  height:1100px;
+  height: 1100px;
   z-index: 9999999;
   padding-left: 66px;
   background-color: var(--background);
@@ -100,6 +101,7 @@ input[type="number"] {
   text-align: center;
   padding: 2px;
 }
+
 /* Settings Table ***************************************************************/
 
 .settings-table {
@@ -108,15 +110,21 @@ input[type="number"] {
   border-collapse: collapse;
   border-spacing: 0;
   width: 550px;
-  line-height: 1.5em;
+  /* line-height: 1.5em; */
+}
+.settings-table h3 {
+  height: 9px;
+  padding: 0;
 }
 .hr {
   border-bottom: solid 1px var(--table-border);
   height: 15px;
 }
 .setting-row td {
-  height: 35px;
+  height: 32px;
+  padding-left: 15px;
 }
+
 .settings-table a {
   color: var(--primary);
 }
@@ -129,8 +137,14 @@ input[type="number"] {
 .shortcut-row td:first-child() {
   width: 200px;
 }
-.main-setting {
+.shortcut-info td {
+  padding: 18px 0 12px 0;
+}
+.main-setting td {
+  padding: 10px 0 1px 0;
+  margin-left: 10px;
   font-weight: 600;
+  font-size: 1.05em;
 }
 .grey {
   color: var(--hover) !important;
@@ -208,7 +222,7 @@ ul {
   color: var(--primary-lighter);
 }
 .match-rules {
-  padding-top: 0.1px;;
+  padding-top: 0.1px;
 }
 .edit-list h3 {
   font-size: 12pt;

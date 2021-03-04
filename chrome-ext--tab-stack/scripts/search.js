@@ -59,7 +59,7 @@ $(document).ready(function () {
   function oldestToNewest(a, b) {
     return a.timeClosed - b.timeClosed;
   }
-  
+
   function updateAllResults() {
     chrome.runtime.sendMessage(
       { msg: "request_tabs" },
@@ -214,6 +214,10 @@ $(document).ready(function () {
     const tabId = tabIdOf(resultRow);
     const newState = $(resultRow).hasClass("locked") ? "unlocked" : "locked";
     $(resultRow).removeClass("locked unlocked").addClass(newState);
+    chrome.browserAction.setBadgeText({
+      tabId: tabId,
+      text: newState == "locked" ? "lock" : "",
+    });
     chrome.runtime.sendMessage(
       {
         msg: "request_locked_tabs",
@@ -294,9 +298,10 @@ $(document).ready(function () {
         )
       );
       noResults($(selector + ":visible").length == 0);
-      if ($(selector + ":visible").length != 0)
+      if ($(selector + ":visible").length != 0) {
         changeSelectedRowTo($(selector + ":visible").first());
-      $(".selected")[0].scrollIntoView();
+        $(".selected")[0].scrollIntoView();
+      }
     });
   }
 
@@ -316,7 +321,7 @@ $(document).ready(function () {
         return !isClosed && otherCriteria;
       case "Closed tabs":
         return isClosed && otherCriteria;
-      case "Closed by tab stack":
+      case "Auto-closed":
         if (isClosed) {
           return isClosedByTs && otherCriteria;
         } else {
@@ -448,11 +453,6 @@ $(document).ready(function () {
           )
           .addClass("selected");
       }
-
-      alert(range);
-      // for each between below ? last and this : this and first{
-      //    addClass slected
-      //  }
     } else {
       var id = tabIdOf(this);
       if (id in openTabs) {
@@ -473,6 +473,22 @@ $(document).ready(function () {
         );
       }
     }
+  });
+
+  $("#settings-link").on("click", function (e) {
+    e.stopPropagation;
+    chrome.tabs.query({}, function (tabs) {
+      var tabTo = null;
+      tabs.forEach(function (tab) {
+        if (tab.url.indexOf("/layouts/settings.html") > 0) {
+          tabTo = tab;
+        }
+      });
+      tabTo
+        ? chrome.tabs.update(tabTo.id, { active: true })
+        : chrome.tabs.create({ url: "/layouts/settings.html" });
+      window.close();
+    });
   });
 
   // When click on lock icon
@@ -677,7 +693,9 @@ $(document).ready(function () {
   // Chrome Listeners --------------------------------------------------------------------------------------------------------------------------
 
   chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
-    updateAllResults();
+    if (info.status == "complete") {
+      updateAllResults();
+    }
   });
 
   chrome.tabs.onRemoved.addListener(function (tabId) {
@@ -694,11 +712,8 @@ $(document).ready(function () {
     if (obj.msg == "command_lock_toggle") {
       sendReponse({ confirmed: true });
       var selected = $(".selected").first();
-      $(".selected").each(function (i, element) {
+      $(".selected[data-closed='false']").each(function (i, element) {
         lock(this);
-        setTimeout(function () {
-          //filterMatchCriteria(".result");
-        }, 100);
       });
     }
   });

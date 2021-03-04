@@ -1,6 +1,6 @@
 {
   "name": "tab stack",
-  "version": "1.0",
+  "version": "1.01",
   "description": "Closes tabs you don't need and makes it easy to restore closed tabs.",
   "permissions": ["tabs", "storage", "notifications"],
   "background": {
