@@ -431,7 +431,7 @@ $(document).ready(function () {
     // If so, do not trigger actions below.
     // Instead, appley .selected to the row
     const osKey = navigator.platform == "MacIntel" ? evt.metaKey : evt.ctrlKey;
-    if (osKey) {
+    if (osKey && $(".selected").length > 1) {
       $(this).toggleClass("selected");
     } else if (evt.shiftKey) {
       var first = $(".selected").last();
@@ -658,8 +658,12 @@ $(document).ready(function () {
         }
         break;
       // space, enter
-      case 13:
       case 32:
+        if ($("#search-filter").val().length == 0) {
+          $(".selected").trigger("click");
+        }
+        break;
+      case 13:
         $(".selected").trigger("click");
         break;
     }
@@ -693,9 +697,7 @@ $(document).ready(function () {
   // Chrome Listeners --------------------------------------------------------------------------------------------------------------------------
 
   chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
-    if (info.status == "complete") {
-      updateAllResults();
-    }
+    updateAllResults();
   });
 
   chrome.tabs.onRemoved.addListener(function (tabId) {
