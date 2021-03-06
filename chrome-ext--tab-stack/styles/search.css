@@ -401,6 +401,12 @@ td:nth-child(4) {
   color: var(--alt-win-tag);
   background-color: var(--white);
 }
+/* tag */
+.tag-incognito::before {
+  content: "Incognito";
+  color: var(--alt-win-tag);
+  background-color: fuchsia;
+}
 .tag-pinned::before {
   content: "pinned";
   color: var(--white);

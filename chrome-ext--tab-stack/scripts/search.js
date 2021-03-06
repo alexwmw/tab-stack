@@ -503,6 +503,11 @@ $(document).ready(function () {
 
   // Close tab on x
   $(document).on("click", ".result .fa-times", function (e) {
+    /*e.stopPropagation();
+    const closed = $(this).closest(".result").data("closed");
+    const id = tabIdOf($(this).closest(".result")[0]);
+    chrome.runtime.sendMessage({ msg: "tab_report", closed: closed, id: id });
+    /*/
     e.stopPropagation();
     var result = $(this).closest(".result");
     var tabId = tabIdOf(result[0]);

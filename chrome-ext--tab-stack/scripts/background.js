@@ -247,17 +247,13 @@ function updateBroswerAction() {
   chrome.browserAction.setTitle({ title: title });
 }
 
-var everySecond = window.setInterval(function () {
-  var tick =
+const everySecond = window.setInterval(function () {
+  const tick =
     !status.paused &&
-    //(!status.disabled || (status.disabled && settings.timer_reset == "continue")) &&
     (!status.pending || (status.pending && settings.timer_reset == "continue"));
-
   if (tick) {
-    Object.keys(times).forEach((tabId) => {
-      if (!Object.keys(openTabs).includes(tabId)) {
-        delete times[tabId];
-      } else if (
+    Object.keys(openTabs).forEach((tabId) => {
+      if (
         !tabLocked(tabId) &&
         !tabPinned(tabId) &&
         !tabActive(tabId) &&
@@ -266,7 +262,6 @@ var everySecond = window.setInterval(function () {
       ) {
         times[tabId] = times[tabId] - 1;
       }
-
       if (times[tabId] == 0 && !status.pending) {
         chrome.tabs.remove(parseInt(tabId));
       }
@@ -315,6 +310,19 @@ function notification(tab) {
 
 chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
   switch (obj.msg) {
+    case "tab_report":
+      const object = obj.closed ? ClosedTab.tabs : openTabs;
+      const tab = object[obj.id];
+      const report = [
+        "Type: " + (obj.closed ? "closed" : "open"),
+        "Title: " + tab.title,
+        "Url: " + tab.url,
+        !obj.closed
+          ? "Time created: " + times[obj.id]
+          : "Time remaining): " + tab.timeClosed,
+      ];
+      alert(report.join("\n"));
+      break;
     case "request_tabs":
       sendResponse({
         msg: "data sent from bg page",
@@ -479,5 +487,13 @@ chrome.storage.sync.get(["settings", "closedTabs"], function (result) {
   Object.keys(openTabs).forEach((id) => {
     times[id] = time();
   });
+  if (settings.show_notifications) {
+    chrome.notifications.create({
+      iconUrl: "../images/icon128.png",
+      type: "basic",
+      title: "Tab Stack is closing tabs on your behalf",
+      message: `To change settings, click the [ts] icon in Chrome.`,
+    });
+  }
 });
 chrome.browserAction.setBadgeBackgroundColor({ color: "#008080" });
