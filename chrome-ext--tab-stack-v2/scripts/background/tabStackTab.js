@@ -1,5 +1,5 @@
 class TabStackTab {
-  constructor(tab, container, matchesRule = function (tab, rule) {}) {
+  constructor(tab, settings, matchesRule = function (tab, rule) {}) {
     //Chrome tab properties
     this.active = tab.active;
     this.audible = tab.audible;
@@ -18,8 +18,8 @@ class TabStackTab {
     this.windowId = tab.windowId;
 
     //Copy references to parameter objects
-    this.container = container;
-    this.matchesRule - matchesRule;
+    this.settings = settings;
+    this.matchesRule = matchesRule;
 
     //Tab Stack variables
     this.timeCreated = parseInt(Date.now());

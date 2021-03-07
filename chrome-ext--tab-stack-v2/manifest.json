@@ -4,7 +4,14 @@
   "description": "Closes tabs you don't need and makes it easy to restore closed tabs.",
   "permissions": ["tabs", "storage", "notifications"],
   "background": {
-    "scripts": ["scripts/jquery-3.4.1.js", "scripts/background.js"],
+    "scripts": [
+      "scripts/jquery-3.4.1.js",
+      "tabContainer.js",
+      "tabStackTab.js",
+      "openTab.js",
+      "closedTab.js",
+      "scripts/background.js"
+    ],
     "persistent": true
   },
   "browser_action": {
