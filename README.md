@@ -4,7 +4,7 @@ A Chrome extension that closes tabs you don't need and makes it easy to restore 
 
 You can view and install it from <a href="https://chrome.google.com/webstore/detail/tab-stack/agjealbfpkdojoonkdjchophopohpaco">the chrome webstore</a>.
 
-**Note:** I plan to do some significant refactoring and commenting of the code, as well as adding additional features; however I am taking a break from this for the time being.
+**Note:** V1 is live; V2 is the beginning of some significant refactoring, and will include some additional features such as auto-locking
 
 # Description [Version 1.0] #
 

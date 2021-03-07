@@ -1,0 +1,234 @@
+/* Settings Page */
+
+html {
+  margin: 0 auto;
+  height: 90%;
+  background: linear-gradient(135deg, var(--bg) 25%, transparent 25%) -50px 0,
+    linear-gradient(225deg, var(--bg) 25%, transparent 25%) -50px 0,
+    linear-gradient(315deg, var(--bg) 25%, transparent 25%),
+    linear-gradient(45deg, var(--bg) 25%, transparent 25%);
+  background-size: 100px 100px;
+  background-color: var(--stripe);
+  background-attachment: fixed;
+}
+/* Input ****************************************************************/
+
+input,
+select {
+  background-color: var(--white);
+  color: var(--text);
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="button"],
+button {
+  color: white;
+  background-color: var(--primary);
+  border: solid 1px var(--table-border);
+  cursor: pointer;
+  min-width: 66px;
+  padding: 5px;
+}
+input[type="button"]:active,
+button {
+  background-color: var(--primary-lighter);
+}
+input[type="checkbox"] {
+  padding-top: 12px;
+  margin: 0 5px 0 0px;
+}
+
+input[type="number"] {
+  width: 3em;
+}
+/* Upper & Outer ****************************************************************/
+
+#settings {
+  height: 1100px;
+  z-index: 9999999;
+  padding-left: 66px;
+  background-color: var(--background);
+  opacity: 0.95;
+  margin-bottom: 0;
+}
+#title-border-box {
+  position: sticky;
+  top: 0;
+  border-bottom: solid 2px var(--secondary-lighter);
+  height: 90%;
+  background-color: var(--white);
+  z-index: 999;
+}
+.icon {
+  content: var(--icon);
+  display: inline;
+  position: relative;
+  left: 66px;
+  top: 4px;
+  height: 37px;
+}
+#settings-title {
+  position: relative;
+  left: 66px;
+  top: -11px;
+  font-family: var(--heading-family);
+  font-size: 18pt;
+  font-weight: 300;
+  color: var(--charcoal);
+}
+#close-settings {
+  position: absolute;
+  right: 15px;
+  top: 12px;
+  font-family: var(--heading-family);
+  text-decoration: underline;
+  font-size: 13pt;
+  font-weight: 300;
+  color: var(--primary);
+  cursor: pointer;
+}
+#saved-notification {
+  display: none;
+  position: absolute;
+  right: 15px;
+  top: 60px;
+  color: rgb(70, 129, 14);
+  font-size: 1.1em;
+  max-width: 140px;
+  text-align: center;
+  padding: 2px;
+}
+
+/* Settings Table ***************************************************************/
+
+.settings-table {
+  color: var(--text);
+  margin: 0;
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 550px;
+  /* line-height: 1.5em; */
+}
+.settings-table h3 {
+  height: 9px;
+  padding: 0;
+}
+.hr {
+  border-bottom: solid 1px var(--table-border);
+  height: 15px;
+}
+.setting-row td {
+  height: 32px;
+  padding-left: 15px;
+}
+
+.settings-table a {
+  color: var(--primary);
+}
+.shortcut-row td {
+  padding: 6px 20px;
+  width: 180px;
+  background-color: var(--white);
+  border: 2px solid var(--background);
+}
+.shortcut-row td:first-child() {
+  width: 200px;
+}
+.shortcut-info td {
+  padding: 18px 0 12px 0;
+}
+.main-setting td {
+  padding: 10px 0 1px 0;
+  margin-left: 10px;
+  font-weight: 600;
+  font-size: 1.05em;
+}
+.grey {
+  color: var(--hover) !important;
+}
+.grey input {
+  background-color: var(--background) !important;
+}
+
+/* or switch ***************************************************************/
+@keyframes fadeColor {
+  0% {
+    background-color: var(--background);
+  }
+  100% {
+    background-color: var(--primary);
+  }
+}
+.or-switch input[type="button"] {
+  display: inline;
+  width: 48px;
+  padding: 0;
+  margin: -2px;
+  height: 20px;
+  font-size: 8pt;
+  background-color: var(--background);
+  color: darkgrey;
+  border: solid 1px lightgrey;
+  border-radius: 2px;
+  padding: 0;
+}
+.or-switch input[type="button"]:focus {
+  outline: none;
+  border: 2px solid grey;
+}
+.or-switch input[type="button"]:hover {
+  cursor: pointer;
+}
+
+.or-switch input[type="button"].selected {
+  background-color: teal;
+  color: white;
+  font-weight: bold;
+  animation: fadeColor ease 0.3s;
+}
+
+.or-switch input:nth-child(2) {
+  margin-left: -2px;
+}
+
+/* Modals ***********************************************/
+.edit-list {
+  position: absolute;
+  top: 4%;
+  color: var(--text);
+  width: 660px !important;
+  height: 450px;
+  background-color: var(--background) !important;
+}
+.edit-list textarea {
+  display: block;
+  width: 95%;
+  height: 250px;
+  outline: none;
+  padding: 4px 4px;
+}
+.edit-list li {
+  margin: 0.5em 0;
+}
+.edit-list p,
+ul {
+  font-size: 9.5pt;
+  line-height: 1.5em;
+}
+.edit-list code {
+  color: var(--primary-lighter);
+}
+.match-rules {
+  padding-top: 0.1px;
+}
+.edit-list h3 {
+  font-size: 12pt;
+  margin-top: 23px;
+}
+.modal-buttons-container input {
+  margin: 10px 5px 0 0;
+  padding: 8px;
+}

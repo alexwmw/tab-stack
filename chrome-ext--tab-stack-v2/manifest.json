@@ -1,0 +1,43 @@
+{
+  "name": "tab stack",
+  "version": "2.0",
+  "description": "Closes tabs you don't need and makes it easy to restore closed tabs.",
+  "permissions": ["tabs", "storage", "notifications"],
+  "background": {
+    "scripts": ["scripts/jquery-3.4.1.js", "scripts/background.js"],
+    "persistent": true
+  },
+  "browser_action": {
+    "default_popup": "layouts/search.html"
+  },
+  "options_page": "layouts/settings.html",
+  "commands": {
+    "_execute_browser_action": {
+      "description": "Perform a search",
+      "suggested_key": {
+        "windows": "Ctrl+Shift+S",
+        "mac": "Command+Shift+S"
+      }
+    },
+    "lock-toggle": {
+      "description": "Lock/unlock current tab",
+      "suggested_key": {
+        "windows": "Ctrl+Shift+L",
+        "mac": "Command+Shift+L"
+      }
+    },
+    "delete-selected": {
+      "description": "Delete/forget the selected tab",
+      "suggested_key": {
+        "windows": "Ctrl+Delete",
+        "mac": "Command+Delete"
+      }
+    }
+  },
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  },
+  "manifest_version": 2
+}

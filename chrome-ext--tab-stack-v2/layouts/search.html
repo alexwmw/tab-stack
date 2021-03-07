@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript" src="../scripts/jquery-3.4.1.js"></script>
+    <script type="text/javascript" src="../scripts/psl.min.js"></script>
+    <script type="text/javascript" src="../scripts/search.js"></script>
+    <link rel="stylesheet" href="../styles/common.css" />
+    <link rel="stylesheet" href="../styles/search.css" />
+    <link rel="stylesheet" href="../fonts/font-awesome/css/all.css" />
+  </head>
+  <body>
+    <div id="searchcontainer">
+      <div id="close-button"><i class="fas fa-times"></i></div>
+      <span id="pseudosearchbox"><i class="fas fa-search"></i></span>
+      <input
+        tabindex="0"
+        autofocus
+        value=""
+        type="text"
+        id="searchbox"
+        placeholder="Search"
+      />
+      <select id="search-filter">
+        <option>All tabs</option>
+        <option>Open tabs</option>
+        <option>Closed tabs</option>
+        <option>Auto-closed</option>
+        <option>Locked tabs</option>
+        <option>Unlocked tabs</option>
+        <!--option>-> Open history -></option-->
+      </select>
+    </div>
+    <div id="results-area">
+      <div id="no-results">
+        <p><i class="fas fa-frown"> </i><br />No Results<br /></p>
+      </div>
+      <table id="results-table">
+        <colgroup>
+          <col class="favicon" />
+          <col class="tab-details" />
+          <col class="opt1" />
+          <col class="opt2" />
+        </colgroup>
+        <tbody id="results-tbody"></tbody>
+      </table>
+    </div>
+    <div class="footer">
+      <!--span class="footer-links" id="monitor-link"
+        ><a href="tab-history.html">
+          <i class="fas fa-angle-double-left"></i> Expand</a
+        ></span
+        -->
+      <span class="footer-links" id="settings-link"
+        ><a href=""> <i class="fas fa-wrench"></i> Settings</a></span
+      >
+      <span class="footer-links"
+        ><a id="theme-switch" href="">
+          <i class="fas fa-sun"></i> Theme</a
+        ></span
+      >
+      <span class="footer-links"
+        ><a data-extended="false" id="extend-button" href="">
+          <i class="fas"></i> Size</a
+        ></span
+      >
+      <span class="footer-links"
+        ><a data-paused="true" id="pause-button" href="">
+          <i class="fas fa-play"></i> Active</a
+        ></span
+      >
+      <span class="footer-status"><i class="fas fa-circle"></i></span>
+    </div>
+  </body>
+</html>

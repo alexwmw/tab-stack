@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html class="">
+  <head>
+    <link rel="stylesheet" href="../styles/common.css" />
+    <link rel="stylesheet" href="../styles/popup.css" />
+    <link rel="stylesheet" href="../styles/settings.css" />
+    <link rel="stylesheet" href="../fonts/font-awesome/css/all.css" />
+    <link rel="stylesheet" href="../scripts/jquery.modal.min.css" />
+    <script type="text/javascript" src="../scripts/jquery-3.4.1.js"></script>
+    <script
+      type="text/javascript"
+      src="../scripts/jquery.modal.min.js"
+    ></script>
+    <!--script type="text/javascript" src="../scripts/popup.js"></script-->
+    <script type="text/javascript" src="../scripts/settings.js"></script>
+  </head>
+
+  <body>
+    <!-- Header Area ----------------------------------------------->
+    <div id="title-border-box">
+      <a target="_blank" href="https://github.com/alexwmw/tab-stack"
+        ><img class="icon" src="../images/title.png" title="Link to github"
+      /></a>
+      <span id="saved-notification"
+        ><i class="fas fa-check"> </i>&nbsp;saved</span
+      >
+      <span id="settings-title"></span>
+      <span id="close-settings">close</span>
+    </div>
+    <!-- Settings ------------------------------------------------>
+    <div id="settings">
+      <div id="settings-view">
+        <form>
+          <table class="settings-table">
+            <!-- AUTOMATIC CLOSING ------------------------------->
+            <tr class="setting-row main-setting">
+              <td colspan="2">
+                <!--input
+                  checked
+                  type="checkbox"
+                  id="allow_closing"
+                  name="close-tabs"
+                  class="send-value-to-bg"
+                /-->
+                Automatic closing:
+              </td>
+            </tr>
+            <tr class="setting-row">
+              <td colspan="2">
+                Close tabs after:&nbsp;
+                <input
+                  class="time-input send-value-to-bg"
+                  min="0"
+                  max="180"
+                  type="number"
+                  id="_time_min"
+                />
+                min(s) &nbsp;&nbsp;
+                <input
+                  min="0"
+                  max="59"
+                  class="time-input send-value-to-bg"
+                  type="number"
+                  id="_time_sec"
+                />
+                sec(s)
+              </td>
+            </tr>
+            <tr class="setting-row">
+              <td colspan="2">
+                To reset a tab's timer, the tab must be active for:&nbsp;
+                <input
+                  id="reset_delay"
+                  min="0"
+                  max="99"
+                  type="number"
+                  class="send-value-to-bg"
+                />
+                second(s)
+              </td>
+            </tr>
+            <tr class="setting-row">
+              <td colspan="2">
+                Start closing tabs when more than:&nbsp;
+                <input
+                  min="1"
+                  max="99"
+                  id="max_allowed"
+                  type="number"
+                  class="send-value-to-bg"
+                />
+                tabs are open
+              </td>
+            </tr>
+            <tr class="setting-row">
+              <td colspan="2">
+                If not enough tabs are open:&nbsp;
+                <select class="send-value-to-bg" type="select" id="timer_reset">
+                  <option value="reset">Reset timers</option>
+                  <option value="continue">Continue timers</option>
+                  <option value="pause">Pause timers</option>
+                </select>
+              </td>
+            </tr>
+            <!--tr class="setting-row">
+              <td colspan="2">
+                <input
+                  id="audible_lock"
+                  class="send-value-to-bg"
+                  type="checkbox"
+                />
+                Prevent closing of tabs playing audio
+              </td>
+            </tr-->
+
+            <!--AUTOMATIC LOCKING--------------------------
+            <tr class="setting-row main-setting">
+              <td colspan="2">
+                Automatic locking:
+              </td>
+            </tr>
+            <tr id="list-button-row" class="setting-row">
+              <td colspan="2">
+                <input
+                  type="radio"
+                  name="auto_locking"
+                  value="none"
+                  id="auto_locking_none"
+                />
+                Do not lock any tabs automatically
+              </td>
+            </tr>
+            <tr id="list-button-row" class="setting-row">
+              <td colspan="2">
+                <input
+                  type="radio"
+                  name="auto_locking"
+                  value="matches"
+                  id="auto_locking_matches"
+                />
+                Automatically lock any tabs that match:&nbsp;
+                <input
+                  style="padding: 5px"
+                  type="button"
+                  class="change-view-button"
+                  id="match-list-button"
+                  value="Rules..."
+                />
+              </td>
+            </tr>
+            <tr id="list-button-row" class="setting-row">
+              <td colspan="2">
+                <input
+                  type="radio"
+                  name="auto_locking"
+                  value="not_matches"
+                  id="auto_locking_not_matches"
+                />
+                Automatically lock any tabs that don't match:&nbsp;
+                <input
+                  style="padding: 5px"
+                  type="button"
+                  class="change-view-button"
+                  id="not-match-list-button"
+                  value="Rules..."
+                />
+              </td>
+            </tr-->
+ 
+            <!--TAB HISTORY----------------------------->
+            <tr class="setting-row main-setting">
+              <td colspan="2">Tab history:</td>
+            </tr>
+            <tr class="setting-row">
+              <td colspan="2">
+                <input
+                  type="checkbox"
+                  id="clear_on_quit"
+                  name="O-clear-criteria"
+                  class="send-value-to-bg"
+                />
+                Clear closed tabs list on quit.
+              </td>
+            </tr>
+            <tr class="setting-row">
+              <td colspan="2">
+                Maximum number of closed tabs to store:&nbsp;
+                <input
+                  id="max_stored"
+                  class="send-value-to-bg"
+                  min="3"
+                  max="100"
+                  type="number"
+                />
+              </td>
+            </tr>
+            <tr class="setting-row">
+              <td colspan="2">
+                Do not duplicate closed tabs if:&nbsp;
+                <select
+                  class="send-value-to-bg"
+                  type="select"
+                  id="prevent_dup"
+                  name="duplicate-select"
+                >
+                  <option value="allow">Allow duplicates</option>
+                  <option value="url">URL exists</option>
+                  <option value="title_host">
+                    Title and host name exist
+                  </option>
+                </select>
+              </td>
+            </tr>
+            <tr class="setting-row">
+              <td colspan="2">
+                Delete closed tabs history: &nbsp;
+                <input type="button" id="clear-tabs" value="Delete history" />
+              </td>
+            </tr>
+
+            <!--INTERFACE SETTINGS----------------------------->
+            <tr class="setting-row main-setting">
+              <td colspan="2">Interface settings:</td>
+            </tr>
+            <tr class="setting-row indented">
+              <td colspan="2">
+                Select theme:&nbsp;&nbsp;
+                <input id="theme" style="display: none" type="button" />
+                <span class="or-switch">
+                  <input
+                    id="light-mode"
+                    style="border-radius: 4px 0 0 4px"
+                    type="button"
+                    class="theme-switch"
+                    value="Light" />
+                  <input
+                    id="system-mode"
+                    type="button"
+                    style="display: none; border-radius: 0 0"
+                    class="theme-switch"
+                    value="System" />
+                  <input
+                    id="dark-mode"
+                    style="border-radius: 0 4px 4px 0"
+                    type="button"
+                    class="theme-switch"
+                    value="Dark"
+                /></span>
+              </td>
+            </tr>
+            <tr class="setting-row">
+              <td colspan="2">
+                Search popup window size:&nbsp;
+                <select class="send-value-to-bg" type="select" id="window_size">
+                  <option value="small">Small</option>
+                  <option value="large">Large</option>
+                </select>
+              </td>
+            </tr>
+            <tr class="setting-row">
+              <td colspan="2">
+                <input
+                  type="checkbox"
+                  id="show_notifications"
+                  name="O-clear-criteria"
+                  class="send-value-to-bg"
+                />
+                Show notifications on startup and when a tab is locked
+              </td>
+            </tr>
+
+
+            <tr class="hr">
+              <td></td>
+            </tr>
+            <!--Keyboard-Shortcuts----------------------------->
+            <tr class="blank_row">
+              <td style="height: 0" colspan="3"></td>
+            </tr>
+            <tr class='main-setting'>
+              <td colspan="2">Keyboard shortcuts:</td>
+            </tr>
+            <tr class="shortcut-info" id="universal-shortcuts">
+              <td colspan="2">
+                The following shortcuts work from anywhere inside Chrome.
+                <a id="chromeExt" href="">Edit these shortcuts</a>.
+              </td>
+            </tr>
+            <tr></tr>
+            <tr class="shortcut-row">
+              <td>
+                <span class="">Open tab search:</span>
+              </td>
+              <td>
+                <span id="sc1"></span>
+              </td>
+            </tr>
+            <tr class="shortcut-row">
+              <td>
+                <span class="">Lock/unlock current tab:</span>
+              </td>
+              <td>
+                <span id="sc2"></span>
+              </td>
+            </tr>
+            <tr class="shortcut-info">
+              <td colspan="2">
+                The following shortcuts only work inside the 'search' popup.
+              </td>
+            </tr>
+            <tr></tr>
+            <tr class="shortcut-row">
+              <td>
+                <span>Lock/unlock the highlighted tab(s):</span>
+              </td>
+              <td><span id="sc4"></span></td>
+            </tr>
+            <tr class="shortcut-row">
+              <td>
+                <span>Go-to/re-open the selected tab(s):</span>
+              </td>
+              <td>
+                <span id="sc6">Enter</span>
+              </td>
+            </tr>
+            <tr class="shortcut-row">
+              <td>
+                <span>Close/delete the selected tab(s):</span>
+              </td>
+              <td><span id="sc3">tbc</span></td>
+            </tr>
+            <tr class="shortcut-row">
+              <td>
+                <span>Select multiple rows:</span>
+              </td>
+              <td>
+                <span id="sc5">&#8679;Up / &#8679;Down</span>
+              </td>
+            </tr>
+          </table>
+        </form>
+      </div>
+      <!-- Modals ------------------------->
+      <div id="edit-match-list" class="edit-list modal">
+        <h2 class="match-rules-button">
+          <i class="fas fa-plus-square"></i> Match rules
+        </h2>
+        <div style="display: none" class="match-rules">
+          <p>
+            URL-matching criteria can be entered, one per line in the form:<br />
+
+            <code>[procotol]</code> // <code>[hostname]</code> /
+            <code>[path]</code>
+          </p>
+          <p>
+            If omitted, <code>[protocol]</code> will be replaced with
+            <code>https:</code> by default. The wildcard character '*' can be
+            used to replace any field or the beginning or end of a field string.
+            Below are some examples of valid criteria:
+          </p>
+          <ul>
+            <li>
+              <code>www.website.com/</code> will match
+              <u>only</u> www.website.com and no paths
+            </li>
+            <li>
+              <code>*website.com/*</code> will match any hostname ending in
+              "website.com" and with any path
+            </li>
+            <li>
+              <code>www.videos.com/watch*</code> will match with www.videos.com
+              with any path beginning 'watch'
+            </li>
+            <li>
+              <code>chrome://*</code> will match any page using the
+              <code>chrome</code> protocol
+            </li>
+          </ul>
+          <p>
+            Alternatively, you may enter a substring to search for using one of
+            the <code>:identifiers:</code> below. There are three identifiers. Identifiers begin and end with a colon ':' and should be followed by the substring to match with:
+          </p>
+          <ul>
+            <li>
+              <code>:title:foo</code> will match any page with 'foo' in the title
+            </li>
+            <li>
+              <code>:hostname:org.uk</code> will match any page with 'org.uk' in
+              the hostname
+            </li>
+            <li>
+              <code>:url:admin</code> will match any page with 'admin' in the url
+            </li>
+          </ul>
+        </div>
+        <!--span id='match-rules-info'><u>More</u></span-->
+        <div class="textarea-area">
+          <h3>
+            <strong>Automatically lock any tabs that match:</strong>
+          </h3>
+          <textarea type="textarea" id="match_rules"></textarea>
+          <div class="modal-buttons-container">
+            <a style="display: none" rel="modal:close" href="#">Close</a>
+            <input class="cancel-rule-changes" type="button" value="Cancel" />
+            <input
+              id="save-match-list"
+              rel="modal:close"
+              class="save-rules-btn"
+              type="button"
+              value="Save Changes"
+            />
+          </div>
+        </div>
+      </div>
+      <a
+        style="display: none"
+        id="edit-match-list-link"
+        href="#edit-match-list"
+        rel="modal:open"
+        >Open Modal</a
+      >
+
+      <div id="edit-not-match-list" class="edit-list modal">
+        <h2>Match rules</h2>
+        <p>
+          URLs can be entered below, one per line, in the form
+          [host].[domain]/[path]
+        </p>
+        <p>For example: google.com, bbc.co.uk/weather</p>
+        <p>
+          The wildcard character '*' can be used to replace any field. For
+          example, website.com/*/bar would match website.com/foo/bar
+        </p>
+        <p style="font-size: 9pt">
+          <strong>Automatically lock any tabs that <u>don't</u> match:</strong>
+        </p>
+        <textarea type="textarea" id="not_match_rules"></textarea>
+        <div class="modal-buttons-container">
+          <a style="display: none" rel="modal:close" href="#">Close</a>
+          <input class="cancel-rule-changes" type="button" value="Cancel" />
+          <input
+            id="save-not-match-list"
+            rel="modal:close"
+            class="save-rules-btn"
+            type="button"
+            value="Save Changes"
+          />
+        </div>
+      </div>
+      <a
+        style="display: none"
+        id="edit-not-match-list-link"
+        href="#edit-not-match-list"
+        rel="modal:open"
+        >Open Modal</a
+      >
+    </div>
+  </body>
+</html>
