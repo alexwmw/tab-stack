@@ -1,31 +1,50 @@
 class TabContainer {
+
+  tabs = {};
+
   constructor() {
     this.tabs = {};
   }
 
-  // Getters allow easy access to open / closed / locked tabs etc
-  get openTabs() {
-    return tabs.filter((tab) => !tab.closed);
+  filteredArray(filterFunction) {
+    return Object.values(this.tabs).filter(filterFunction);
   }
 
-  get closedTabs() {
-    return tabs.filter((tab) => tab.closed);
-  }
-
-  get lockedTabs() {
-    return tabs.filter((tab) => tab.locked);
-  }
-
-  get activeTabs() {
-    return tabs.filter((tab) => tab.active);
-  }
-
-  filtered(filterFunction) {
-    return this.tabs.filter(filterFunction);
+  filteredObj(filterFunction) {
+    const retObj = {};
+    Object.values(this.tabs)
+      .filter(filterFunction)
+      .forEach((tab) => (retObj[tab.id] = tab));
+    return retObj;
   }
 
   filterAndEach(filterFunction, eachFunction) {
-    this.tabs.filter(filterFunction).forEach(eachFunction);
+    Object.values(this.tabs).filter(filterFunction).forEach(eachFunction);
+  }
+
+  // Getters allow easy access to open / closed / locked tabs etc
+  get openTabs() {
+    return Object.values(this.tabs).filter((tab) => !tab.closed);
+  }
+
+  get closedTabs() {
+    return Object.values(this.tabs).filter((tab) => tab.closed);
+  }
+
+  get lockedTabs() {
+    return Object.values(this.tabs).filter((tab) => tab.locked);
+  }
+
+  get activeTabs() {
+    return Object.values(this.tabs).filter((tab) => tab.active);
+  }
+
+  get pinnedTabs() {
+    return Object.values(this.tabs).filter((tab) => tab.pinned);
+  }
+
+  get audibledTabs() {
+    return Object.values(this.tabs).filter((tab) => tab.audible);
   }
 
   // Used to set the 'pending' status in the background
@@ -40,7 +59,9 @@ class TabContainer {
     if (arguments.length == 0) {
       this.openTabs.forEach((tab) => tab.resetTimer());
     } else {
-      this.tabs.filter(filterFunction).forEach((tab) => tab.resetTimer());
+      Object.values(this.tabs)
+        .filter(filterFunction)
+        .forEach((tab) => tab.resetTimer());
     }
   }
 
@@ -50,14 +71,24 @@ class TabContainer {
     if (arguments.length == 0) {
       this.openTabs.forEach((tab) => tab.tick());
     } else {
-      this.tabs.filter(filterFunction).forEach((tab) => tab.tick());
+      this.filterAndEach(filterFunction, (tab) => tab.tick());
     }
   }
 
-  addTab(openTab) {
+  add(openTab) {
     if (!openTab.closed) {
       this.tabs[tabId] = openTab;
     } else if (openTab.closed) {
+      throw new TypeError("Closed tabs should not be added external to class");
+    } else {
+      throw new TypeError("Only openTab (tabStackTab) should be added");
+    }
+  }
+
+  replace(tabId, newOpenTab){
+    if (!newOpenTab.closed) {
+      this.tabs[tabId] = newOpenTab;
+    } else if (newOpenTab.closed) {
       throw new TypeError("Closed tabs should not be added external to class");
     } else {
       throw new TypeError("Only openTab (tabStackTab) should be added");

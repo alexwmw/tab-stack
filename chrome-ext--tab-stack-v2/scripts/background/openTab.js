@@ -23,13 +23,13 @@ class OpenTab extends TabStackTab {
     return false;
   }
 
-  lock(mustLock, displayAfterLock) {
+  lock(bool, displayAfterLock) {
     if (arguments.length == 1) {
       //toggle
       this.lock = !this.lock;
     } else if (arguments.length == 2) {
       //set by parameter
-      this.lock = mustLock;
+      this.lock = bool;
     }
     displayAfterLock(this)
   }

@@ -113,7 +113,7 @@ window.setInterval(function () {
     !status.paused &&
     (!status.pending || (status.pending && settings.timer_reset == "continue"));
   if (statusAllowsTicking) {
-    allTabs.filterAndEach(
+    /*allTabs.filterAndEach(
       (tab) =>
         !tab.closed &&
         !tab.locked &&
@@ -126,7 +126,7 @@ window.setInterval(function () {
     allTabs.filterAndEach(
       (tab) => !tab.closed && tab.timeRemaining <= 0,
       (tab) => chrome.tabs.remove(parseInt(tab.id))
-    );
+    );*/
   }
 }, 1000);
 
@@ -165,7 +165,7 @@ chrome.runtime.onMessage.addListener(function (obj, sender, sendResponse) {
 
 chrome.tabs.onCreated.addListener(function (chromeTab) {
   if (chromeTab.title != "New Tab") {
-    allTabs.addTab(new OpenTab(chromeTab, settings, matchesRule));
+    allTabs.add(new OpenTab(chromeTab, settings, matchesRule));
   }
   changePendingStatus();
 });
@@ -180,7 +180,7 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
 
 chrome.tabs.onUpdated.addListener(function (tabId, info, chromeTab) {
   if (info.status == "complete") {
-    allTabs.openTabs[tabId] = new OpenTab(chromeTab, settings, matchesRule);
+    allTabs.replace(tabId, new OpenTab(chromeTab, settings, matchesRule));
     changePendingStatus();
   }
 });

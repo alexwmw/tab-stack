@@ -5,12 +5,13 @@
   "permissions": ["tabs", "storage", "notifications"],
   "background": {
     "scripts": [
-      "scripts/jquery-3.4.1.js",
-      "tabContainer.js",
-      "tabStackTab.js",
-      "openTab.js",
-      "closedTab.js",
-      "scripts/background.js"
+      "scripts/jquery/jquery-3.4.1.js",
+      "scripts/foreground/helperFunctions.js",
+      "scripts/background/tabContainer.js",
+      "scripts/background/tabStackTab.js",
+      "scripts/background/openTab.js",
+      "scripts/background/closedTab.js",
+      "scripts/background/background.js"
     ],
     "persistent": true
   },

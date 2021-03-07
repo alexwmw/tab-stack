@@ -1,86 +1,22 @@
 $(document).ready(function () {
   // Variables --------------------------------------------------------------
 
-  // Constant = () =>  ------------------------------------------------------
+  var allTabs = new TabContainer();
 
-  const element = (type) => document.createElement(type);
+  chrome.storage.sync.get(["allTabs"], function (result) {
+    allTabs = result.allTabs;
+  });
 
-  const elementOfClass = (typ, clas) => {
-    var elem = element(typ);
-    elem.classList.add(clas);
-    return elem;
-  };
+  function updateAfterLoad(result) {
+    allTabs = result["allTabs"];
+    updateResults();
+  }
 
-  const elementOfClasses = (typ, cList) => {
-    var elem = element(typ);
-    $.each(cList, function (i, c) {
-      elem.classList.add(c);
-    });
-    return elem;
-  };
+  function updateResults() {}
 
-  const isChromeTab = (tab) =>
-    tab.url.substring(0, tab.url.indexOf(":")) == "chrome"
-      ? tab.url.substring(0, tab.url.indexOf(":"))
-      : false;
-
-
-
-  // Functions ----------------------------------------------------------------------
-
-
-
-  // Settings ------------------------------------------------------------------------------------------------------------------------------
-
+  getFromStorage("allTabs", updateAfterLoad);
 
   // Click events --------------------------------------------------------------------------------------------------------------------------
-
-  // When click on .result
-  $(document).on("click", ".result:visible", function (evt) {
-    // Check if cmd / ctrl is being pressed.
-    // If so, do not trigger actions below.
-    // Instead, appley .selected to the row
-    const osKey = navigator.platform == "MacIntel" ? evt.metaKey : evt.ctrlKey;
-    if (osKey) {
-      $(this).toggleClass("selected");
-    } else if (evt.shiftKey) {
-      var first = $(".selected").last();
-      var last = $(".selected").first();
-      var below =
-        $(".result:visible").index(this) > $(".result:visible").index(last);
-      if (below) {
-        $(".result:visible")
-          .slice(
-            $(".result:visible").index(last),
-            $(".result:visible").index(this) + 1
-          )
-          .addClass("selected");
-      } else {
-        $(".result:visible")
-          .slice(
-            $(".result:visible").index(this),
-            $(".result:visible").index(last)
-          )
-          .addClass("selected");
-      }
-    } else {
-      var id = tabIdOf(this);
-      if (id in openTabs) {
-        setTimeout(function () {
-          // make tab active
-          chrome.tabs.update(id, { active: true });
-          // make window focused
-          chrome.tabs.get(id, function (tab) {
-            chrome.windows.update(tab.windowId, { focused: true });
-          });
-          updateAllResults();
-          self.close();
-        }, 100);
-      } else if (id in closedTabs) {
-        chrome.runtime.sendMessage({ msg: "resurrect", tabId: id });
-      }
-    }
-  });
 
   $("#settings-link").on("click", function (e) {
     e.stopPropagation;
@@ -99,44 +35,10 @@ $(document).ready(function () {
   });
 
   // When click on lock icon
-  $(document).on("click", ".result .lock-toggle i", function (e) {
-    var result = $(this).closest(".result")[0];
-    e.stopPropagation();
-    lock(result);
-    setTimeout(function () {
-      filterMatchCriteria(".result");
-    }, 100);
-  });
+  $(document).on("click", ".result .lock-toggle i", function (e) {});
 
   // Close tab on x
-  $(document).on("click", ".result .fa-times", function (e) {
-    /*e.stopPropagation();
-    const closed = $(this).closest(".result").data("closed");
-    const id = tabIdOf($(this).closest(".result")[0]);
-    chrome.runtime.sendMessage({ msg: "tab_report", closed: closed, id: id });
-    /*/
-    e.stopPropagation();
-    var result = $(this).closest(".result");
-    var tabId = tabIdOf(result[0]);
-    result.hide();
-    if (openTabs[tabId]) {
-      chrome.tabs.remove(tabId);
-    }
-    if (closedTabs[tabId]) {
-      chrome.runtime.sendMessage(
-        { msg: "forget_closed_tab", data: tabId }
-        /*
-        function (responseObject) {
-          closedTabs = responseObject.closedTabs;
-        }
-        */
-      );
-    }
-    if (result.hasClass("selected")) {
-      result.toggleClass("selected");
-      result.next(":visible").toggleClass("selected");
-    }
-  });
+  $(document).on("click", ".result .fa-times", function (e) {});
 
   $(document).on("mouseenter", ".result td:nth-child(3)", function (e) {
     $(this).find("i").removeClass("fa-volume-up");
@@ -158,12 +60,6 @@ $(document).ready(function () {
     $("#pause-button").text(paused ? " Paused" : " Active");
     $("#pause-button").prepend(paused ? pauseIcon : playIcon);
     $("#pause-button").data("paused", !paused);
-    chrome.runtime.sendMessage({
-      msg: "set_setting",
-      key: "paused",
-      value: paused,
-    });
-    changeStatus();
   });
 
   $("#extend-button").on("click", function (e) {
@@ -177,12 +73,6 @@ $(document).ready(function () {
     $(this)
       .find("i")
       .replaceWith(!makeLarge ? makeLongIcon : makeShortIcon);
-
-    chrome.runtime.sendMessage({
-      msg: "set_setting",
-      key: "window_size",
-      value: makeLarge ? "large" : "small",
-    });
   });
 
   //Click theme switch
@@ -190,17 +80,10 @@ $(document).ready(function () {
     e.preventDefault();
     $(this).find("i").toggleClass("fa-sun fa-moon");
     $("body").toggleClass("dark");
-    const theme = $("body").first().hasClass("dark") ? "dark" : "light";
-    chrome.runtime.sendMessage({
-      msg: "set_setting",
-      key: "theme",
-      value: theme,
-    });
   });
 
   // Key & Change  events --------------------------------------------------------------------------------------------------------------------
 
-  var prevVal;
   // Filter results by dropdown
   $("#search-filter").change(function () {
     const val = $(this).val();
@@ -210,12 +93,6 @@ $(document).ready(function () {
     } else {
       filterMatchCriteria(".result");
       $("#searchbox").focus();
-      chrome.runtime.sendMessage({
-        msg: "set_setting",
-        key: "filterSelection",
-        value: val,
-      });
-      prevVal = val;
     }
   });
 
@@ -302,27 +179,7 @@ $(document).ready(function () {
     }
   });
 
-  // Shortcuts
-  $(document).keyup(function (e) {});
-
-  // Shortcuts
-  $(document).keyup(function (e) {});
-
   // Chrome Listeners --------------------------------------------------------------------------------------------------------------------------
-
-  chrome.tabs.onUpdated.addListener(function (tabId, info, tab) {
-    updateAllResults();
-  });
-
-  chrome.tabs.onRemoved.addListener(function (tabId) {
-    var result = $(".result[data-tabid=" + tabId + "]");
-    result.fadeOut();
-    if (result.hasClass("selected")) {
-      result.toggleClass("selected");
-      result.next().toggleClass("selected");
-    }
-    updateAllResults();
-  });
 
   chrome.commands.onCommand.addListener(function (command) {
     switch (command) {
