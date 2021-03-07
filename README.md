@@ -1,4 +1,4 @@
-<img src="./chrome-ext--tab-stack/images/title.png" width="20%">
+<img src="./chrome-ext--tab-stack-v1/images/title.png" width="20%">
 
 A Chrome extension that closes tabs you don't need and makes it easy to restore closed tabs.
 
@@ -60,9 +60,9 @@ A status icon in the bottom right of the search window footer indicates whether 
 
 # Screenshots #
 
-<img src="./chrome-ext--tab-stack/images/screenshots/Screenshot%202021-02-27%20at%2016.58.04.png" >
-<img src="./chrome-ext--tab-stack/images/screenshots/Screenshot%202021-02-27%20at%2016.57.30.png" >
+<img src="./chrome-ext--tab-stack-v1/images/screenshots/Screenshot%202021-02-27%20at%2016.58.04.png" >
+<img src="./chrome-ext--tab-stack-v1/images/screenshots/Screenshot%202021-02-27%20at%2016.57.30.png" >
 
 
-<img src="./chrome-ext--tab-stack/images/screenshots/Screenshot%202021-02-27%20at%2016.57.54.png" >
-<img src="./chrome-ext--tab-stack/images/screenshots/Screenshot%202021-02-27%20at%2016.58.17.png" >
+<img src="./chrome-ext--tab-stack-v1/images/screenshots/Screenshot%202021-02-27%20at%2016.57.54.png" >
+<img src="./chrome-ext--tab-stack-v1/images/screenshots/Screenshot%202021-02-27%20at%2016.58.17.png" >
