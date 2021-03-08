@@ -1,5 +1,4 @@
 class TabContainer {
-
   tabs = {};
 
   constructor() {
@@ -11,11 +10,19 @@ class TabContainer {
   }
 
   filteredObj(filterFunction) {
-    const retObj = {};
+    const entries = {};
     Object.values(this.tabs)
       .filter(filterFunction)
-      .forEach((tab) => (retObj[tab.id] = tab));
-    return retObj;
+      .forEach((tab) => (entries[tab.id] = tab));
+    return entries;
+  }
+
+  restoreClosedTabs() {
+    const entries = {};
+    Object.values(this.tabs)
+      .filter((tab) => tab.closed)
+      .forEach((tab) => (entries[tab.id + "c"] = tab));
+    return entries;
   }
 
   filterAndEach(filterFunction, eachFunction) {
@@ -75,6 +82,7 @@ class TabContainer {
     }
   }
 
+  // Add Chrome tabs to the tab container (when they are opened in Chrome)
   add(openTab) {
     if (!openTab.closed) {
       this.tabs[tabId] = openTab;
@@ -85,18 +93,40 @@ class TabContainer {
     }
   }
 
-  replace(tabId, newOpenTab){
-    if (!newOpenTab.closed) {
+  // replace one open tab with another, retaining the original ID
+  replaceOpenTab(tabId, newOpenTab) {
+    if (!newOpenTab.closed && !tabs[tabId].closed) {
       this.tabs[tabId] = newOpenTab;
     } else if (newOpenTab.closed) {
       throw new TypeError("Closed tabs should not be added external to class");
-    } else {
-      throw new TypeError("Only openTab (tabStackTab) should be added");
+    } else if (tabs[tabId].closed) {
+      throw new TypeError(
+        "Do not use this method to replace Closed tabs. Use .resurrect() instead."
+      );
     }
   }
 
+  // replace a closed tab with a new open tab
+  resurrect(tabId, keyValues, callback = false) {
+    if (tabs[tabId].closed) {
+      delete this.tabs[tabId];
+      const container = this;
+      chrome.tabs.create({}, function (tab) {
+        container.add(
+          new OpenTab(tab, keyValues.settings, keyValues.matchRule)
+        );
+      });
+      if (callback) {
+        callback();
+      }
+    } else if (!tabs[tabId].closed) {
+      ("You cannot use .resurrect() with open tabs.");
+    }
+  }
+
+  // Used if the user wants to delete a closed tab for tab history
   forget(tabId) {
-    if (!tab.closed) {
+    if (!tabs[tabId].closed) {
       throw new TypeError("Only closed tabs can be forgotten");
     }
     delete this.tabs[tabId];
