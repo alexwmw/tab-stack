@@ -85,7 +85,7 @@ class TabContainer {
   // Add Chrome tabs to the tab container (when they are opened in Chrome)
   add(openTab) {
     if (!openTab.closed) {
-      this.tabs[tabId] = openTab;
+      this.tabs[openTab.id] = openTab;
     } else if (openTab.closed) {
       throw new TypeError("Closed tabs should not be added external to class");
     } else {
@@ -95,11 +95,11 @@ class TabContainer {
 
   // replace one open tab with another, retaining the original ID
   replaceOpenTab(tabId, newOpenTab) {
-    if (!newOpenTab.closed && !tabs[tabId].closed) {
+    if (!newOpenTab.closed && !this.tabs[tabId].closed) {
       this.tabs[tabId] = newOpenTab;
     } else if (newOpenTab.closed) {
       throw new TypeError("Closed tabs should not be added external to class");
-    } else if (tabs[tabId].closed) {
+    } else if (this.tabs[tabId].closed) {
       throw new TypeError(
         "Do not use this method to replace Closed tabs. Use .resurrect() instead."
       );
@@ -108,7 +108,7 @@ class TabContainer {
 
   // replace a closed tab with a new open tab
   resurrect(tabId, keyValues, callback = false) {
-    if (tabs[tabId].closed) {
+    if (this.tabs[tabId].closed) {
       delete this.tabs[tabId];
       const container = this;
       chrome.tabs.create({}, function (tab) {
@@ -126,13 +126,13 @@ class TabContainer {
 
   // Used if the user wants to delete a closed tab for tab history
   forget(tabId) {
-    if (!tabs[tabId].closed) {
+    if (!this.tabs[tabId].closed) {
       throw new TypeError("Only closed tabs can be forgotten");
     }
     delete this.tabs[tabId];
   }
 
-  close(tabId, limit_value, duplicateFilter = function (tab) {}) {
+  close(tabId, settings, duplicateFilter) {
     if (this.tabs[tabId].closed) {
       throw new TypeError("Only open tabs can be closed");
     }
@@ -141,6 +141,8 @@ class TabContainer {
     if (this.closedTabs.length > limit_value) {
       // remove oldest tab
     }
+
+
     this.tabs = this.tabs.filter(duplicateFilter);
   }
 }

@@ -52,32 +52,25 @@ var defaultSettings = {
  * An event listener updates local settings on every change.
  */
 const settingsHandler = {
-  get: function (obj, property) {
-    if (property == "allowedTime") {
-      return obj._time_min * 60 + obj._time_sec / 1;
-    }
-    if (property == "selected_match_rules") {
-      return obj.auto_locking != "none"
-        ? // Check in setting that this is the right value
-          obj[obj.auto_locking + "_rules"]
-        : false;
-    }
-    return obj[property];
+  get: function (obj, property, receiver) {
+
+    return obj.property;
   },
-  set: function (obj, property, value) {
+  set: function (obj, property, receiver, value) {
     if (property == "_time_min" || property == "_time_sec") {
       allTabs.resetTimers();
     }
+    obj[property] = value;
     // Save to sync storage on every 'set'
     chrome.storage.sync.set({ settings: obj });
   },
 };
 
-const settings = new Proxy(_settings, settingsHandler);
+var settings = new Proxy({}, settingsHandler);
 
 // Functions  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-function changePendingStatus() {
+/*function changePendingStatus() {
   if (allTabs.withinPendingRange(settings.min_required)) {
     status.pending = true;
     if (settings.timer_reset == "reset") {
@@ -86,9 +79,21 @@ function changePendingStatus() {
   } else {
     status.pending = false;
   }
+}*/
+
+function allowedTime(settings) {
+  return settings._time_min * 60 + settings._time_sec / 1;
 }
 
+function selected_match_rules(settings) {
+  return settings.auto_locking != "none" // Check in setting that this is the right value
+    ? settings[settings.auto_locking + "_rules"]
+    : false;
+}
+
+
 function matchesRule(tabObj, ruleStr) {
+  /*
   // return true if tab matches rule
   const tabURL = new URL(tabObj.url.toLowerCase());
   const ruleURL = ruleStr[0] == ":" ? false : new URL(ruleStr.trim());
@@ -116,8 +121,10 @@ function matchesRule(tabObj, ruleStr) {
   }
   alert("tab stack: Bad formatted rule.\nCheck your rules in settings!");
   return false;
+  */
 }
 
+//  Used in a tab's .lock( callback ) method
 function displayAfterLock(tab) {
   if (settings.lock_notification) {
     chrome.notifications.create({
@@ -133,13 +140,21 @@ function displayAfterLock(tab) {
   });
 }
 
+function setting(key) {
+  return settings.key;
+}
+
+function duplicateFilter(tab) {
+  return true;
+}
+
 // Intervals - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 window.setInterval(function () {
   const statusAllowsTicking =
     !status.paused &&
     (!status.pending ||
-      (status.pending && _settings.timer_reset == "continue"));
+      (status.pending && settings.timer_reset == "continue"));
   if (statusAllowsTicking) {
     /*allTabs.filterAndEach(
       (tab) =>
@@ -156,27 +171,14 @@ window.setInterval(function () {
       (tab) => chrome.tabs.remove(parseInt(tab.id))
     );*/
   }
-}, 1000);
-
-// Listeners - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-chrome.storage.onChanged.addListener(function (changes, areaName) {
-  for (var key in changes) {
-    if (key == "settings") {
-      _settings = changes[key];
-    } else if (key == "allTabs") {
-      allTabs = changes[key];
-    }
-  }
-});
-
+}, 1000); /*
 chrome.tabs.onCreated.addListener(function (chromeTab) {
   if (chromeTab.title != "New Tab") {
-    allTabs.add(new OpenTab(chromeTab, _settings, matchesRule));
+    allTabs.add(new OpenTab(chromeTab, settings, matchesRule));
   }
-  changePendingStatus();
+  //changePendingStatus();
 });
-
+*/ /*
 chrome.tabs.onActivated.addListener(function (activeInfo) {
   allTabs.openTabs[activeInfo.tabId].active = true;
   allTabs.filterAndEach(
@@ -184,19 +186,22 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
     (tab) => (tab.active = false)
   );
 });
-
+*/ /*
 chrome.tabs.onUpdated.addListener(function (tabId, info, chromeTab) {
   if (info.status == "complete") {
-    allTabs.replaceOpenTab(tabId, new OpenTab(chromeTab, _settings, matchesRule));
-    changePendingStatus();
+    allTabs.replaceOpenTab(
+      tabId,
+      new OpenTab(chromeTab, settings, matchesRule)
+    );
+    //changePendingStatus();
   }
 });
-
+*/ /*
 chrome.tabs.onRemoved.addListener(function (tabId) {
-  allTabs.close(tabId, _settings.max_stored, duplicateFilter);
-  changePendingStatus();
+  allTabs.close(tabId, settings.limit_value, duplicateFilter);
+  //changePendingStatus();
 });
-
+*/ /*
 chrome.commands.onCommand.addListener(function (command) {
   switch (command) {
     case "lock-toggle":
@@ -209,26 +214,62 @@ chrome.commands.onCommand.addListener(function (command) {
       break;
   }
 });
+*/
+
+// Listeners - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/*
+chrome.storage.onChanged.addListener(function (changes, areaName) {
+  for (var key in changes) {
+    if (key == "settings") {
+      settings = changes[key];
+    } else if (key == "allTabs") {
+      allTabs = changes[key];
+    }
+  }
+});
+*/
+function stringify(obj) {
+  return JSON.stringify(obj);
+}
+
+function logAllTabs() {
+  console.log("alltabs: " + stringify(Object.keys(allTabs.tabs)));
+}
 
 // Main  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+//chrome.storage.sync.clear(function(){})
+
 
 // Pull settings and closedTabs from storage
 chrome.storage.sync.get(["settings"], function (result) {
   if (result["settings"]) {
-    _settings = result["settings"];
+    console.log(result["settings"]);
+    settings = result["settings"];
   } else {
-    _settings = defaultSettings;
+    console.log("using default settings");
+    settings = defaultSettings;
+    chrome.storage.sync.set({ settings: settings });
   }
   if (result["allTabs"] && !settings.clear_on_quit) {
     allTabs.tabs = result["allTabs"].restoreClosedTabs();
   }
+  logAllTabs();
 
   // Add any currently open tabs to allTabs if not New Tab
   chrome.tabs.query({}, function (tabs) {
     tabs.forEach((tab) =>
-      OpenTab.constructIf(tab, tab.title != "new Tab", allTabs, matchesRule)
+      allTabs.add(
+        OpenTab.constructIf(tab, tab.title != "new Tab", allTabs, matchesRule)
+      )
     );
-    changePendingStatus();
+    logAllTabs();
+    console.log(settings.startup_notification)
+    console.log(selected_match_rules(settings))
+
+    //changePendingStatus();
     if (settings.startup_notification) {
       chrome.notifications.create({
         iconUrl: "../images/icon128.png",
