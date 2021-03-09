@@ -24,13 +24,10 @@ const status = {
 
 // Settings  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-var _settings = {};
-
-var defaultSettings = {
+// Default settings
+var settings = {
   filterSelection: "All tabs",
   theme: "light",
-  _time_min: 16,
-  _time_sec: 0,
   reset_delay: 1,
   min_required: 3, // change to min_required in settings script
   timer_reset: "reset",
@@ -38,35 +35,32 @@ var defaultSettings = {
   match_rules: [],
   not_match_rules: [],
   audible_lock: true,
-  clear_on_quit: true,
+  clear_on_quit: false,
   window_size: "small",
   max_stored: 25,
   prevent_dup: "url",
   paused: false,
   startup_notification: true, // Add to settings
   lock_notification: true, // Add to settings
-};
-
-/**
- * The settingsHandler saves to chrome.storage.sync on every 'set'.
- * An event listener updates local settings on every change.
- */
-const settingsHandler = {
-  get: function (obj, property, receiver) {
-
-    return obj.property;
+  // getters
+  get time_min() {
+    return this._time_min;
   },
-  set: function (obj, property, receiver, value) {
-    if (property == "_time_min" || property == "_time_sec") {
-      allTabs.resetTimers();
-    }
-    obj[property] = value;
-    // Save to sync storage on every 'set'
-    chrome.storage.sync.set({ settings: obj });
+  get time_sec() {
+    return this._time_sec;
+  },
+  get allowedTime() {
+    return this._time_min * 60 + this._time_sec / 1;
+  },
+  // setters
+  set time_min(val) {
+    alert("in the setter: " + val);
+    this._time_min = val;
+  },
+  set time_sec(val) {
+    this._time_sec = val;
   },
 };
-
-var settings = new Proxy({}, settingsHandler);
 
 // Functions  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -90,7 +84,6 @@ function selected_match_rules(settings) {
     ? settings[settings.auto_locking + "_rules"]
     : false;
 }
-
 
 function matchesRule(tabObj, ruleStr) {
   /*
@@ -124,6 +117,33 @@ function matchesRule(tabObj, ruleStr) {
   */
 }
 
+
+
+function duplicateFilter(tab) {
+  return true;
+}
+
+const messageLookup = {
+  startup: {
+    title: "Tab Stack is closing tabs on your behalf",
+    message: "To change settings, click the [ts] icon in Chrome.",
+  },
+};
+
+function showNotification(string, messageLookup) {
+  if (!messageLookup[string]) {
+    throw new ReferenceError("Key not found in messageLookup");
+  }
+  if (settings[string + "_notification"]) {
+    chrome.notifications.create({
+      iconUrl: "../images/icon128.png",
+      type: "basic",
+      title: messageLookup[string].title,
+      message: messageLookup[string].message,
+    });
+  }
+}
+
 //  Used in a tab's .lock( callback ) method
 function displayAfterLock(tab) {
   if (settings.lock_notification) {
@@ -134,18 +154,21 @@ function displayAfterLock(tab) {
       message: tab.title,
     });
   }
+
   chrome.browserAction.setBadgeText({
     tabId: tab.id,
     text: tab.locked ? "lock" : "",
   });
 }
 
-function setting(key) {
-  return settings.key;
-}
 
-function duplicateFilter(tab) {
-  return true;
+function store(thingString, parentObj = window, callback = () => {}) {
+  chrome.storage.sync.set(
+    {
+      [thingString]: parentObj[thingString],
+    },
+    callback()
+  );
 }
 
 // Intervals - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -153,8 +176,7 @@ function duplicateFilter(tab) {
 window.setInterval(function () {
   const statusAllowsTicking =
     !status.paused &&
-    (!status.pending ||
-      (status.pending && settings.timer_reset == "continue"));
+    (!status.pending || (status.pending && settings.timer_reset == "continue"));
   if (statusAllowsTicking) {
     /*allTabs.filterAndEach(
       (tab) =>
@@ -229,34 +251,26 @@ chrome.storage.onChanged.addListener(function (changes, areaName) {
   }
 });
 */
-function stringify(obj) {
-  return JSON.stringify(obj);
-}
-
-function logAllTabs() {
-  console.log("alltabs: " + stringify(Object.keys(allTabs.tabs)));
-}
 
 // Main  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-//chrome.storage.sync.clear(function(){})
-
+//chrome.storage.sync.clear(function () {});
 
 // Pull settings and closedTabs from storage
 chrome.storage.sync.get(["settings"], function (result) {
-  if (result["settings"]) {
-    console.log(result["settings"]);
+  /*if (result["settings"]) {
     settings = result["settings"];
+    store("settings");
   } else {
-    console.log("using default settings");
-    settings = defaultSettings;
-    chrome.storage.sync.set({ settings: settings });
-  }
+    settings.time_min = 1;
+    settings.time_sec = 0;
+    store("settings");
+  }*/
   if (result["allTabs"] && !settings.clear_on_quit) {
     allTabs.tabs = result["allTabs"].restoreClosedTabs();
+    //store("allTabs")
+  } else {
+    //store("allTabs")
   }
-  logAllTabs();
 
   // Add any currently open tabs to allTabs if not New Tab
   chrome.tabs.query({}, function (tabs) {
@@ -265,19 +279,9 @@ chrome.storage.sync.get(["settings"], function (result) {
         OpenTab.constructIf(tab, tab.title != "new Tab", allTabs, matchesRule)
       )
     );
-    logAllTabs();
-    console.log(settings.startup_notification)
-    console.log(selected_match_rules(settings))
-
+    store("allTabs");
     //changePendingStatus();
-    if (settings.startup_notification) {
-      chrome.notifications.create({
-        iconUrl: "../images/icon128.png",
-        type: "basic",
-        title: "Tab Stack is closing tabs on your behalf",
-        message: `To change settings, click the [ts] icon in Chrome.`,
-      });
-    }
   });
+  showNotification("startup", messageLookup);
 });
 chrome.browserAction.setBadgeBackgroundColor({ color: "#008080" });
