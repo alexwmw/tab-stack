@@ -22,7 +22,7 @@ class TabStackTab {
     this.matchesRule = matchesRule;
 
     //Tab Stack variables
-    this.timeCreated = parseInt(Date.now());
-    this.timeActive = parseInt(Date.now());
+    this.timeCreated = Date.now();
+    this.timeActive = Date.now();
   }
 }
