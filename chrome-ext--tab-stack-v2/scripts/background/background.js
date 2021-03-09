@@ -244,7 +244,6 @@ chrome.storage.onChanged.addListener(function (changes, areaName) {
  *
  */
 //chrome.storage.sync.clear(function () {});
-
 chrome.browserAction.setBadgeBackgroundColor({ color: "#008080" });
 
 // Pull settings and closedTabs from storage
