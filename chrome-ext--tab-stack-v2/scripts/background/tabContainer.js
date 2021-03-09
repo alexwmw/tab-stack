@@ -1,8 +1,6 @@
 class TabContainer {
-  tabs = {};
-
-  constructor() {
-    this.tabs = {};
+  constructor(tabs = {}) {
+    this.tabs = tabs;
   }
 
   filteredArray(filterFunction) {
@@ -17,12 +15,12 @@ class TabContainer {
     return entries;
   }
 
-  restoreClosedTabs() {
-    const entries = {};
-    Object.values(this.tabs)
-      .filter((tab) => tab.closed)
-      .forEach((tab) => (entries[tab.id + "c"] = tab));
-    return entries;
+  static restore(obj) {
+    return new TabContainer(
+      Object.values(obj.tabs)
+        .filter((tab) => tab.closed)
+        .forEach((tab) => (entries[tab.id + "c"] = tab))
+    );
   }
 
   filterAndEach(filterFunction, eachFunction) {
@@ -141,7 +139,6 @@ class TabContainer {
     if (this.closedTabs.length > limit_value) {
       // remove oldest tab
     }
-
 
     this.tabs = this.tabs.filter(duplicateFilter);
   }

@@ -117,8 +117,6 @@ function matchesRule(tabObj, ruleStr) {
   */
 }
 
-
-
 function duplicateFilter(tab) {
   return true;
 }
@@ -161,14 +159,8 @@ function displayAfterLock(tab) {
   });
 }
 
-
-function store(thingString, parentObj = window, callback = () => {}) {
-  chrome.storage.sync.set(
-    {
-      [thingString]: parentObj[thingString],
-    },
-    callback()
-  );
+function store(obj, callback = () => {}) {
+  chrome.storage.sync.set(obj, callback());
 }
 
 // Intervals - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -252,36 +244,40 @@ chrome.storage.onChanged.addListener(function (changes, areaName) {
 });
 */
 
-// Main  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Main  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+*
+*/
 //chrome.storage.sync.clear(function () {});
 
+chrome.browserAction.setBadgeBackgroundColor({ color: "#008080" });
+
 // Pull settings and closedTabs from storage
-chrome.storage.sync.get(["settings"], function (result) {
-  /*if (result["settings"]) {
+chrome.storage.sync.get(["settings", "closedTabs"], function (result) {
+  if (result["settings"]) {
     settings = result["settings"];
-    store("settings");
+    console.log("startup: Restored settings", settings);
   } else {
     settings.time_min = 1;
     settings.time_sec = 0;
-    store("settings");
-  }*/
-  if (result["allTabs"] && !settings.clear_on_quit) {
-    allTabs.tabs = result["allTabs"].restoreClosedTabs();
-    //store("allTabs")
-  } else {
-    //store("allTabs")
+    console.log("startup: No settings to restore", settings);
   }
-
-  // Add any currently open tabs to allTabs if not New Tab
-  chrome.tabs.query({}, function (tabs) {
-    tabs.forEach((tab) =>
-      allTabs.add(
-        OpenTab.constructIf(tab, tab.title != "new Tab", allTabs, matchesRule)
-      )
-    );
-    store("allTabs");
-    //changePendingStatus();
-  });
-  showNotification("startup", messageLookup);
+  if (result["closedTabs"] && !settings.clear_on_quit) {
+    console.log("startup: Restored tabs", allTabs);
+  } else {
+    console.log("startup: No tabs to restore", allTabs);
+  }
+  store({ settings: settings });
 });
-chrome.browserAction.setBadgeBackgroundColor({ color: "#008080" });
+
+// Add any currently open tabs to allTabs if not New Tab
+chrome.tabs.query({}, function (tabs) {
+  tabs.forEach((tab) =>
+    allTabs.add(
+      OpenTab.constructIf(tab, tab.title != "new Tab", allTabs, matchesRule)
+    )
+  );
+  //changePendingStatus();
+   console.log("startup: Chrome tabs added", allTabs);
+});
+
+showNotification("startup", messageLookup);
