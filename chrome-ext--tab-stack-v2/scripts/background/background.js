@@ -52,12 +52,18 @@ var settings = {
   get allowedTime() {
     return this._time_min * 60 + this._time_sec / 1;
   },
+  get selected_match_rules(settings) {
+    return this.auto_locking != "none"
+      ? this[this.auto_locking + "_rules"]
+      : false;
+  },
   // setters
   set time_min(val) {
-    alert("in the setter: " + val);
+    //allTabs.resetTimers()
     this._time_min = val;
   },
   set time_sec(val) {
+    //allTabs.resetTimers()
     this._time_sec = val;
   },
 };
@@ -74,16 +80,6 @@ var settings = {
     status.pending = false;
   }
 }*/
-
-function allowedTime(settings) {
-  return settings._time_min * 60 + settings._time_sec / 1;
-}
-
-function selected_match_rules(settings) {
-  return settings.auto_locking != "none" // Check in setting that this is the right value
-    ? settings[settings.auto_locking + "_rules"]
-    : false;
-}
 
 function matchesRule(tabObj, ruleStr) {
   /*
@@ -152,13 +148,13 @@ function displayAfterLock(tab) {
       message: tab.title,
     });
   }
-
   chrome.browserAction.setBadgeText({
     tabId: tab.id,
     text: tab.locked ? "lock" : "",
   });
 }
 
+// store the {key: value} in chrome storage
 function store(obj, callback = () => {}) {
   chrome.storage.sync.set(obj, callback());
 }
@@ -245,8 +241,8 @@ chrome.storage.onChanged.addListener(function (changes, areaName) {
 */
 
 /** Main  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-*
-*/
+ *
+ */
 //chrome.storage.sync.clear(function () {});
 
 chrome.browserAction.setBadgeBackgroundColor({ color: "#008080" });
@@ -277,7 +273,7 @@ chrome.tabs.query({}, function (tabs) {
     )
   );
   //changePendingStatus();
-   console.log("startup: Chrome tabs added", allTabs);
+  console.log("startup: Chrome tabs added", allTabs);
 });
 
 showNotification("startup", messageLookup);
