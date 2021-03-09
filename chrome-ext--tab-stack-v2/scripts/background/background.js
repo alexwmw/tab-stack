@@ -52,10 +52,10 @@ var settings = {
   get allowedTime() {
     return this._time_min * 60 + this._time_sec / 1;
   },
-  get selected_match_rules(settings) {
+  get selected_match_rules() {
     return this.auto_locking != "none"
       ? this[this.auto_locking + "_rules"]
-      : false;
+      : [];
   },
   // setters
   set time_min(val) {
