@@ -166,7 +166,7 @@ window.setInterval(function () {
     !status.paused &&
     (!status.pending || (status.pending && settings.timer_reset == "continue"));
   if (statusAllowsTicking) {
-    /*allTabs.filterAndEach(
+    allTabs.filterAndEach(
       (tab) =>
         !tab.closed &&
         !tab.locked &&
@@ -174,21 +174,19 @@ window.setInterval(function () {
         !tab.active &&
         !tab.audible &&
         tab.timeRemaining > 0,
-      (tab) => tab.tick()
+      (tab) => {
+        tab.tick();
+        console.log(tab.timeRemaining);
+      }
     );
     allTabs.filterAndEach(
       (tab) => !tab.closed && tab.timeRemaining <= 0,
-      (tab) => chrome.tabs.remove(parseInt(tab.id))
-    );*/
+      (tab) => {
+        chrome.tabs.remove(parseInt(tab.id));
+      }
+    );
   }
 }, 1000); /*
-chrome.tabs.onCreated.addListener(function (chromeTab) {
-  if (chromeTab.title != "New Tab") {
-    allTabs.add(new OpenTab(chromeTab, settings, matchesRule));
-  }
-  //changePendingStatus();
-});
-*/ /*
 chrome.tabs.onActivated.addListener(function (activeInfo) {
   allTabs.openTabs[activeInfo.tabId].active = true;
   allTabs.filterAndEach(
@@ -206,12 +204,13 @@ chrome.tabs.onUpdated.addListener(function (tabId, info, chromeTab) {
     //changePendingStatus();
   }
 });
-*/ /*
+*/ 
 chrome.tabs.onRemoved.addListener(function (tabId) {
-  allTabs.close(tabId, settings.limit_value, duplicateFilter);
+  allTabs.close(tabId, settings.max_stored, duplicateFilter);
   //changePendingStatus();
 });
-*/ /*
+
+/*
 chrome.commands.onCommand.addListener(function (command) {
   switch (command) {
     case "lock-toggle":
@@ -224,11 +223,7 @@ chrome.commands.onCommand.addListener(function (command) {
       break;
   }
 });
-*/
-
-// Listeners - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/*
+*/ /*
 chrome.storage.onChanged.addListener(function (changes, areaName) {
   for (var key in changes) {
     if (key == "settings") {
@@ -238,13 +233,23 @@ chrome.storage.onChanged.addListener(function (changes, areaName) {
     }
   }
 });
-*/
-
+*/ //chrome.storage.sync.clear(function () {});
 /** Main  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  *
  */
-//chrome.storage.sync.clear(function () {});
-chrome.browserAction.setBadgeBackgroundColor({ color: "#008080" });
+
+// Listeners - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/*
+chrome.tabs.onCreated.addListener(function (chromeTab) {
+  if (chromeTab.title != "New Tab") {
+    allTabs.add(new OpenTab(chromeTab, settings, matchesRule));
+  }
+  //changePendingStatus();
+});
+*/ chrome.browserAction.setBadgeBackgroundColor(
+  { color: "#008080" }
+);
 
 // Pull settings and closedTabs from storage
 chrome.storage.sync.get(["settings", "closedTabs"], function (result) {
@@ -276,3 +281,6 @@ chrome.tabs.query({}, function (tabs) {
 });
 
 showNotification("startup", messageLookup);
+
+settings.time_sec = 10;
+settings.time_min = 0;
