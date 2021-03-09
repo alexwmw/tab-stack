@@ -122,7 +122,7 @@ class TabContainer {
     }
   }
 
-  // Used if the user wants to delete a closed tab for tab history
+  // Used if the user wants to delete a closed tab from tab history
   forget(tabId) {
     if (!this.tabs[tabId].closed) {
       throw new TypeError("Only closed tabs can be forgotten");
@@ -130,16 +130,29 @@ class TabContainer {
     delete this.tabs[tabId];
   }
 
-  close(tabId, settings, duplicateFilter) {
+  close(tabId, limit_value, findDuplicates) {
     if (this.tabs[tabId].closed) {
       throw new TypeError("Only open tabs can be closed");
     }
-    this.tabs[tabId] = new ClosedTab(this.tabs[tabId]);
+    // replace the tab with a new ClosedTab
+    this.tabs[tabId] = new ClosedTab(this);
 
     if (this.closedTabs.length > limit_value) {
       // remove oldest tab
+      delete tabs[
+        this.closedTabs.reduce((oldestTab, tab) =>
+          oldestTab.timeCreated < tab.timeCreated ? oldestTab : tab
+        ).id
+      ];
     }
-
-    this.tabs = this.tabs.filter(duplicateFilter);
+    // remove duplicates
+    this.closedTabs
+      .filter(findDuplicates)
+      .map((tab) => tab.id)
+      .forEach(
+        function (tabId) {
+          delete this.tabs[tabId];
+        }.bind(this)
+      );
   }
 }
