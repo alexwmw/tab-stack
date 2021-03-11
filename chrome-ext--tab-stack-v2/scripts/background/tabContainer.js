@@ -3,26 +3,6 @@ class TabContainer {
     this.tabs = tabs;
   }
 
-  filteredArray(filterFunction) {
-    return Object.values(this.tabs).filter(filterFunction);
-  }
-
-  filteredObj(filterFunction) {
-    const entries = {};
-    Object.values(this.tabs)
-      .filter(filterFunction)
-      .forEach((tab) => (entries[tab.id] = tab));
-    return entries;
-  }
-
-  static restore(obj) {
-    return new TabContainer(
-      Object.values(obj.tabs)
-        .filter((tab) => tab.closed)
-        .forEach((tab) => (entries[tab.id + "c"] = tab))
-    );
-  }
-
   filterAndEach(filterFunction, eachFunction) {
     Object.values(this.tabs).filter(filterFunction).forEach(eachFunction);
   }
@@ -48,8 +28,32 @@ class TabContainer {
     return Object.values(this.tabs).filter((tab) => tab.pinned);
   }
 
-  get audibledTabs() {
+  get audibleTabs() {
     return Object.values(this.tabs).filter((tab) => tab.audible);
+  }
+
+  contains(tabId) {
+    return Object.keys(this.tabs).includes(tabId.toString());
+  }
+
+  filteredArray(filterFunction) {
+    return Object.values(this.tabs).filter(filterFunction);
+  }
+
+  filteredObj(filterFunction) {
+    const entries = {};
+    Object.values(this.tabs)
+      .filter(filterFunction)
+      .forEach((tab) => (entries[tab.id] = tab));
+    return entries;
+  }
+
+  static restore(obj) {
+    return new TabContainer(
+      Object.values(obj.tabs)
+        .filter((tab) => tab.closed)
+        .forEach((tab) => (entries[tab.id + "c"] = tab))
+    );
   }
 
   // Used to set the 'pending' status in the background
@@ -60,12 +64,12 @@ class TabContainer {
   }
 
   // If no argument is given, resets all openTab timers
-  resetTimers(filterFunction) {
+  resetTimers(filter) {
     if (arguments.length == 0) {
       this.openTabs.forEach((tab) => tab.resetTimer());
     } else {
       Object.values(this.tabs)
-        .filter(filterFunction)
+        .filter(filter)
         .forEach((tab) => tab.resetTimer());
     }
   }
@@ -91,17 +95,11 @@ class TabContainer {
     }
   }
 
-  // replace one open tab with another, retaining the original ID
-  replaceOpenTab(tabId, newOpenTab) {
-    if (!newOpenTab.closed && !this.tabs[tabId].closed) {
-      this.tabs[tabId] = newOpenTab;
-    } else if (newOpenTab.closed) {
-      throw new TypeError("Closed tabs should not be added external to class");
-    } else if (this.tabs[tabId].closed) {
-      throw new TypeError(
-        "Do not use this method to replace Closed tabs. Use .resurrect() instead."
-      );
-    }
+  // Replace one open tab with another, retaining the original ID
+  // Useful for chrome.tabs.onUpdated
+  updateOpenTab(tabId, chromeTab) {
+    const tab = this.tabs[tabId];
+    this.tabs[tabId] = new OpenTab(chromeTab, tab.settings, tab.matchRule);
   }
 
   // replace a closed tab with a new open tab
@@ -135,10 +133,18 @@ class TabContainer {
       throw new TypeError("Only open tabs can be closed");
     }
     // replace the tab with a new ClosedTab
-    this.tabs[tabId] = new ClosedTab(this);
+    this.tabs[tabId] = new ClosedTab(this.tabs[tabId]);
 
     if (this.closedTabs.length > limit_value) {
+      console.log("TabContainer.close: max stored limit surpassed");
       // remove oldest tab
+      console.log(
+        `TabContainer.close: deleting ID ${
+          this.closedTabs.reduce((oldestTab, tab) =>
+            oldestTab.timeCreated < tab.timeCreated ? oldestTab : tab
+          ).id
+        }`
+      );
       delete tabs[
         this.closedTabs.reduce((oldestTab, tab) =>
           oldestTab.timeCreated < tab.timeCreated ? oldestTab : tab
@@ -146,13 +152,13 @@ class TabContainer {
       ];
     }
     // remove duplicates
-    this.closedTabs
+    /*this.closedTabs
       .filter(findDuplicates)
       .map((tab) => tab.id)
       .forEach(
         function (tabId) {
           delete this.tabs[tabId];
         }.bind(this)
-      );
+      );*/
   }
 }
