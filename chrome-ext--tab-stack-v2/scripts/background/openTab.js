@@ -3,13 +3,7 @@ class OpenTab extends TabStackTab {
     super(tab, settings, matchesRule);
     this.closed = false;
     this.locked = this.autoLock(matchesRule);
-    this.timeRemaining = settings.allowedTime;
-  }
-
-  static constructIf(tab, ifBool, matchesRule) {
-    if (ifBool) {
-      return new OpenTab(tab, settings, matchesRule);
-    }
+    this.timeRemaining = settings.time_allowed;
   }
 
   autoLock(matchesRule) {
@@ -22,20 +16,21 @@ class OpenTab extends TabStackTab {
         );
   }
 
-  lock(bool, finish) {
-    if (arguments.length == 1 && typeof arguments[0] == "function" ) {
+  lock(finish, bool) {
+    if (arguments.length == 1 && typeof arguments[0] == "function") {
       // toggle
       this.lock = !this.lock;
+      finish(this);
     } else if (arguments.length == 2) {
       // set by parameter
       this.lock = bool;
+      finish(this.id, this.locked, this.title);
     }
     // callback with procedure for notifications & browser icon
-    finish(this);
   }
 
   resetTimer() {
-    this.timeRemaining = settings.allowed_time;
+    this.timeRemaining = settings.time_allowed;
   }
 
   tick() {
