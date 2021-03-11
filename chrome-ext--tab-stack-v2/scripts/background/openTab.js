@@ -24,7 +24,9 @@ class OpenTab extends TabStackTab {
     } else if (arguments.length == 2) {
       // set by parameter
       this.lock = bool;
-      finish(this.id, this.locked, this.title);
+      finish(this.id, this.locked, this.title); 
+      // this isn't working!! Error at parameter 'details': Error at property 'tabId': Invalid type: expected integer, found object.
+      // Maybe try var thisTab = this ?
     }
     // callback with procedure for notifications & browser icon
   }
