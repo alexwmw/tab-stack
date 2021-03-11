@@ -29,6 +29,7 @@ var settings = {
   filterSelection: "All tabs",
   theme: "light",
   reset_delay: 1,
+  time_allowed: 10,
   min_required: 3, // change to min_required in settings script
   timer_reset: "reset",
   auto_locking: "none",
@@ -43,28 +44,10 @@ var settings = {
   startup_notification: true, // Add to settings
   lock_notification: true, // Add to settings
   // getters
-  get time_min() {
-    return this._time_min;
-  },
-  get time_sec() {
-    return this._time_sec;
-  },
-  get allowedTime() {
-    return this._time_min * 60 + this._time_sec / 1;
-  },
   get selected_match_rules() {
     return this.auto_locking != "none"
       ? this[this.auto_locking + "_rules"]
       : [];
-  },
-  // setters
-  set time_min(val) {
-    //allTabs.resetTimers()
-    this._time_min = val;
-  },
-  set time_sec(val) {
-    //allTabs.resetTimers()
-    this._time_sec = val;
   },
 };
 
@@ -139,18 +122,18 @@ function showNotification(string, messageLookup) {
 }
 
 //  Used in a tab's .lock( callback ) method
-function displayAfterLock(tab) {
+function displayAfterLock(tabId, locked, title) {
   if (settings.lock_notification) {
     chrome.notifications.create({
       iconUrl: "../images/icon128.png",
       type: "basic",
-      title: tab.locked ? "Tab Locked" : "Tab Unlocked",
-      message: tab.title,
+      title: locked ? "Tab Locked" : "Tab Unlocked",
+      message: title,
     });
   }
   chrome.browserAction.setBadgeText({
-    tabId: tab.id,
-    text: tab.locked ? "lock" : "",
+    tabId: tabId.valueOf(),
+    text: locked ? "lock" : "",
   });
 }
 
@@ -176,54 +159,81 @@ window.setInterval(function () {
         tab.timeRemaining > 0,
       (tab) => {
         tab.tick();
-        console.log(tab.timeRemaining);
+        console.log(
+          `setInterval: tab ${tab.id} was ticked: ${tab.timeRemaining}`
+        );
       }
     );
     allTabs.filterAndEach(
       (tab) => !tab.closed && tab.timeRemaining <= 0,
       (tab) => {
         chrome.tabs.remove(parseInt(tab.id));
+        console.log(
+          `setInterval: tab ${tab.id} reached zero and was removed`,
+          tab
+        );
       }
     );
   }
-}, 1000); /*
-chrome.tabs.onActivated.addListener(function (activeInfo) {
-  allTabs.openTabs[activeInfo.tabId].active = true;
-  allTabs.filterAndEach(
-    (tab) => tab.id != activeInfo.tabId,
-    (tab) => (tab.active = false)
-  );
-});
-*/ /*
-chrome.tabs.onUpdated.addListener(function (tabId, info, chromeTab) {
-  if (info.status == "complete") {
-    allTabs.replaceOpenTab(
-      tabId,
-      new OpenTab(chromeTab, settings, matchesRule)
+}, 1000);
+
+// Listeners - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+chrome.tabs.onActivated.addListener(function (info) {
+  // Get all active tabs in the current window and make not active
+  chrome.windows.getCurrent(function (window) {
+    allTabs.filterAndEach(
+      (tab) => tab.windowId == window.id && tab.active,
+      (tab) => {
+        tab.active = false;
+        console.log(`onActivated: tab ${tab.id} was made inactive`);
+      }
     );
-    //changePendingStatus();
+    // Then (if exists) make the openTab with id activeInfo.tabId active
+    if (allTabs.contains(info.tabId)) {
+      allTabs.tabs[info.tabId].active = true;
+      allTabs.tabs[info.tabId].timeActive = Date.now();
+      console.log(`onActivated: tab ${info.tabId} was made active`);
+      if (settings.timer_reset == "reset") {
+        allTabs.resetTimers((tab) => tab.id == info.tabId);
+        console.log(`onActivated: tab ${info.tabId} timeRemaining was reset`);
+      }
+      console.log(`onActivated: the active tabs are:`, allTabs.activeTabs);
+    }
+  });
+});
+
+chrome.tabs.onRemoved.addListener(function (tabId) {
+  try {
+    allTabs.close(tabId, settings.max_stored, duplicateFilter);
+  } catch (e) {
+    console.log(
+      `onRemoved: tried allTabs.close(tabId ${tabId}) but got an error`
+    );
+    throw e;
+  }
+  //changePendingStatus();
+  console.log("onRemoved: ", allTabs);
+});
+
+chrome.tabs.onUpdated.addListener(function (tabId, info, chromeTab) {
+  allTabs.updateOpenTab(tabId, chromeTab);
+  console.log(`onUpdated: tab ${tabId}`, info);
+  //changePendingStatus();
+  if (info.status == "complete") {
+    // Only update UI if status is complete ??
   }
 });
-*/ 
-chrome.tabs.onRemoved.addListener(function (tabId) {
-  allTabs.close(tabId, settings.max_stored, duplicateFilter);
-  //changePendingStatus();
+
+chrome.tabs.onCreated.addListener(function (chromeTab) {
+  if (chromeTab.title != "New Tab") {
+    allTabs.add(new OpenTab(chromeTab, settings, matchesRule));
+    //changePendingStatus();
+    console.log("onCreated: new Chrome tab added", allTabs);
+  }
 });
 
 /*
-chrome.commands.onCommand.addListener(function (command) {
-  switch (command) {
-    case "lock-toggle":
-      chrome.tabs.query(
-        { active: true, lastFocusedWindow: true },
-        function (chromeTabs) {
-          allTabs.activeTabs[chromeTabs[0].id].lock(displayAfterLock);
-        }
-      );
-      break;
-  }
-});
-*/ /*
 chrome.storage.onChanged.addListener(function (changes, areaName) {
   for (var key in changes) {
     if (key == "settings") {
@@ -233,23 +243,33 @@ chrome.storage.onChanged.addListener(function (changes, areaName) {
     }
   }
 });
-*/ //chrome.storage.sync.clear(function () {});
-/** Main  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
- *
- */
+*/
 
-// Listeners - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/*
-chrome.tabs.onCreated.addListener(function (chromeTab) {
-  if (chromeTab.title != "New Tab") {
-    allTabs.add(new OpenTab(chromeTab, settings, matchesRule));
+chrome.commands.onCommand.addListener(function (command) {
+  switch (command) {
+    case "lock-toggle":
+      chrome.tabs.query(
+        { active: true, lastFocusedWindow: true },
+        function (chromeTabs) {
+          console.log(`onCommand[${command}] with tab ${chromeTabs[0].id}`);
+          allTabs.tabs[chromeTabs[0].id].lock(displayAfterLock);
+        }
+      );
+      break;
   }
-  //changePendingStatus();
 });
-*/ chrome.browserAction.setBadgeBackgroundColor(
-  { color: "#008080" }
-);
+
+/* Main  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+chrome.storage.sync.clear(function () {});
+*/
+
+function finishStartup() {
+  showNotification("startup", messageLookup);
+  settings.time_allowed = 30;
+  store({ settings: settings });
+}
+
+chrome.browserAction.setBadgeBackgroundColor({ color: "#008080" });
 
 // Pull settings and closedTabs from storage
 chrome.storage.sync.get(["settings", "closedTabs"], function (result) {
@@ -257,30 +277,25 @@ chrome.storage.sync.get(["settings", "closedTabs"], function (result) {
     settings = result["settings"];
     console.log("startup: Restored settings", settings);
   } else {
-    settings.time_min = 1;
-    settings.time_sec = 0;
     console.log("startup: No settings to restore", settings);
   }
   if (result["closedTabs"] && !settings.clear_on_quit) {
     console.log("startup: Restored tabs", allTabs);
   } else {
-    console.log("startup: No tabs to restore", allTabs);
+    console.log("startup: No tabs were restored", allTabs);
   }
   store({ settings: settings });
+
+  // Add any currently open tabs to allTabs if not New Tab
+  chrome.tabs.query({}, function (tabs) {
+    tabs.forEach((chromeTab) => {
+      if (chromeTab.title != "New Tab") {
+        allTabs.add(new OpenTab(chromeTab, settings, matchesRule));
+      }
+    });
+    //changePendingStatus();
+    console.log("startup: Chrome tabs added", allTabs);
+
+    finishStartup();
+  });
 });
-
-// Add any currently open tabs to allTabs if not New Tab
-chrome.tabs.query({}, function (tabs) {
-  tabs.forEach((tab) =>
-    allTabs.add(
-      OpenTab.constructIf(tab, tab.title != "new Tab", allTabs, matchesRule)
-    )
-  );
-  //changePendingStatus();
-  console.log("startup: Chrome tabs added", allTabs);
-});
-
-showNotification("startup", messageLookup);
-
-settings.time_sec = 10;
-settings.time_min = 0;
