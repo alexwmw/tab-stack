@@ -24,5 +24,8 @@ class TabStackTab {
     //Tab Stack variables
     this.timeCreated = Date.now();
     this.timeActive = Date.now();
+    this.closed = false;
+    this.locked = false;
+    
   }
 }
