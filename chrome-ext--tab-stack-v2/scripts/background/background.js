@@ -159,7 +159,7 @@ window.setInterval(function () {
         tab.timeRemaining > 0,
       (tab) => {
         tab.tick();
-        if (tab.timeRemaining % 10 == 0) {
+        if (tab.timeRemaining % 60 == 0 || tab.timeRemaining <= 10) {
           console.log(
             `setInterval: tab ${tab.id} has ${tab.timeRemaining}s remaining`
           );
@@ -215,6 +215,7 @@ chrome.tabs.onRemoved.addListener(function (tabId) {
     console.log(
       `onRemoved: tried allTabs.close(tabId ${tabId}) but got an error`
     );
+    alert(`onRemoved: tried allTabs.close(tabId ${tabId}) but got an error`);
     throw e;
   }
   //changePendingStatus();
@@ -222,7 +223,15 @@ chrome.tabs.onRemoved.addListener(function (tabId) {
 });
 
 chrome.tabs.onUpdated.addListener(function (tabId, info, chromeTab) {
-  allTabs.updateOpenTab(tabId, chromeTab);
+  try {
+    allTabs.updateOpenTab(tabId, chromeTab);
+  } catch (e) {
+    console.log(
+      `onUpdated: attempted to update ${tabId} with a new tab, but got an error`,
+      allTabs
+    );
+    throw e;
+  }
   console.log(`onUpdated: tab ${tabId}`, info);
   //changePendingStatus();
   if (info.status == "complete") {
@@ -270,8 +279,17 @@ chrome.storage.sync.clear(function () {});
 
 function finishStartup() {
   showNotification("startup", messageLookup);
-  settings.time_allowed = 600;
+  setSetting('time_allowed', 600)
+  /*settings.time_allowed = 600;
   store({ settings: settings });
+  allTabs.resetTimers();*/
+}
+
+function setSetting(property, value){
+  settings[property] = value;
+  if(property == 'time_allowed'){
+    allTabs.resetTimers()
+  }
 }
 
 chrome.browserAction.setBadgeBackgroundColor({ color: "#008080" });
