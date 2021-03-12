@@ -122,18 +122,18 @@ function showNotification(string, messageLookup) {
 }
 
 //  Used in a tab's .lock( callback ) method
-function displayAfterLock(tabId, locked, title) {
+function displayAfterLock(tab) {
   if (settings.lock_notification) {
     chrome.notifications.create({
       iconUrl: "../images/icon128.png",
       type: "basic",
-      title: locked ? "Tab Locked" : "Tab Unlocked",
-      message: title,
+      title: tab.locked ? "Tab Locked" : "Tab Unlocked",
+      message: tab.title,
     });
   }
   chrome.browserAction.setBadgeText({
-    tabId: tabId.valueOf(),
-    text: locked ? "lock" : "",
+    tabId: tab.id,
+    text: tab.locked ? "lock" : "",
   });
 }
 
@@ -159,9 +159,11 @@ window.setInterval(function () {
         tab.timeRemaining > 0,
       (tab) => {
         tab.tick();
-        console.log(
-          `setInterval: tab ${tab.id} was ticked: ${tab.timeRemaining}`
-        );
+        if (tab.timeRemaining % 10 == 0) {
+          console.log(
+            `setInterval: tab ${tab.id} has ${tab.timeRemaining}s remaining`
+          );
+        }
       }
     );
     allTabs.filterAndEach(
@@ -180,25 +182,28 @@ window.setInterval(function () {
 // Listeners - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 chrome.tabs.onActivated.addListener(function (info) {
+  var logLine = "onActivated: ";
   // Get all active tabs in the current window and make not active
   chrome.windows.getCurrent(function (window) {
     allTabs.filterAndEach(
       (tab) => tab.windowId == window.id && tab.active,
       (tab) => {
         tab.active = false;
-        console.log(`onActivated: tab ${tab.id} was made inactive`);
+        logLine += `tab ${tab.id} was made inactive; `;
       }
     );
     // Then (if exists) make the openTab with id activeInfo.tabId active
     if (allTabs.contains(info.tabId)) {
       allTabs.tabs[info.tabId].active = true;
       allTabs.tabs[info.tabId].timeActive = Date.now();
-      console.log(`onActivated: tab ${info.tabId} was made active`);
+      console.log(
+        logLine + `tab ${info.tabId} was made active`,
+        allTabs.activeTabs
+      );
       if (settings.timer_reset == "reset") {
         allTabs.resetTimers((tab) => tab.id == info.tabId);
         console.log(`onActivated: tab ${info.tabId} timeRemaining was reset`);
       }
-      console.log(`onActivated: the active tabs are:`, allTabs.activeTabs);
     }
   });
 });
@@ -265,7 +270,7 @@ chrome.storage.sync.clear(function () {});
 
 function finishStartup() {
   showNotification("startup", messageLookup);
-  settings.time_allowed = 30;
+  settings.time_allowed = 600;
   store({ settings: settings });
 }
 
@@ -295,7 +300,6 @@ chrome.storage.sync.get(["settings", "closedTabs"], function (result) {
     });
     //changePendingStatus();
     console.log("startup: Chrome tabs added", allTabs);
-
     finishStartup();
   });
 });
